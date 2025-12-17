@@ -1,2 +1,31 @@
-:root {
+@import url('https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&display=swap');
+@import "tailwindcss";
+
+@layer base {
+    html {
+        font-family: "Geom", system-ui, sans-serif;
+    }
 }
+
+@layer utilities {
+    .flex-center {
+        @apply flex justify-center items-center gap-2;
+    }
+
+    .flex-left {
+        @apply flex justify-start items-center gap-2;
+    }
+
+    .flex-right {
+        @apply flex justify-end items-center gap-2;
+    }
+
+    .flex-between {
+        @apply flex justify-between items-center gap-2;
+    }
+
+    .basic-padding {
+        @apply px-4 py-2
+    }
+}
+
