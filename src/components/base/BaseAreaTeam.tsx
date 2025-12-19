@@ -11,6 +11,7 @@ import ChampionSkeletonLoader from "../loaders/ChampionSkeletonLoader";
 import ChampionCard from "../card/ChampionCard";
 import TeamModal from "../modals/TeamModal";
 import ChampionModal from "../modals/ChampionModal";
+import { sortBySpeedDesc } from "../../helpers/sortChampions";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -58,7 +59,7 @@ export default function BaseAreaTeam({
           .map((id) => champions.find((c) => c.id === id))
           .filter(Boolean) as IChampion[];
 
-        setTeamChampionList(mapped);
+        setTeamChampionList(sortBySpeedDesc(mapped));
       } else setTeamChampionList([]);
 
       setTimeout(() => setLoading(false), 500);
