@@ -25,11 +25,9 @@ export default function ChampionCard({
   nsfw = false,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
-
   const { deleteChampion, loading } = useChampion();
 
   const isBuilt = checkIfChampionIsBuilt(champion);
-  const championNameMaxLength = 20;
   const thresholdDifferenceTolerance: number = 2;
   let thresholdDifference = 0;
 
@@ -172,15 +170,12 @@ export default function ChampionCard({
                 width="20px"
               />
             </div>
-            <p title={champion.name}>
-              <b>
-                {champion.name.length > championNameMaxLength
-                  ? champion.name.substring(0, championNameMaxLength - 3) +
-                    "..."
-                  : champion.name}
-              </b>{" "}
-              Lvl. {champion.level}
+            <p className="truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
+              {champion.name}
             </p>
+            <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
+              {champion.level}
+            </div>
           </div>
           <ChampionStar
             stars={champion.stars}
@@ -190,7 +185,7 @@ export default function ChampionCard({
         </div>
 
         <div
-          className={`relative w-90 h-50 overflow-hidden ${
+          className={`relative w-full h-50 overflow-hidden ${
             nsfw ? "invisible" : "visible"
           }`}
         >
@@ -244,13 +239,8 @@ export default function ChampionCard({
               ))}
               <tr>
                 <td>Role</td>
-                <td
-                  className="text-right capitalize"
-                  title={champion.role?.join(", ")}
-                >
-                  {champion.role?.join(", ").length > 30
-                    ? champion.role?.join(", ").substring(0, 27).concat("...")
-                    : champion.role?.join(", ")}
+                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
+                  {champion.role?.join(", ")}
                 </td>
               </tr>
             </tbody>
@@ -269,6 +259,11 @@ export default function ChampionCard({
                       threshold
                     )}`}
                   >
+                    {champion[key] < threshold && (
+                      <span className="opacity-50 mr-1">
+                        (-{threshold - champion[key]})
+                      </span>
+                    )}
                     {formatNumber(champion[key])}
                   </td>
                 </tr>

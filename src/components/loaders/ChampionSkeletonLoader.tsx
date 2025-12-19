@@ -5,7 +5,7 @@ export default function ChampionSkeletonLoader({
   length = 8,
 }: ChampionSkeletonProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 p-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {Array.from({ length }).map((_, idx) => (
         <div
           key={idx}

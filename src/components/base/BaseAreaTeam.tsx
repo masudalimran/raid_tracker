@@ -73,7 +73,7 @@ export default function BaseAreaTeam({
     <>
       <div className="overflow-scroll h-[92vh]">
         <div className="flex-between sticky top-0 bg-white z-20">
-          <h1 className="text-3xl">{title}</h1>
+          <h1 className="text-xl">{title}</h1>
 
           {team ? (
             <FaEdit
@@ -99,7 +99,7 @@ export default function BaseAreaTeam({
           </div>
         )}
 
-        <div className="flex justify-start flex-wrap gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {teamChampionList.map((champion) => (
             <Fragment key={champion.id}>
               <ChampionCard
