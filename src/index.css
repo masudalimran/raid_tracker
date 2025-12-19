@@ -1,31 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&display=swap");
 @import "tailwindcss";
 
 @layer base {
-    html {
-        font-family: "Geom", system-ui, sans-serif;
-    }
+  html {
+    font-family: "Geom", system-ui, sans-serif;
+  }
 }
 
 @layer utilities {
-    .flex-center {
-        @apply flex justify-center items-center gap-2;
-    }
+  .flex-center {
+    @apply flex justify-center items-center gap-2;
+  }
 
-    .flex-left {
-        @apply flex justify-start items-center gap-2;
-    }
+  .flex-left {
+    @apply flex justify-start items-center gap-2;
+  }
 
-    .flex-right {
-        @apply flex justify-end items-center gap-2;
-    }
+  .flex-right {
+    @apply flex justify-end items-center gap-2;
+  }
 
-    .flex-between {
-        @apply flex justify-between items-center gap-2;
-    }
+  .flex-between {
+    @apply flex justify-between items-center gap-2;
+  }
 
-    .basic-padding {
-        @apply px-4 py-2
-    }
+  .basic-padding {
+    @apply px-4 py-2;
+  }
+
+  .basic-padding-xs {
+    @apply px-2 py-1;
+  }
+
+  .basic-input {
+    @apply border border-gray-300 rounded-md pl-2 py-1 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+
+  .input {
+    @apply mb-2 w-full border px-2 py-1 rounded;
+  }
 }
-

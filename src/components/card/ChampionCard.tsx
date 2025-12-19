@@ -1,40 +1,104 @@
 import type IChampion from "../../models/IChampion.ts";
 import ChampionStar from "../utility/ChampionStar.tsx";
 import { formatNumber } from "../../helpers/formatNumber.ts";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaEdit, FaTrash } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
-import { ChampionRole } from "../../models/ChampionRole.ts";
 import { ChampionRarity } from "../../models/ChampionRarity.ts";
+import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
+import { ChampionType } from "../../models/ChampionType.ts";
+import { ChampionRole } from "../../models/ChampionRole.ts";
+import { useState } from "react";
+import Modal from "../modals/Modal.tsx";
+import { useChampion } from "../../hooks/useChampion.ts";
 
 interface ChampionCardProps {
   champion: IChampion;
+  onEdit: (champion: IChampion) => void;
+  onDelete: () => void;
+  nsfw?: boolean;
 }
 
-const basic_info = [
-  { label: "Faction", key: "faction" },
-  { label: "Rarity", key: "rarity" },
-  { label: "Type", key: "type" },
-] as const;
+export default function ChampionCard({
+  champion,
+  onEdit,
+  onDelete,
+  nsfw = false,
+}: ChampionCardProps) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
 
-const stats = [
-  { label: "HP", key: "hp", threshold: 0 },
-  { label: "ATK", key: "atk", threshold: 0 },
-  { label: "DEF", key: "def", threshold: 0 },
-  { label: "SPD", key: "spd", threshold: 0 },
-  { label: "C.Rate", key: "c_rate", threshold: 0 },
-  { label: "C.DMG", key: "c_dmg", threshold: 0 },
-  { label: "RES", key: "res", threshold: 0 },
-  { label: "ACC", key: "acc", threshold: 0 },
-] as const;
+  const { deleteChampion, loading } = useChampion();
 
-export default function ChampionCard({ champion }: ChampionCardProps) {
-  const checkIfBuilt: () => boolean = (): boolean => {
-    if (champion.role.includes(ChampionRole.NUKER) && champion.level < 60)
-      return false;
-    if (champion.level < 50) return false;
-    if (!champion.is_booked) return false;
-    if (!champion.has_mastery) return false;
-    return true;
+  const isBuilt = checkIfChampionIsBuilt(champion);
+  const championNameMaxLength = 20;
+  const thresholdDifferenceTolerance: number = 2;
+  let thresholdDifference = 0;
+
+  const current_rsl_account = JSON.parse(
+    localStorage.getItem("supabase_rsl_account_list") ?? "[]"
+  ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
+
+  if (!current_rsl_account) return;
+
+  const basic_info = [
+    { label: "Faction", key: "faction" },
+    { label: "Rarity", key: "rarity" },
+    { label: "Type", key: "type" },
+  ] as const;
+
+  const stats = [
+    {
+      label: "HP",
+      key: "hp",
+      threshold: champion.type === ChampionType.HP ? 45000 : 30000,
+    },
+    {
+      label: "ATK",
+      key: "atk",
+      threshold:
+        champion.type === ChampionType.ATTACK &&
+        champion.role?.includes(ChampionRole.NUKER)
+          ? 4000
+          : 0,
+    },
+    {
+      label: "DEF",
+      key: "def",
+      threshold: champion.type === ChampionType.DEFENSE ? 4000 : 2500,
+    },
+    {
+      label: "SPD",
+      key: "spd",
+      threshold: champion.role?.includes(ChampionRole.DEBUFFER) ? 180 : 160,
+    },
+    {
+      label: "C.Rate",
+      key: "c_rate",
+      threshold: champion.role?.includes(ChampionRole.NUKER) ? 100 : 0,
+    },
+    {
+      label: "C.DMG",
+      key: "c_dmg",
+      threshold: champion.role?.includes(ChampionRole.NUKER) ? 200 : 0,
+    },
+    { label: "RES", key: "res", threshold: 0 },
+    {
+      label: "ACC",
+      key: "acc",
+      threshold:
+        champion.role?.includes(ChampionRole.DEBUFFER) ||
+        champion.role?.includes(ChampionRole.TM_REDUCER)
+          ? 200
+          : 0,
+    },
+  ] as const;
+
+  const checkBuildThreshold = (available: number, threshold: number) => {
+    if (available > threshold) {
+      return "text-green-500";
+    } else {
+      thresholdDifference++;
+      return "text-red-500";
+    }
   };
 
   const determineCardBg = (): string => {
@@ -43,13 +107,13 @@ export default function ChampionCard({ champion }: ChampionCardProps) {
         return "bg-red-100";
         break;
       case ChampionRarity.LEGENDARY:
-        return "bg-orange-100";
+        return "bg-orange-300";
         break;
       case ChampionRarity.EPIC:
-        return "bg-purple-100";
+        return "bg-purple-300";
         break;
       case ChampionRarity.RARE:
-        return "bg-blue-100";
+        return "bg-blue-300";
         break;
       case ChampionRarity.UNCOMMON:
         return "bg-green-100";
@@ -63,99 +127,221 @@ export default function ChampionCard({ champion }: ChampionCardProps) {
     }
   };
 
+  const handleDeleteClick = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const handleOnClose = () => {
+    setDeleteModalOpen(false);
+    onDelete();
+  };
+
+  const handleDelete = async () => {
+    await deleteChampion(champion.id.toString())
+      .then((deleted) => {
+        const supabase_champions = JSON.parse(
+          localStorage.getItem("supabase_champion_list") || "[]"
+        );
+        const updatedChampions = supabase_champions.filter(
+          (c: IChampion) => c.id !== deleted.id
+        );
+        localStorage.setItem(
+          "supabase_champion_list",
+          JSON.stringify(updatedChampions)
+        );
+      })
+      .catch((error) => {
+        console.error("Error deleting champion:", error);
+      });
+
+    handleOnClose();
+  };
+
   return (
-    <div
-      className={`border border-gray-300 rounded-xl overflow-hidden shadow-xl`}
-    >
-      <div className="flex-between basic-padding">
-        <div className="flex-left">
-          <div>
-            <img
-              src={champion.affinity}
-              alt={champion.name}
-              height="20px"
-              width="20px"
-            />
+    <>
+      <div
+        className={`border border-gray-300 rounded-xl overflow-hidden shadow-xl`}
+      >
+        <div className={`flex-between basic-padding ${determineCardBg()}`}>
+          <div className="flex-left">
+            <div>
+              <img
+                src={champion.affinity}
+                alt={champion.name}
+                height="20px"
+                width="20px"
+              />
+            </div>
+            <p title={champion.name}>
+              <b>
+                {champion.name.length > championNameMaxLength
+                  ? champion.name.substring(0, championNameMaxLength - 3) +
+                    "..."
+                  : champion.name}
+              </b>{" "}
+              Lvl. {champion.level}
+            </p>
           </div>
-          <p>
-            <b>{champion.name}</b> Lvl. {champion.level}
-          </p>
-        </div>
-        <ChampionStar
-          stars={champion.stars}
-          ascension_stars={champion.ascension_stars}
-          awaken_stars={champion.awaken_stars}
-        />
-      </div>
-
-      <div className={`${determineCardBg()} min-w-75 overflow-hidden`}>
-        <a href={champion.championUrl} target="_blank">
-          <img
-            src={champion.imgUrl}
-            alt={champion.name}
-            className="object-contain w-full h-50 hover:scale-105 transition duration-600"
+          <ChampionStar
+            stars={champion.stars}
+            ascension_stars={champion.ascension_stars}
+            awaken_stars={champion.awaken_stars}
           />
-        </a>
-      </div>
+        </div>
 
-      <div className="basic-padding">
-        <table className="w-full">
-          <tbody>
-            {basic_info.map(({ label, key }) => (
-              <tr key={key}>
-                <td>{label}</td>
-                <td className="text-right">{champion[key]}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div
+          className={`relative w-90 h-50 overflow-hidden ${
+            nsfw ? "invisible" : "visible"
+          }`}
+        >
+          {/* Blurred background */}
+          <div
+            className="absolute inset-0 bg-center bg-cover blur-md scale-110"
+            style={{ backgroundImage: `url(${champion.imgUrl})` }}
+          />
 
-        <hr className="my-2"></hr>
+          {/* Foreground image */}
+          <a
+            href={champion.championUrl}
+            target="_blank"
+            className="relative z-10 flex justify-center"
+          >
+            <img
+              src={champion.imgUrl}
+              alt={champion.name}
+              className="object-contain h-50 hover:scale-105 transition duration-300"
+            />
+          </a>
+        </div>
 
-        <table className="w-full">
-          <tbody>
-            {stats.map(({ label, key }) => (
-              <tr key={key}>
-                <td>{label}</td>
-                <td className="text-right">{formatNumber(champion[key])}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <hr className="my-2"></hr>
-
-        <div className="flex-between">
-          <div className="flex-center">
-            <p>Book: </p>
-            {champion.is_booked ? (
-              <FaCheckCircle className="text-green-500" />
-            ) : (
-              <MdCancel className="text-red-500" />
-            )}
+        <div className="flex-right basic-padding">
+          <div
+            className="basic-padding-xs text-xs flex-center border rounded-full text-blue-500 cursor-pointer hover:bg-blue-500 transition border-blue-500 hover:text-white"
+            onClick={() => onEdit(champion)}
+          >
+            <p>Edit</p>
+            <FaEdit size={16} className="" />
           </div>
-          <div className="flex-center">
-            <p>Mastery: </p>
-            {champion.has_mastery ? (
-              <FaCheckCircle className="text-green-500" />
-            ) : (
-              <MdCancel className="text-red-500" />
-            )}
+          <div
+            onClick={handleDeleteClick}
+            className="basic-padding-xs text-xs flex-center border rounded-full text-red-500 cursor-pointer hover:bg-red-500 transition border-red-500 hover:text-white"
+          >
+            <p>Delete</p>
+            <FaTrash size={15} className="" />
           </div>
         </div>
 
-        <hr className="my-2"></hr>
+        <hr className="mb-2"></hr>
+
+        <div className="basic-padding">
+          <table className="w-full">
+            <tbody>
+              {basic_info.map(({ label, key }) => (
+                <tr key={key}>
+                  <td>{label}</td>
+                  <td className="text-right">{champion[key]}</td>
+                </tr>
+              ))}
+              <tr>
+                <td>Role</td>
+                <td
+                  className="text-right capitalize"
+                  title={champion.role?.join(", ")}
+                >
+                  {champion.role?.join(", ").length > 30
+                    ? champion.role?.join(", ").substring(0, 27).concat("...")
+                    : champion.role?.join(", ")}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <hr className="my-2"></hr>
+
+          <table className="w-full">
+            <tbody>
+              {stats.map(({ label, key, threshold }) => (
+                <tr key={key}>
+                  <td>{label}</td>
+                  <td
+                    className={`text-right ${checkBuildThreshold(
+                      champion[key],
+                      threshold
+                    )}`}
+                  >
+                    {formatNumber(champion[key])}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <hr className="my-2"></hr>
+
+          <div className="flex-between">
+            <div className="flex-center">
+              <p>Book: </p>
+              {champion.is_booked ? (
+                <FaCheckCircle className="text-green-500" />
+              ) : (
+                <MdCancel className="text-red-500" />
+              )}
+            </div>
+            <div className="flex-center">
+              <p>Mastery: </p>
+              {champion.has_mastery ? (
+                <FaCheckCircle className="text-green-500" />
+              ) : (
+                <MdCancel className="text-red-500" />
+              )}
+            </div>
+          </div>
+        </div>
 
         <div>
           <p
             className={`text-center w-full basic-padding text-white ${
-              checkIfBuilt() ? "bg-green-500" : "bg-red-500"
+              isBuilt
+                ? thresholdDifference >= thresholdDifferenceTolerance
+                  ? "bg-yellow-400"
+                  : "bg-green-500"
+                : "bg-red-500"
             }`}
           >
-            {checkIfBuilt() ? "" : "Not "} Built
+            {isBuilt
+              ? thresholdDifference >= thresholdDifferenceTolerance
+                ? "Needs Improvement"
+                : "Built"
+              : "Not Built"}
           </p>
         </div>
       </div>
-    </div>
+
+      {deleteModalOpen && (
+        <Modal
+          isOpen={deleteModalOpen}
+          title={`Do you want to delete ${champion.name}?`}
+          onClose={handleOnClose}
+        >
+          <hr className="my-4" />
+          <div className="flex justify-end gap-2 mt-2 [&>button]:cursor-pointer">
+            <button
+              type="button"
+              onClick={handleOnClose}
+              className="border border-gray-500 hover:bg-gray-600 transition text-gray-500 hover:text-white px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition"
+            >
+              {loading ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
