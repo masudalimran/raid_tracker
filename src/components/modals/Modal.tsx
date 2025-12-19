@@ -1,5 +1,4 @@
 import { AiFillCloseSquare } from "react-icons/ai";
-import { MdCancel } from "react-icons/md";
 
 interface ModalProps {
   isOpen: boolean;

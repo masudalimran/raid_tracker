@@ -10,9 +10,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   const [championList, setChampionList] = useState<IChampion[]>([]);
-  const [teamsList, setTeamList] = useState<ITeam[]>([]);
+  const [teamList, setTeamList] = useState<ITeam[]>([]);
 
-  const [reloadDetector, setReloadDetector] = useState<boolean>(false);
+  console.log(championList);
+  console.log(teamList);
+
+  // const [reloadDetector, setReloadDetector] = useState<boolean>(false);
 
   useEffect(() => {
     const load = async () => {
