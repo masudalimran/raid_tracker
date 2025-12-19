@@ -9,6 +9,7 @@ import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader
 
 import type IChampion from "../models/IChampion";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
+import { fetchTeams } from "../helpers/handleTeams";
 
 export default function Champions() {
   const [championList, setChampionList] = useState<IChampion[]>([]);
@@ -32,6 +33,8 @@ export default function Champions() {
     await fetchChampions(); // ensures localStorage is up to date
     const generated = generateChampions();
     setChampionList(generated);
+
+    fetchTeams();
 
     setTimeout(() => setLoading(false), 400);
   }, []);
