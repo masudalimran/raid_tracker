@@ -40,19 +40,22 @@ export default function ChampionMultiSelect({
       />
 
       <div className="max-h-62.5 overflow-y-auto space-y-1">
-        {filtered.map((champ) => (
-          <label
-            key={champ.id}
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <input
-              type="checkbox"
-              checked={value.includes(champ.id.toString())}
-              onChange={() => toggleChampion(champ.id.toString())}
-            />
-            {champ.name}
-          </label>
-        ))}
+        {filtered
+          .slice() // make a copy to avoid mutating original array
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((champ) => (
+            <label
+              key={champ.id}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={value.includes(champ.id.toString())}
+                onChange={() => toggleChampion(champ.id.toString())}
+              />
+              {champ.name}
+            </label>
+          ))}
       </div>
 
       <p className="text-xs text-gray-500 mt-1">
