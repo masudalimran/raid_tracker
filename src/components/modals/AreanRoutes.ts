@@ -9,7 +9,7 @@ import { POTION_KEEP } from "../../models/game_areas/PotionKeep";
 export const AREA_ROUTES = [
   ...buildAreaRoutes(POTION_KEEP, {
     titleSuffix: "Team",
-    maxChampions: 4,
+    maxChampions: 5,
   }),
 
   ...buildAreaRoutes(DUNGEON, {
