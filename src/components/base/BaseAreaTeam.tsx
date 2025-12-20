@@ -72,9 +72,16 @@ export default function BaseAreaTeam({
 
   return (
     <>
-      <div className="overflow-scroll h-[92vh]">
+      <div className="overflow-auto h-[92vh]">
         <div className="flex-between sticky top-0 bg-white z-20">
-          <h1 className="text-xl">{title}</h1>
+          <h1 className="text-xl">
+            {title}{" "}
+            {team?.clearing_stage && (
+              <span className="ml-1 basic-padding bg-black text-white">
+                {team.clearing_stage}
+              </span>
+            )}
+          </h1>
 
           {team ? (
             <FaEdit

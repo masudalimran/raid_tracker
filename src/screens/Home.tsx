@@ -61,7 +61,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="overflow-scroll h-[92vh]">
+      <div className="overflow-auto h-[92vh]">
         <h1 className="text-2xl font-semibold">Book Priority</h1>
         <hr className="py-2" />
         <h2 className="text-xl pb-2">{ChampionRarity.LEGENDARY}</h2>

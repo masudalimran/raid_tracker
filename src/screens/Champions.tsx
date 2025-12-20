@@ -76,7 +76,7 @@ export default function Champions() {
 
   return (
     <>
-      <div className="overflow-scroll h-[92vh]">
+      <div className="overflow-auto h-[92vh]">
         {/* Header */}
         <div className="flex-between sticky top-0 bg-white z-20">
           <h1 className="text-xl">
