@@ -1,7 +1,7 @@
 import type IChampion from "../../models/IChampion.ts";
 import ChampionStar from "../utility/ChampionStar.tsx";
 import { formatNumber } from "../../helpers/formatNumber.ts";
-import { FaCheckCircle, FaEdit, FaTrash } from "react-icons/fa";
+import { FaCheckCircle, FaEdit, FaInfoCircle, FaTrash } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { ChampionRarity } from "../../models/ChampionRarity.ts";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
@@ -10,6 +10,8 @@ import { ChampionRole } from "../../models/ChampionRole.ts";
 import { useState } from "react";
 import Modal from "../modals/Modal.tsx";
 import { useChampion } from "../../hooks/useChampion.ts";
+import type ITeam from "../../models/ITeam.ts";
+import { fromSlug } from "../../helpers/fromSlug.ts";
 
 interface ChampionCardProps {
   champion: IChampion;
@@ -26,6 +28,26 @@ export default function ChampionCard({
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
+
+  // Parse teams from localStorage
+  const supabase_team_list: ITeam[] = JSON.parse(
+    localStorage.getItem("supabase_team_list") || "[]"
+  );
+
+  // // Filter teams that include this champion
+  // const championTeams = supabase_team_list.filter((team) =>
+  //   team.champion_ids.includes(String(champion.id))
+  // );
+
+  // // Count
+  // const championTeamCount = championTeams.length;
+
+  const championTeams = supabase_team_list.filter((team) =>
+    team.champion_ids.includes(String(champion.id))
+  );
+
+  const championTeamCount = championTeams.length;
+  const championTeamNames = championTeams.map((t) => t.team_name);
 
   const isBuilt = checkIfChampionIsBuilt(champion);
   const thresholdDifferenceTolerance: number = 2;
@@ -171,7 +193,7 @@ export default function ChampionCard({
               />
             </div>
             <p className="truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
-              {champion.name}
+              {champion.name} {championTeamCount}
             </p>
             <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
               {champion.level}
@@ -290,6 +312,43 @@ export default function ChampionCard({
                 <MdCancel className="text-red-500" />
               )}
             </div>
+          </div>
+
+          <hr className="my-2"></hr>
+
+          <div className="flex-left gap-1 mt-2 relative group">
+            <p className="text-sm">
+              Used in {championTeamCount} team
+              {championTeamCount !== 1 ? "s" : ""}
+            </p>
+
+            {championTeamCount > 0 && (
+              <>
+                {/* Info icon */}
+                <FaInfoCircle />
+
+                {/* Tooltip */}
+                <div
+                  className="
+          absolute bottom-full  mb-2
+          hidden group-hover:block
+          bg-gray-800 text-white text-xs
+          rounded-md shadow-lg
+          px-3 py-2
+          max-w-xs
+          z-50
+        "
+                >
+                  <ul className="space-y-1">
+                    {championTeamNames.map((team) => (
+                      <li key={team} className="whitespace-nowrap">
+                        • {fromSlug(team)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

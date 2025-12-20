@@ -33,7 +33,7 @@ function createTeamPriorityRule(teams: ITeam[]): PriorityScoreRule {
       team.champion_ids.includes(String(champion.id))
     ).length;
 
-    return teamCount * 5;
+    return teamCount * 10;
   };
 }
 
