@@ -193,7 +193,7 @@ export default function ChampionCard({
               />
             </div>
             <p className="truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
-              {champion.name} {championTeamCount}
+              {champion.name}
             </p>
             <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
               {champion.level}
