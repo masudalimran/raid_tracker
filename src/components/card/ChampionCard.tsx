@@ -15,8 +15,8 @@ import { fromSlug } from "../../helpers/fromSlug.ts";
 
 interface ChampionCardProps {
   champion: IChampion;
-  onEdit: (champion: IChampion) => void;
-  onDelete: () => void;
+  onEdit?: (champion: IChampion) => void;
+  onDelete?: () => void;
   nsfw?: boolean;
 }
 
@@ -231,22 +231,24 @@ export default function ChampionCard({
           </a>
         </div>
 
-        <div className="flex-right basic-padding">
-          <div
-            className="basic-padding-xs text-xs flex-center border rounded-full text-blue-500 cursor-pointer hover:bg-blue-500 transition border-blue-500 hover:text-white"
-            onClick={() => onEdit(champion)}
-          >
-            <p>Edit</p>
-            <FaEdit size={16} className="" />
+        {onEdit && onDelete && (
+          <div className="flex-right basic-padding">
+            <div
+              className="basic-padding-xs text-xs flex-center border rounded-full text-blue-500 cursor-pointer hover:bg-blue-500 transition border-blue-500 hover:text-white"
+              onClick={() => onEdit(champion)}
+            >
+              <p>Edit</p>
+              <FaEdit size={16} className="" />
+            </div>
+            <div
+              onClick={handleDeleteClick}
+              className="basic-padding-xs text-xs flex-center border rounded-full text-red-500 cursor-pointer hover:bg-red-500 transition border-red-500 hover:text-white"
+            >
+              <p>Delete</p>
+              <FaTrash size={15} className="" />
+            </div>
           </div>
-          <div
-            onClick={handleDeleteClick}
-            className="basic-padding-xs text-xs flex-center border rounded-full text-red-500 cursor-pointer hover:bg-red-500 transition border-red-500 hover:text-white"
-          >
-            <p>Delete</p>
-            <FaTrash size={15} className="" />
-          </div>
-        </div>
+        )}
 
         <hr className="mb-2"></hr>
 

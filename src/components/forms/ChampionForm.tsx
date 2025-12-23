@@ -15,6 +15,8 @@ import { ChampionRole } from "../../models/ChampionRole";
 import StarRatingInput from "./inputs/StartRatingInput";
 import ToggleInput from "./inputs/ToggleInput";
 import { useChampion } from "../../hooks/useChampion";
+import { useState } from "react";
+import ChampionCard from "../card/ChampionCard";
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -22,6 +24,7 @@ interface ChampionFormProps {
 }
 
 export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
+  const [isOnPreview, setIsOnPreview] = useState<boolean>(false);
   const { addChampion, updateChampion, loading } = useChampion();
 
   const { id: userId } = JSON.parse(
@@ -57,12 +60,20 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
     // eslint-disable-next-line react-hooks/rules-of-hooks
   } = useForm<ChampionFormData>({
     resolver: zodResolver(championSchema),
     defaultValues: champion ?? DefaultChampionObject,
   });
+
+  const watchedFormData = watch();
+
+  const previewChampion: IChampion = {
+    ...(champion ?? DefaultChampionObject),
+    ...watchedFormData,
+  };
 
   const onSave = async (data: ChampionFormData) => {
     if (champion?.id) {
@@ -103,139 +114,148 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSave)}
-      className="bg-white max-h-[80vh] overflow-auto px-8 border-t-2 pt-2"
-    >
-      <hr className="my-2" />
-      <p className="text-xl font-bold">Basic Info</p>
-      <hr className="my-2" />
+    <form onSubmit={handleSubmit(onSave)} className="bg-white border-t-2 pt-2">
+      {isOnPreview ? (
+        <>
+          <div className="px-8">
+            <ChampionCard champion={previewChampion} />
+          </div>
+        </>
+      ) : (
+        <div className="max-h-[70vh] overflow-auto px-8 ">
+          <hr className="my-2" />
+          <p className="text-xl font-bold">Basic Info</p>
+          <hr className="my-2" />
 
-      {textFields.map((field) => (
-        <div key={field.name}>
-          <label>{field.label}</label>
-          <input {...register(field.name)} className="input" />
-          {errors[field.name] && (
-            <p className="text-red-500">{errors[field.name]?.message}</p>
-          )}
-        </div>
-      ))}
+          {textFields.map((field) => (
+            <div key={field.name}>
+              <label>{field.label}</label>
+              <input {...register(field.name)} className="input" />
+              {errors[field.name] && (
+                <p className="text-red-500">{errors[field.name]?.message}</p>
+              )}
+            </div>
+          ))}
 
-      <hr className="my-2" />
-      <p className="text-xl font-bold">Stat Info</p>
-      <hr className="my-2" />
+          <hr className="my-2" />
+          <p className="text-xl font-bold">Stat Info</p>
+          <hr className="my-2" />
 
-      {numericStats.map((stat) => (
-        <div key={stat.name}>
-          <label>{stat.label}</label>
-          <input
-            type="number"
-            inputMode="numeric"
-            {...register(stat.name, { valueAsNumber: true })}
-            className="mb-2 w-full border px-2 py-1 rounded"
+          {numericStats.map((stat) => (
+            <div key={stat.name}>
+              <label>{stat.label}</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                {...register(stat.name, { valueAsNumber: true })}
+                className="mb-2 w-full border px-2 py-1 rounded"
+              />
+              {errors[stat.name] && (
+                <p className="text-red-500">{errors[stat.name]?.message}</p>
+              )}
+            </div>
+          ))}
+
+          <hr className="my-2" />
+          <p className="text-xl font-bold">Champion Specific</p>
+          <hr className="my-2" />
+
+          <div>
+            <label>Level</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              {...register("level", { valueAsNumber: true })}
+              className="mb-2 w-full border px-2 py-1 rounded"
+            />
+            {errors.level && (
+              <p className="text-red-500">{errors.level?.message}</p>
+            )}
+          </div>
+
+          <SelectField
+            label="Affinity"
+            options={Object.values(ChampionAffinity)}
+            register={register("affinity")}
+            error={errors.affinity}
           />
-          {errors[stat.name] && (
-            <p className="text-red-500">{errors[stat.name]?.message}</p>
-          )}
+
+          <SelectField
+            label="Type"
+            options={Object.values(ChampionType)}
+            register={register("type")}
+            error={errors.type}
+          />
+
+          <SelectField
+            label="Rarity"
+            options={Object.values(ChampionRarity)}
+            register={register("rarity")}
+            error={errors.rarity}
+          />
+
+          <SelectField
+            label="Faction"
+            options={Object.values(ChampionFaction)}
+            register={register("faction")}
+            error={errors.faction}
+          />
+
+          <label className="font-semibold">Role</label>
+
+          <div className="grid grid-cols-2 gap-2">
+            {Object.values(ChampionRole).map((role) => (
+              <label key={role} className="flex items-center gap-2">
+                <input type="checkbox" value={role} {...register("role")} />
+                {role}
+              </label>
+            ))}
+          </div>
+
+          {errors.role && <p className="text-red-500">{errors.role.message}</p>}
+
+          <hr className="my-2" />
+          <p className="text-xl font-bold">Upgrade Specific</p>
+          <hr className="my-2" />
+
+          <StarRatingInput name="stars" label="Stars" control={control} />
+
+          <StarRatingInput
+            name="ascension_stars"
+            label="Ascension Stars"
+            control={control}
+            allowZero
+          />
+
+          <StarRatingInput
+            name="awaken_stars"
+            label="Awaken Stars"
+            control={control}
+            allowZero
+          />
+
+          <ToggleInput label="Is Booked" register={register("is_booked")} />
+          <ToggleInput
+            label="Needs Books"
+            register={register("is_book_needed")}
+          />
+          <ToggleInput label="Has Mastery" register={register("has_mastery")} />
+          <ToggleInput
+            label="Needs Mastery"
+            register={register("is_mastery_needed")}
+          />
+
+          {/* Hidden fields */}
+          <input type="hidden" {...register("user_id")} value={userId} />
+          <input
+            type="hidden"
+            {...register("rsl_account_id")}
+            value={rslAccountId}
+          />
+
+          <hr className="my-4" />
         </div>
-      ))}
-
-      <hr className="my-2" />
-      <p className="text-xl font-bold">Champion Specific</p>
-      <hr className="my-2" />
-
-      <div>
-        <label>Level</label>
-        <input
-          type="number"
-          inputMode="numeric"
-          {...register("level", { valueAsNumber: true })}
-          className="mb-2 w-full border px-2 py-1 rounded"
-        />
-        {errors.level && (
-          <p className="text-red-500">{errors.level?.message}</p>
-        )}
-      </div>
-
-      <SelectField
-        label="Affinity"
-        options={Object.values(ChampionAffinity)}
-        register={register("affinity")}
-        error={errors.affinity}
-      />
-
-      <SelectField
-        label="Type"
-        options={Object.values(ChampionType)}
-        register={register("type")}
-        error={errors.type}
-      />
-
-      <SelectField
-        label="Rarity"
-        options={Object.values(ChampionRarity)}
-        register={register("rarity")}
-        error={errors.rarity}
-      />
-
-      <SelectField
-        label="Faction"
-        options={Object.values(ChampionFaction)}
-        register={register("faction")}
-        error={errors.faction}
-      />
-
-      <label className="font-semibold">Role</label>
-
-      <div className="grid grid-cols-2 gap-2">
-        {Object.values(ChampionRole).map((role) => (
-          <label key={role} className="flex items-center gap-2">
-            <input type="checkbox" value={role} {...register("role")} />
-            {role}
-          </label>
-        ))}
-      </div>
-
-      {errors.role && <p className="text-red-500">{errors.role.message}</p>}
-
-      <hr className="my-2" />
-      <p className="text-xl font-bold">Upgrade Specific</p>
-      <hr className="my-2" />
-
-      <StarRatingInput name="stars" label="Stars" control={control} />
-
-      <StarRatingInput
-        name="ascension_stars"
-        label="Ascension Stars"
-        control={control}
-        allowZero
-      />
-
-      <StarRatingInput
-        name="awaken_stars"
-        label="Awaken Stars"
-        control={control}
-        allowZero
-      />
-
-      <ToggleInput label="Is Booked" register={register("is_booked")} />
-      <ToggleInput label="Needs Books" register={register("is_book_needed")} />
-      <ToggleInput label="Has Mastery" register={register("has_mastery")} />
-      <ToggleInput
-        label="Needs Mastery"
-        register={register("is_mastery_needed")}
-      />
-
-      {/* Hidden fields */}
-      <input type="hidden" {...register("user_id")} value={userId} />
-      <input
-        type="hidden"
-        {...register("rsl_account_id")}
-        value={rslAccountId}
-      />
-
-      <hr className="my-4" />
-
+      )}
       <div className="flex justify-end gap-2 mt-2 [&>button]:cursor-pointer">
         <button
           type="button"
@@ -244,6 +264,14 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
         >
           Cancel
         </button>
+        <button
+          type="button"
+          className="border border-gray-500 hover:bg-gray-600 transition text-gray-500 hover:text-white px-4 py-2 rounded"
+          onClick={() => setIsOnPreview((prev) => !prev)}
+        >
+          {isOnPreview ? "Stop Preview" : "Preview"}
+        </button>
+
         <button
           type="submit"
           className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition"

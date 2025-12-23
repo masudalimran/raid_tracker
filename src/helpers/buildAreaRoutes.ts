@@ -5,19 +5,21 @@ export interface AreaRoute {
   title: string;
   teamKey: string;
   maxChampions: number;
+  isFaction?: boolean;
 }
 
 export function buildAreaRoutes<T extends Record<string, string>>(
   source: T,
   options: {
-    titleSuffix: string;
     maxChampions: number;
+    isFaction?: boolean;
   }
 ): AreaRoute[] {
   return Object.keys(source).map((key) => ({
     path: toSlug(key),
-    title: `${source[key as keyof T]} ${options.titleSuffix}`,
+    title: `${source[key as keyof T]}`,
     teamKey: key,
     maxChampions: options.maxChampions,
+    isFaction: options.isFaction,
   }));
 }

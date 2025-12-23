@@ -16,12 +16,14 @@ import { sortBySpeedDesc } from "../../helpers/sortChampions";
 interface BaseAreaTeamProps {
   title: string;
   teamKey: string;
+  isFaction: boolean;
   maxChampions: number;
 }
 
 export default function BaseAreaTeam({
   title,
   teamKey,
+  isFaction,
   maxChampions,
 }: BaseAreaTeamProps) {
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,15 @@ export default function BaseAreaTeam({
 
       let champions = await fetchChampions();
       champions = generateChampions();
-      setChampionList(champions);
+
+      if (isFaction) {
+        console.log(title);
+        setChampionList(
+          champions.filter((champion) => champion.faction === title)
+        );
+      } else {
+        setChampionList(champions);
+      }
 
       const fetchedTeam = await fetchSingleTeam(teamKey);
       setTeam(fetchedTeam);
