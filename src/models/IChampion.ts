@@ -5,10 +5,10 @@ import type { ChampionRarity } from "./ChampionRarity.ts";
 import type { ChampionFaction } from "./ChampionFaction.ts";
 
 export default interface IChampion {
-  id: number | string;
+  id?: number | string;
   championUrl?: string;
   name: string;
-  imgUrl: string;
+  imgUrl?: string;
 
   hp: number;
   atk: number;

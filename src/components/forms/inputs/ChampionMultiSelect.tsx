@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type IChampion from "../../../models/IChampion";
 
 interface ChampionMultiSelectProps {
@@ -43,19 +43,27 @@ export default function ChampionMultiSelect({
         {filtered
           .slice() // make a copy to avoid mutating original array
           .sort((a, b) => a.name.localeCompare(b.name))
-          .map((champ) => (
-            <label
-              key={champ.id}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={value.includes(champ.id.toString())}
-                onChange={() => toggleChampion(champ.id.toString())}
-              />
-              {champ.name}
-            </label>
-          ))}
+          .map((champ) =>
+            champ.id ? (
+              <Fragment>
+                <label
+                  key={champ.id}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={value.includes(champ.id.toString())}
+                    onChange={() =>
+                      champ.id && toggleChampion(champ.id.toString())
+                    }
+                  />
+                  {champ.name}
+                </label>
+              </Fragment>
+            ) : (
+              <p>Champion Id Does Not Exist!!</p>
+            )
+          )}
       </div>
 
       <p className="text-xs text-gray-500 mt-1">

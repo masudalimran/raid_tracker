@@ -153,26 +153,28 @@ export default function ChampionCard({
 
   const handleOnClose = () => {
     setDeleteModalOpen(false);
-    onDelete();
+    if (onDelete) onDelete();
   };
 
   const handleDelete = async () => {
-    await deleteChampion(champion.id.toString())
-      .then((deleted) => {
-        const supabase_champions = JSON.parse(
-          localStorage.getItem("supabase_champion_list") || "[]"
-        );
-        const updatedChampions = supabase_champions.filter(
-          (c: IChampion) => c.id !== deleted.id
-        );
-        localStorage.setItem(
-          "supabase_champion_list",
-          JSON.stringify(updatedChampions)
-        );
-      })
-      .catch((error) => {
-        console.error("Error deleting champion:", error);
-      });
+    if (champion.id) {
+      await deleteChampion(champion.id.toString())
+        .then((deleted) => {
+          const supabase_champions = JSON.parse(
+            localStorage.getItem("supabase_champion_list") || "[]"
+          );
+          const updatedChampions = supabase_champions.filter(
+            (c: IChampion) => c.id !== deleted.id
+          );
+          localStorage.setItem(
+            "supabase_champion_list",
+            JSON.stringify(updatedChampions)
+          );
+        })
+        .catch((error) => {
+          console.error("Error deleting champion:", error);
+        });
+    } else console.error("Champion ID does not exist!");
 
     handleOnClose();
   };
