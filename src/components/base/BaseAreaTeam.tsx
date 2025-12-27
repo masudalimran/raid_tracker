@@ -53,7 +53,6 @@ export default function BaseAreaTeam({
       champions = generateChampions();
 
       if (isFaction) {
-        console.log(title);
         setChampionList(
           champions.filter((champion) => champion.faction === title)
         );

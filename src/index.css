@@ -39,4 +39,8 @@
   .input {
     @apply mb-2 w-full border px-2 py-1 rounded;
   }
+
+  .basic-select {
+    @apply w-full border px-2 py-1 rounded cursor-pointer;
+  }
 }

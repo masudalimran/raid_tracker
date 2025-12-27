@@ -6,8 +6,8 @@ import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
 import {
-  sortByBookPriorityDesc,
-  sortByMasteryPriorityDesc,
+  sortByBookPriorityDescTopFive,
+  sortByMasteryPriorityDescTopFive,
 } from "../helpers/sortChampions";
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
@@ -18,9 +18,6 @@ export default function Home() {
 
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamList, setTeamList] = useState<ITeam[]>([]);
-
-  console.log(championList);
-  console.log(teamList);
 
   const [reloadDetector, setReloadDetector] = useState<boolean>(false);
 
@@ -68,7 +65,7 @@ export default function Home() {
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
           {[
-            ...sortByBookPriorityDesc(
+            ...sortByBookPriorityDescTopFive(
               championList,
               teamList,
               ChampionRarity.LEGENDARY
@@ -85,7 +82,7 @@ export default function Home() {
           {Array.from({
             length:
               5 -
-              sortByBookPriorityDesc(
+              sortByBookPriorityDescTopFive(
                 championList,
                 teamList,
                 ChampionRarity.LEGENDARY
@@ -99,7 +96,7 @@ export default function Home() {
         <h2 className="text-xl pb-2">{ChampionRarity.EPIC}</h2>
         <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
           {[
-            ...sortByBookPriorityDesc(
+            ...sortByBookPriorityDescTopFive(
               championList,
               teamList,
               ChampionRarity.EPIC
@@ -116,7 +113,7 @@ export default function Home() {
           {Array.from({
             length:
               5 -
-              sortByBookPriorityDesc(
+              sortByBookPriorityDescTopFive(
                 championList,
                 teamList,
                 ChampionRarity.EPIC
@@ -130,7 +127,7 @@ export default function Home() {
         <h2 className="text-xl pb-2">{ChampionRarity.RARE}</h2>
         <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
           {[
-            ...sortByBookPriorityDesc(
+            ...sortByBookPriorityDescTopFive(
               championList,
               teamList,
               ChampionRarity.RARE
@@ -147,7 +144,7 @@ export default function Home() {
           {Array.from({
             length:
               5 -
-              sortByBookPriorityDesc(
+              sortByBookPriorityDescTopFive(
                 championList,
                 teamList,
                 ChampionRarity.RARE
@@ -162,7 +159,7 @@ export default function Home() {
         <h1 className="text-2xl font-semibold">Mastery Priority</h1>
         <hr className="py-2" />
         <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[...sortByMasteryPriorityDesc(championList, teamList)].map(
+          {[...sortByMasteryPriorityDescTopFive(championList, teamList)].map(
             (champion) => (
               <Fragment key={champion.id}>
                 <ChampionCard
@@ -175,37 +172,14 @@ export default function Home() {
           )}
           {Array.from({
             length:
-              5 - sortByMasteryPriorityDesc(championList, teamList).length,
+              5 -
+              sortByMasteryPriorityDescTopFive(championList, teamList).length,
           }).map((_, idx) => (
             <Fragment key={idx}>
               <ChampionSkeletonCard fullWidth />
             </Fragment>
           ))}
         </div>
-
-        {/* <h1 className="text-2xl font-semibold">Level Up Priority</h1>
-        <hr className="py-2" />
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[...sortByMasteryPriorityDesc(championList, teamList)].map(
-            (champion) => (
-              <Fragment key={champion.id}>
-                <ChampionCard
-                  champion={champion}
-                  onEdit={handleEdit}
-                  onDelete={() => handleCloseModal(true)}
-                />
-              </Fragment>
-            )
-          )}
-          {Array.from({
-            length:
-              5 - sortByMasteryPriorityDesc(championList, teamList).length,
-          }).map((_, idx) => (
-            <Fragment key={idx}>
-              <ChampionSkeletonCard fullWidth />
-            </Fragment>
-          ))}
-        </div> */}
       </div>
 
       {showModal && (

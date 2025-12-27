@@ -18,7 +18,7 @@ export default function SelectField({
     <div className="mb-3">
       <label className="block mb-1 font-medium">{label}</label>
 
-      <select {...register} className="w-full border px-2 py-1 rounded">
+      <select {...register} className="basic-select">
         <option value="">Select {label}</option>
 
         {options.map((opt) => (

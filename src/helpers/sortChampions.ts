@@ -132,6 +132,20 @@ export function sortByMasteryPriorityDesc(
     }))
     .filter((c) => !c.champion.has_mastery)
     .sort((a, b) => b.priority - a.priority)
+    .map(({ champion }) => champion);
+}
+
+export function sortByMasteryPriorityDescTopFive(
+  champions: IChampion[],
+  teams: ITeam[]
+): IChampion[] {
+  return champions
+    .map((c) => ({
+      champion: c,
+      priority: getMasteryPriority(c, teams),
+    }))
+    .filter((c) => !c.champion.has_mastery)
+    .sort((a, b) => b.priority - a.priority)
     .slice(0, 5)
     .map(({ champion }) => champion);
 }
@@ -172,6 +186,43 @@ export function sortByBookPriorityDesc(
     .filter((c) => !c.champion.is_booked && c.champion.rarity === rarity)
     .filter((c) => c.champion.is_book_needed)
     .sort((a, b) => b.priority - a.priority)
+    .map(({ champion }) => champion);
+}
+
+export function sortByBookPriorityDescTopFive(
+  champions: IChampion[],
+  teams: ITeam[],
+  rarity: ChampionRarity
+): IChampion[] {
+  return champions
+    .map((c) => ({
+      champion: c,
+      priority: getBookPriority(c, teams),
+    }))
+    .filter((c) => !c.champion.is_booked && c.champion.rarity === rarity)
+    .filter((c) => c.champion.is_book_needed)
+    .sort((a, b) => b.priority - a.priority)
     .slice(0, 5)
     .map(({ champion }) => champion);
+}
+
+export function sortChampions(
+  list: IChampion[],
+  stat: keyof IChampion,
+  order: "asc" | "desc"
+) {
+  return [...list].sort((a, b) => {
+    const av = a[stat];
+    const bv = b[stat];
+
+    // if stat is name → alphabetical
+    if (typeof av === "string" && typeof bv === "string") {
+      return order === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
+
+    // numeric fallback (hp, atk, speed...)
+    return order === "asc"
+      ? (av as number) - (bv as number)
+      : (bv as number) - (av as number);
+  });
 }

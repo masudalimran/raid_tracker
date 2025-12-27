@@ -59,7 +59,6 @@ export default function TeamForm({
   });
 
   const onSubmit = async (data: TeamFormData) => {
-    console.log(data);
     if (team?.id) {
       await updateTeam(team.id.toString(), data)
         .then((res) => {
