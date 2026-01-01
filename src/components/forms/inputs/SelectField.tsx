@@ -1,6 +1,5 @@
 // components/form/SelectField.tsx
 import type { FieldError, UseFormRegisterReturn } from "react-hook-form";
-import getFactionLogo from "../../../helpers/getFactionLogo";
 
 interface SelectFieldProps {
   label: string;
