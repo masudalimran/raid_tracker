@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
-import { CiSearch } from "react-icons/ci";
+import { CiImageOff, CiImageOn, CiSearch } from "react-icons/ci";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
@@ -20,6 +20,7 @@ import {
 } from "../helpers/sortChampions";
 import { ChampionRarity } from "../models/ChampionRarity";
 import type ITeam from "../models/ITeam";
+import EmptyChampionList from "../components/empty/EmptyChampionList";
 
 export default function Champions() {
   const [championList, setChampionList] = useState<IChampion[]>([]);
@@ -33,6 +34,7 @@ export default function Champions() {
     stat: "name",
     type: "type_all",
     faction: "faction_all",
+    rarity: "rarity_all",
     sortOrder: "desc",
   });
 
@@ -85,6 +87,10 @@ export default function Champions() {
       if (filterInfo.type !== "type_all")
         filteredChampionList = [...filteredChampionList].filter(
           (champion) => champion.type === filterInfo.type
+        );
+      if (filterInfo.rarity !== "rarity_all")
+        filteredChampionList = [...filteredChampionList].filter(
+          (champion) => champion.rarity === filterInfo.rarity
         );
 
       if (filterInfo.stat === "book_priority") {
@@ -148,6 +154,7 @@ export default function Champions() {
     championList,
     filterInfo.faction,
     filterInfo.type,
+    filterInfo.rarity,
     filterInfo.stat,
     filterInfo.sortOrder,
     teams,
@@ -181,6 +188,7 @@ export default function Champions() {
         stat: "name",
         type: "type_all",
         faction: "faction_all",
+        rarity: "rarity_all",
         sortOrder: "asc",
       });
       setOnFilterMode(false);
@@ -214,17 +222,21 @@ export default function Champions() {
               </Fragment>
             ) : (
               <Fragment>
-                <button
-                  type="button"
-                  className={`cursor-pointer font-bold text-sm border basic-padding-xs transition shadow-2xl ${
-                    nsfw
-                      ? "line-through bg-black text-white"
-                      : "bg-white text-black"
-                  }`}
-                  onClick={() => setNsfw((v) => !v)}
-                >
-                  NSFW
-                </button>
+                {nsfw ? (
+                  <CiImageOn
+                    onClick={() => setNsfw(false)}
+                    className="cursor-pointer hover:text-gray-500 transition"
+                    title="Hide Image"
+                    size={36}
+                  />
+                ) : (
+                  <CiImageOff
+                    onClick={() => setNsfw(true)}
+                    className="cursor-pointer hover:text-gray-500 transition"
+                    title="Show Image"
+                    size={36}
+                  />
+                )}
 
                 <div className="relative">
                   <input
@@ -267,16 +279,20 @@ export default function Champions() {
 
         {/* Champion grid */}
         <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {filteredChampions?.map((champion) => (
-            <Fragment key={champion.id}>
-              <ChampionCard
-                champion={champion}
-                nsfw={nsfw}
-                onEdit={handleEdit}
-                onDelete={() => handleCloseModal(true)}
-              />
-            </Fragment>
-          ))}
+          {filteredChampions?.length === 0 ? (
+            <EmptyChampionList />
+          ) : (
+            filteredChampions?.map((champion) => (
+              <Fragment key={champion.id}>
+                <ChampionCard
+                  champion={champion}
+                  nsfw={nsfw}
+                  onEdit={handleEdit}
+                  onDelete={() => handleCloseModal(true)}
+                />
+              </Fragment>
+            ))
+          )}
         </div>
       </div>
 

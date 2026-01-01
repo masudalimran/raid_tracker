@@ -6,6 +6,7 @@ import type {
   FilterStat,
 } from "../../../models/ChampionFilter";
 import type { Dispatch, SetStateAction } from "react";
+import { ChampionRarity } from "../../../models/ChampionRarity";
 
 interface SelectChampionFilterProp {
   filterInfo: ChampionFilter;
@@ -40,6 +41,14 @@ export default function SelectChampionFilter({
     });
   };
 
+  const handleRarityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = e.target.value as ChampionRarity | "All Rarity";
+    setFilterInfo({
+      ...filterInfo,
+      rarity: selected,
+    });
+  };
+
   const handleSortOrderChange = (sortOrder: "asc" | "desc") => {
     setFilterInfo({
       ...filterInfo,
@@ -65,8 +74,27 @@ export default function SelectChampionFilter({
           <option value="c_dmg">C.DMG</option>
           <option value="res">RES</option>
           <option value="acc">ACC</option>
+          <option value="level">Level</option>
+          <option value="ascension_stars">Ascension Stars</option>
+          <option value="awaken_stars">Awaken Stars</option>
           <option value="book_priority">Book Priority</option>
           <option value="mastery_priority">Mastery Priority</option>
+        </select>
+      </div>
+
+      {/* Champion Rarity */}
+      <div className="mb-0">
+        <select
+          className="basic-select"
+          value={filterInfo.rarity}
+          onChange={handleRarityChange}
+        >
+          <option value="rarity_all">All Rarity</option>
+          {Object.entries(ChampionRarity).map(([key, label]) => (
+            <option key={key} value={label}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
 

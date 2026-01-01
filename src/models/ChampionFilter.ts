@@ -7,5 +7,6 @@ export interface ChampionFilter {
   stat: FilterStat;
   type: string;
   faction: string;
+  rarity: string;
   sortOrder: SortOrder;
 }
