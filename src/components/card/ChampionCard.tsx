@@ -224,25 +224,29 @@ export default function ChampionCard({
             <tbody>
               <tr>
                 <td>Faction</td>
-                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch] flex justify-end items-center gap-1">
-                  <img
-                    src={getFactionLogo(champion.faction)}
-                    className="w-5 h-5 object-cover rounded-full"
-                  />
-                  {champion.faction}
+                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
+                  <div className="flex justify-end items-center gap-1">
+                    <img
+                      src={getFactionLogo(champion.faction)}
+                      className="w-5 h-5 object-cover rounded-full"
+                    />
+                    <p>{champion.faction}</p>
+                  </div>
                 </td>
               </tr>
               <tr>
                 <td>Rarity</td>
                 <td
-                  className={`text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch] flex justify-end items-center gap-1`}
+                  className={`text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch] `}
                 >
-                  <div
-                    className={`h-5 w-5 rounded-full ${colorByRarity(
-                      champion.rarity
-                    )}`}
-                  />{" "}
-                  {champion.rarity}
+                  <div className="flex justify-end items-center gap-1">
+                    <div
+                      className={`h-5 w-5 rounded-full ${colorByRarity(
+                        champion.rarity
+                      )}`}
+                    />{" "}
+                    <p>{champion.rarity}</p>
+                  </div>
                 </td>
               </tr>
               <tr>
