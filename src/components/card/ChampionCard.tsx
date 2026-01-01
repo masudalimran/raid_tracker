@@ -3,7 +3,6 @@ import ChampionStar from "../utility/ChampionStar.tsx";
 import { formatNumber } from "../../helpers/formatNumber.ts";
 import { FaCheckCircle, FaEdit, FaInfoCircle, FaTrash } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
-import { ChampionRarity } from "../../models/ChampionRarity.ts";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import { ChampionRole } from "../../models/ChampionRole.ts";
@@ -12,6 +11,8 @@ import Modal from "../modals/Modal.tsx";
 import { useChampion } from "../../hooks/useChampion.ts";
 import type ITeam from "../../models/ITeam.ts";
 import { fromSlug } from "../../helpers/fromSlug.ts";
+import colorByRarity from "../../helpers/colorByRarity.ts";
+import getFactionLogo from "../../helpers/getFactionLogo.ts";
 
 interface ChampionCardProps {
   champion: IChampion;
@@ -34,14 +35,6 @@ export default function ChampionCard({
     localStorage.getItem("supabase_team_list") || "[]"
   );
 
-  // // Filter teams that include this champion
-  // const championTeams = supabase_team_list.filter((team) =>
-  //   team.champion_ids.includes(String(champion.id))
-  // );
-
-  // // Count
-  // const championTeamCount = championTeams.length;
-
   const championTeams = supabase_team_list.filter((team) =>
     team.champion_ids.includes(String(champion.id))
   );
@@ -58,12 +51,6 @@ export default function ChampionCard({
   ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
 
   if (!current_rsl_account) return;
-
-  const basic_info = [
-    { label: "Faction", key: "faction" },
-    { label: "Rarity", key: "rarity" },
-    { label: "Type", key: "type" },
-  ] as const;
 
   const stats = [
     {
@@ -121,32 +108,6 @@ export default function ChampionCard({
     }
   };
 
-  const determineCardBg = (): string => {
-    switch (champion.rarity) {
-      case ChampionRarity.MYTHICAL:
-        return "bg-red-100";
-        break;
-      case ChampionRarity.LEGENDARY:
-        return "bg-orange-300";
-        break;
-      case ChampionRarity.EPIC:
-        return "bg-purple-300";
-        break;
-      case ChampionRarity.RARE:
-        return "bg-blue-300";
-        break;
-      case ChampionRarity.UNCOMMON:
-        return "bg-green-100";
-        break;
-      case ChampionRarity.COMMON:
-        return "bg-gray-100";
-        break;
-      default:
-        return "bg-gray-100";
-        break;
-    }
-  };
-
   const handleDeleteClick = () => {
     setDeleteModalOpen(true);
   };
@@ -184,7 +145,11 @@ export default function ChampionCard({
       <div
         className={`border border-gray-300 rounded-xl overflow-hidden shadow-xl`}
       >
-        <div className={`flex-between basic-padding ${determineCardBg()}`}>
+        <div
+          className={`flex-between basic-padding ${colorByRarity(
+            champion.rarity
+          )}`}
+        >
           <div className="flex-left">
             <div>
               <img
@@ -257,12 +222,35 @@ export default function ChampionCard({
         <div className="basic-padding">
           <table className="w-full">
             <tbody>
-              {basic_info.map(({ label, key }) => (
-                <tr key={key}>
-                  <td>{label}</td>
-                  <td className="text-right">{champion[key]}</td>
-                </tr>
-              ))}
+              <tr>
+                <td>Faction</td>
+                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch] flex justify-end items-center gap-1">
+                  <img
+                    src={getFactionLogo(champion.faction)}
+                    className="w-5 h-5 object-cover rounded-full"
+                  />
+                  {champion.faction}
+                </td>
+              </tr>
+              <tr>
+                <td>Rarity</td>
+                <td
+                  className={`text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch] flex justify-end items-center gap-1`}
+                >
+                  <div
+                    className={`h-5 w-5 rounded-full ${colorByRarity(
+                      champion.rarity
+                    )}`}
+                  />{" "}
+                  {champion.rarity}
+                </td>
+              </tr>
+              <tr>
+                <td>Type</td>
+                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
+                  {champion.type}
+                </td>
+              </tr>
               <tr>
                 <td>Role</td>
                 <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">

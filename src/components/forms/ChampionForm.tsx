@@ -17,6 +17,9 @@ import ToggleInput from "./inputs/ToggleInput";
 import { useChampion } from "../../hooks/useChampion";
 import { useState } from "react";
 import ChampionCard from "../card/ChampionCard";
+import colorByRarity from "../../helpers/colorByRarity";
+import colorByAffinity from "../../helpers/colorByAffinity";
+import getFactionLogo from "../../helpers/getFactionLogo";
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -178,6 +181,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             options={Object.values(ChampionAffinity)}
             register={register("affinity")}
             error={errors.affinity}
+            className={colorByAffinity(previewChampion.affinity)}
           />
 
           <SelectField
@@ -192,6 +196,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             options={Object.values(ChampionRarity)}
             register={register("rarity")}
             error={errors.rarity}
+            className={colorByRarity(previewChampion.rarity)}
           />
 
           <SelectField
@@ -199,6 +204,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             options={Object.values(ChampionFaction)}
             register={register("faction")}
             error={errors.faction}
+            labelIcon={getFactionLogo(previewChampion.faction)}
           />
 
           <label className="font-semibold">Role</label>
