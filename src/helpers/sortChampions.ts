@@ -6,7 +6,6 @@ import { ChampionRole } from "../models/ChampionRole";
 import { ChampionType } from "../models/ChampionType";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
-import { fromSlug } from "./fromSlug";
 
 export function sortBySpeedDesc(champions: IChampion[]): IChampion[] {
   return [...champions].sort((a, b) => b.spd - a.spd);
