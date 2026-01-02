@@ -45,7 +45,6 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
   const textFields: { label: string; name: keyof ChampionFormData }[] = [
     { label: "Name", name: "name" },
-    // { label: "Image URL", name: "imgUrl" },
     { label: "Champion Page URL", name: "championUrl" },
   ];
 

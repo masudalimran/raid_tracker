@@ -20,37 +20,37 @@ export const championSchema = z.object({
     .number()
     .int("ATK must be an integer")
     .min(0, "ATK cannot be negative")
-    .max(999999, "ATK too large"),
+    .max(9999, "ATK too large"),
 
   def: z
     .number()
     .int("DEF must be an integer")
     .min(0, "DEF cannot be negative")
-    .max(999999, "DEF too large"),
+    .max(9999, "DEF too large"),
 
   spd: z
     .number()
     .int("SPD must be an integer")
     .min(0, "SPD cannot be negative")
-    .max(999999, "SPD too large"),
+    .max(999, "SPD too large"),
 
   c_rate: z
     .number()
     .int("C. Rate must be an integer")
     .min(0, "C. Rate cannot be negative")
-    .max(1000, "C. Rate too large"),
+    .max(150, "C. Rate too large"),
 
   c_dmg: z
     .number()
     .int("C. DMG must be an integer")
     .min(0, "C. DMG cannot be negative")
-    .max(1000, "C. DMG too large"),
+    .max(999, "C. DMG too large"),
 
   res: z
     .number()
     .int("RES must be an integer")
     .min(0, "RES cannot be negative")
-    .max(10000, "RES too large"),
+    .max(1000, "RES too large"),
 
   acc: z
     .number()
