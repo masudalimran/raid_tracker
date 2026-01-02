@@ -20,6 +20,7 @@ import ChampionCard from "../card/ChampionCard";
 import colorByRarity from "../../helpers/colorByRarity";
 import colorByAffinity from "../../helpers/colorByAffinity";
 import getFactionLogo from "../../helpers/getFactionLogo";
+import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -44,7 +45,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
   const textFields: { label: string; name: keyof ChampionFormData }[] = [
     { label: "Name", name: "name" },
-    { label: "Image URL", name: "imgUrl" },
+    // { label: "Image URL", name: "imgUrl" },
     { label: "Champion Page URL", name: "championUrl" },
   ];
 
@@ -139,6 +140,29 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
               )}
             </div>
           ))}
+
+          {/* Image */}
+          <div>
+            <label>Image URL</label>
+            <input {...register("imgUrl")} className="input" />
+            {errors.imgUrl && (
+              <p className="text-red-500">{errors.imgUrl?.message}</p>
+            )}
+          </div>
+
+          <div className="w-75 h-75 m-auto">
+            {previewChampion.imgUrl ? (
+              <img
+                src={previewChampion.imgUrl}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <img
+                src={STOCK_EMPTY_IMAGE}
+                className="w-full h-full object-contain"
+              />
+            )}
+          </div>
 
           <hr className="my-2" />
           <p className="text-xl font-bold">Stat Info</p>
