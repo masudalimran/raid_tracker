@@ -5,6 +5,7 @@ import {
 } from "../../data/team_priority_weight";
 
 export const teamSchema = z.object({
+  // team_name: z.string().min(1, "Invalid Team Name"),
   team_name: z.custom<TeamIdentifier>(
     (value) => TEAM_IDENTIFIERS.includes(value as TeamIdentifier),
     { message: "Invalid team name" }

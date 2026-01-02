@@ -202,12 +202,13 @@ export default function ChampionCard({
           <div className="flex-between basic-padding">
             <div>
               {champion.priority && (
-                <div className="text-xs border border-pink-400 rounded-r flex items-center gap-0">
-                  <p className="basic-padding-xs bg-pink-400 text-white">
-                    Priority
-                  </p>
+                <div
+                  className="text-xs border border-pink-400 rounded-r flex items-center gap-0"
+                  title="Priority Point"
+                >
+                  <p className="basic-padding-xs bg-pink-400 text-white">PP</p>
                   <p className="basic-padding-xs">
-                    {Math.round(champion.priority * 1000)}
+                    {Math.round(champion.priority * 100)}
                   </p>
                 </div>
               )}

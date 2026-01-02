@@ -45,11 +45,8 @@ export default function ChampionMultiSelect({
           .sort((a, b) => a.name.localeCompare(b.name))
           .map((champ) =>
             champ.id ? (
-              <Fragment>
-                <label
-                  key={champ.id}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
+              <Fragment key={champ.id}>
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={value.includes(champ.id.toString())}

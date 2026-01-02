@@ -19,7 +19,7 @@ interface TeamFormProps {
 
 export default function TeamForm({
   maxChampions = 4,
-  teamName = "Arcane Potion",
+  teamName,
   championList = [],
   team,
   onCancel,
@@ -27,7 +27,8 @@ export default function TeamForm({
 }: TeamFormProps) {
   const { addTeam, updateTeam, loading } = useTeam();
 
-  teamName = toSlug(teamName) as TeamIdentifier;
+  teamName = toSlug(teamName);
+
   const { id: userId } = JSON.parse(
     localStorage.getItem("supabase_auth") || "{}"
   );
@@ -108,6 +109,9 @@ export default function TeamForm({
         <input {...register("clearing_stage")} className="input" />
         {errors.clearing_stage && (
           <p className="text-red-500">{errors.clearing_stage.message}</p>
+        )}
+        {errors.team_name && (
+          <p className="text-red-500">{errors.team_name.message}</p>
         )}
       </div>
 
