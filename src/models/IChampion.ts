@@ -37,4 +37,6 @@ export default interface IChampion {
 
   user_id?: string;
   rsl_account_id?: string;
+
+  priority?: number;
 }

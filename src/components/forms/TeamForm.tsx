@@ -6,10 +6,11 @@ import ChampionMultiSelect from "./inputs/ChampionMultiSelect";
 import type ITeam from "../../models/ITeam";
 import toSlug from "../../helpers/toSlug";
 import { useTeam } from "../../hooks/useTeam";
+import { type TeamIdentifier } from "../../data/team_priority_weight";
 
 interface TeamFormProps {
   maxChampions?: number;
-  teamName: string;
+  teamName: TeamIdentifier;
   championList: IChampion[];
   team?: Partial<ITeam>;
   onCancel: () => void;
@@ -18,7 +19,7 @@ interface TeamFormProps {
 
 export default function TeamForm({
   maxChampions = 4,
-  teamName = "",
+  teamName = "Arcane Potion",
   championList = [],
   team,
   onCancel,
@@ -26,7 +27,7 @@ export default function TeamForm({
 }: TeamFormProps) {
   const { addTeam, updateTeam, loading } = useTeam();
 
-  teamName = toSlug(teamName);
+  teamName = toSlug(teamName) as TeamIdentifier;
   const { id: userId } = JSON.parse(
     localStorage.getItem("supabase_auth") || "{}"
   );

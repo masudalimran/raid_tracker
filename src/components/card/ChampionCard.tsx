@@ -199,20 +199,34 @@ export default function ChampionCard({
         </div>
 
         {onEdit && onDelete && (
-          <div className="flex-right basic-padding">
-            <div
-              className="basic-padding-xs text-xs flex-center border rounded-full text-blue-500 cursor-pointer hover:bg-blue-500 transition border-blue-500 hover:text-white"
-              onClick={() => onEdit(champion)}
-            >
-              <p>Edit</p>
-              <FaEdit size={16} className="" />
+          <div className="flex-between basic-padding">
+            <div>
+              {champion.priority && (
+                <div className="text-xs border border-pink-400 rounded-r flex items-center gap-0">
+                  <p className="basic-padding-xs bg-pink-400 text-white">
+                    Priority
+                  </p>
+                  <p className="basic-padding-xs">
+                    {Math.round(champion.priority * 1000)}
+                  </p>
+                </div>
+              )}
             </div>
-            <div
-              onClick={handleDeleteClick}
-              className="basic-padding-xs text-xs flex-center border rounded-full text-red-500 cursor-pointer hover:bg-red-500 transition border-red-500 hover:text-white"
-            >
-              <p>Delete</p>
-              <FaTrash size={15} className="" />
+            <div className="flex-right ">
+              <div
+                className="basic-padding-xs text-xs flex-center border rounded-full text-blue-500 cursor-pointer hover:bg-blue-500 transition border-blue-500 hover:text-white"
+                onClick={() => onEdit(champion)}
+              >
+                <p>Edit</p>
+                <FaEdit size={16} className="" />
+              </div>
+              <div
+                onClick={handleDeleteClick}
+                className="basic-padding-xs text-xs flex-center border rounded-full text-red-500 cursor-pointer hover:bg-red-500 transition border-red-500 hover:text-white"
+              >
+                <p>Delete</p>
+                <FaTrash size={15} className="" />
+              </div>
             </div>
           </div>
         )}

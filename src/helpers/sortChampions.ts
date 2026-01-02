@@ -1,5 +1,6 @@
 // helpers/sort.ts
 
+import { TEAM_PRIORITY_WEIGHTS } from "../data/team_priority_weight";
 import type { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
 import { ChampionType } from "../models/ChampionType";
@@ -29,11 +30,12 @@ type PriorityScoreRule = (champion: IChampion) => number;
 
 function createTeamPriorityRule(teams: ITeam[]): PriorityScoreRule {
   return (champion) => {
-    const teamCount = teams.filter((team) =>
-      team.champion_ids.includes(String(champion.id))
-    ).length;
+    return teams.reduce((score, team) => {
+      if (!team.champion_ids.includes(String(champion.id))) return score;
 
-    return teamCount * 10;
+      const weight = TEAM_PRIORITY_WEIGHTS[team.team_name] ?? 5;
+      return score + weight;
+    }, 0);
   };
 }
 
@@ -132,7 +134,9 @@ export function sortByMasteryPriorityDesc(
     }))
     .filter((c) => !c.champion.has_mastery)
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion }) => champion);
+    .map(({ champion, priority }) => {
+      return { ...champion, priority };
+    });
 }
 
 export function sortByMasteryPriorityDescTopFive(
@@ -147,7 +151,9 @@ export function sortByMasteryPriorityDescTopFive(
     .filter((c) => !c.champion.has_mastery)
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 5)
-    .map(({ champion }) => champion);
+    .map(({ champion, priority }) => {
+      return { ...champion, priority };
+    });
 }
 
 const BOOK_PRIORITY_RULES: PriorityRule[] = [
@@ -186,7 +192,9 @@ export function sortByBookPriorityDesc(
     .filter((c) => !c.champion.is_booked && c.champion.rarity === rarity)
     .filter((c) => c.champion.is_book_needed)
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion }) => champion);
+    .map(({ champion, priority }) => {
+      return { ...champion, priority };
+    });
 }
 
 export function sortByBookPriorityDescTopFive(
@@ -203,7 +211,9 @@ export function sortByBookPriorityDescTopFive(
     .filter((c) => c.champion.is_book_needed)
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 5)
-    .map(({ champion }) => champion);
+    .map(({ champion, priority }) => {
+      return { ...champion, priority };
+    });
 }
 
 export function sortChampions(

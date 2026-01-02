@@ -12,10 +12,11 @@ import ChampionCard from "../card/ChampionCard";
 import TeamModal from "../modals/TeamModal";
 import ChampionModal from "../modals/ChampionModal";
 import { sortBySpeedDesc } from "../../helpers/sortChampions";
+import type { TeamIdentifier } from "../../data/team_priority_weight";
 
 interface BaseAreaTeamProps {
   title: string;
-  teamKey: string;
+  teamKey: TeamIdentifier;
   isFaction: boolean;
   maxChampions: number;
 }

@@ -3,9 +3,11 @@ import Modal from "./Modal";
 import TeamForm from "../forms/TeamForm";
 import type IChampion from "../../models/IChampion";
 import type ITeam from "../../models/ITeam";
+import type { TeamIdentifier } from "../../data/team_priority_weight";
+import { fromSlug } from "../../helpers/fromSlug";
 
 interface TeamModalProps {
-  teamName: string;
+  teamName: TeamIdentifier;
   team?: ITeam;
   championList: IChampion[];
   maxChampions?: number;
@@ -29,7 +31,7 @@ export default function TeamModal({
   return (
     <Modal
       isOpen={isOpen}
-      title={`${team ? "Edit" : "Add"} ${teamName} Team`}
+      title={`${team ? "Edit" : "Add"} ${fromSlug(teamName)} Team`}
       onClose={() => handleOnClose(false)}
     >
       <TeamForm

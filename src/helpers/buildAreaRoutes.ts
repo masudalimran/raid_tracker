@@ -1,9 +1,10 @@
+import type { TeamIdentifier } from "../data/team_priority_weight";
 import { toSlug } from "./toSlug";
 
 export interface AreaRoute {
   path: string;
   title: string;
-  teamKey: string;
+  teamKey: TeamIdentifier;
   maxChampions: number;
   isFaction?: boolean;
 }
@@ -18,7 +19,7 @@ export function buildAreaRoutes<T extends Record<string, string>>(
   return Object.keys(source).map((key) => ({
     path: toSlug(key),
     title: `${source[key as keyof T]}`,
-    teamKey: key,
+    teamKey: key as TeamIdentifier,
     maxChampions: options.maxChampions,
     isFaction: options.isFaction,
   }));
