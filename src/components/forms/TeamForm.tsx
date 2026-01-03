@@ -107,7 +107,6 @@ export default function TeamForm({
         (team) => team.team_name === teamName.replace("_hard", "")
       );
       if (nonHardTeam) {
-        console.log(nonHardTeam);
         reset({
           team_name: teamName,
           champion_ids: [...nonHardTeam.champion_ids],
