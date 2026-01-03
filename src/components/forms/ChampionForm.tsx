@@ -21,6 +21,7 @@ import colorByRarity from "../../helpers/colorByRarity";
 import colorByAffinity from "../../helpers/colorByAffinity";
 import getFactionLogo from "../../helpers/getFactionLogo";
 import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
+import { CgSearchFound } from "react-icons/cg";
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -30,6 +31,10 @@ interface ChampionFormProps {
 export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const [isOnPreview, setIsOnPreview] = useState<boolean>(false);
   const { addChampion, updateChampion, loading } = useChampion();
+
+  const champion_list = JSON.parse(
+    localStorage.getItem("supabase_champion_list") ?? ""
+  ) as IChampion[];
 
   const { id: userId } = JSON.parse(
     localStorage.getItem("supabase_auth") || "{}"
@@ -44,7 +49,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const rslAccountId = current_rsl_account.id;
 
   const textFields: { label: string; name: keyof ChampionFormData }[] = [
-    { label: "Name", name: "name" },
+    // { label: "Name", name: "name" },
     { label: "Champion Page URL", name: "championUrl" },
   ];
 
@@ -65,6 +70,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     control,
     watch,
     formState: { errors },
+    reset,
     // eslint-disable-next-line react-hooks/rules-of-hooks
   } = useForm<ChampionFormData>({
     resolver: zodResolver(championSchema),
@@ -76,6 +82,39 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const previewChampion: IChampion = {
     ...(champion ?? DefaultChampionObject),
     ...watchedFormData,
+  };
+
+  const handleLookUpExisting = () => {
+    if (!previewChampion.name) return;
+
+    const championExist = champion_list.find((c: IChampion) =>
+      c.name.toLowerCase().includes(previewChampion.name.toLowerCase())
+    );
+
+    if (!championExist) return;
+
+    function omit<T extends object, K extends readonly (keyof T)[]>(
+      obj: T,
+      keys: K
+    ): Omit<T, K[number]> {
+      const copy = { ...obj };
+      keys.forEach((k) => delete copy[k]);
+      return copy;
+    }
+
+    const formCompatibleData = omit(championExist, [
+      "id",
+      "user_id",
+      "rsl_account_id",
+      "priority",
+    ] as const);
+
+    reset({
+      ...DefaultChampionObject, // ensures missing optional fields don’t break
+      ...formCompatibleData,
+      user_id: userId,
+      rsl_account_id: rslAccountId,
+    });
   };
 
   const onSave = async (data: ChampionFormData) => {
@@ -129,6 +168,26 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           <hr className="my-2" />
           <p className="text-xl font-bold">Basic Info</p>
           <hr className="my-2" />
+
+          {/* Name */}
+          <div>
+            <label>Name</label>
+            <div className="flex justify-start items-center gap-1">
+              <input {...register("name")} className="input" />
+              <button
+                type="button"
+                title="Look up existing"
+                onClick={handleLookUpExisting}
+                disabled={!previewChampion.name}
+                className="cursor-pointer bg-black rounded -mt-2 flex-center h-9 w-12 hover:bg-gray-500 disabled:bg-gray-500 disabled:pointer-events-none transition shadow-2xl"
+              >
+                <CgSearchFound size={22} className="text-white " />
+              </button>
+            </div>
+            {errors.name && (
+              <p className="text-red-500">{errors.name?.message}</p>
+            )}
+          </div>
 
           {textFields.map((field) => (
             <div key={field.name}>
