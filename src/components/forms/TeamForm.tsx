@@ -99,10 +99,15 @@ export default function TeamForm({
 
   const handleImportNoHardTeam = () => {
     if (teamName.includes("_hard")) {
-      const nonHardTeam = supabase_teams.find(
+      const currentUserTeams = supabase_teams.filter(
+        (team) =>
+          team.user_id === userId && team.rsl_account_id === rslAccountId
+      );
+      const nonHardTeam = currentUserTeams.find(
         (team) => team.team_name === teamName.replace("_hard", "")
       );
       if (nonHardTeam) {
+        console.log(nonHardTeam);
         reset({
           team_name: teamName,
           champion_ids: [...nonHardTeam.champion_ids],
