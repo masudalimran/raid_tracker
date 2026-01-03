@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import type IChampion from "../../../models/IChampion";
+import colorByRarity from "../../../helpers/colorByRarity";
 
 interface ChampionMultiSelectProps {
   value: string[];
@@ -46,7 +47,11 @@ export default function ChampionMultiSelect({
           .map((champ) =>
             champ.id ? (
               <Fragment key={champ.id}>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label
+                  className={`flex items-center gap-2 cursor-pointer basic-padding-xs ${colorByRarity(
+                    champ.rarity
+                  )}`}
+                >
                   <input
                     type="checkbox"
                     checked={value.includes(champ.id.toString())}
