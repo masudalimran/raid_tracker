@@ -33,7 +33,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const { addChampion, updateChampion, loading } = useChampion();
 
   const champion_list = JSON.parse(
-    localStorage.getItem("supabase_champion_list") ?? ""
+    localStorage.getItem("supabase_champion_list") ?? "[]"
   ) as IChampion[];
 
   const { id: userId } = JSON.parse(

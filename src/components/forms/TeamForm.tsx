@@ -46,6 +46,7 @@ export default function TeamForm({
     control,
     handleSubmit,
     formState: { errors },
+    reset,
     // eslint-disable-next-line react-hooks/rules-of-hooks
   } = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),
@@ -60,13 +61,14 @@ export default function TeamForm({
     },
   });
 
+  const supabase_teams = JSON.parse(
+    localStorage.getItem("supabase_team_list") || "[]"
+  ) as ITeam[];
+
   const onSubmit = async (data: TeamFormData) => {
     if (team?.id) {
       await updateTeam(team.id.toString(), data)
         .then((res) => {
-          const supabase_teams = JSON.parse(
-            localStorage.getItem("supabase_team_list") || "[]"
-          );
           const updatedTeams = supabase_teams.map((c: ITeam) =>
             c.id === team.id ? { ...c, ...res } : c
           );
@@ -81,9 +83,6 @@ export default function TeamForm({
     } else {
       await addTeam(data)
         .then((res) => {
-          const supabase_teams = JSON.parse(
-            localStorage.getItem("supabase_team_list") || "[]"
-          );
           supabase_teams.push(res);
           localStorage.setItem(
             "supabase_team_list",
@@ -98,81 +97,113 @@ export default function TeamForm({
     onSave();
   };
 
+  const handleImportNoHardTeam = () => {
+    if (teamName.includes("_hard")) {
+      const nonHardTeam = supabase_teams.find(
+        (team) => team.team_name === teamName.replace("_hard", "")
+      );
+      if (nonHardTeam) {
+        reset({
+          team_name: teamName,
+          champion_ids: [...nonHardTeam.champion_ids],
+          clearing_stage: nonHardTeam.clearing_stage,
+          notes: nonHardTeam.notes,
+          user_id: userId,
+          rsl_account_id: rslAccountId,
+          ...team,
+        });
+      }
+    }
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-white max-h-[80vh] overflow-auto px-8 border-t-2 pt-2"
-    >
-      {/* Clearing Stage */}
-      <div className="mb-3">
-        <label className="font-medium">Clearing Stage</label>
-        <input {...register("clearing_stage")} className="input" />
-        {errors.clearing_stage && (
-          <p className="text-red-500">{errors.clearing_stage.message}</p>
+    <>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white max-h-[80vh] overflow-auto px-8 border-t-2 pt-2"
+      >
+        {teamName.includes("_hard") && (
+          <div>
+            <button
+              type="button"
+              className="text-blue-400 underline cursor-pointer hover:text-blue-800"
+              onClick={handleImportNoHardTeam}
+            >
+              Import Non-Hard Mode Team
+            </button>
+          </div>
         )}
-        {errors.team_name && (
-          <p className="text-red-500">{errors.team_name.message}</p>
-        )}
-      </div>
-
-      <div className="mb-3">
-        <label className="font-medium">Champions</label>
-
-        <Controller
-          control={control}
-          name="champion_ids"
-          render={({ field }) => (
-            <ChampionMultiSelect
-              value={field.value}
-              onChange={field.onChange}
-              champions={championList}
-              max={maxChampions}
-            />
+        {/* Clearing Stage */}
+        <div className="mb-3">
+          <label className="font-medium">Clearing Stage</label>
+          <input {...register("clearing_stage")} className="input" />
+          {errors.clearing_stage && (
+            <p className="text-red-500">{errors.clearing_stage.message}</p>
           )}
+          {errors.team_name && (
+            <p className="text-red-500">{errors.team_name.message}</p>
+          )}
+        </div>
+
+        <div className="mb-3">
+          <label className="font-medium">Champions</label>
+
+          <Controller
+            control={control}
+            name="champion_ids"
+            render={({ field }) => (
+              <ChampionMultiSelect
+                value={field.value}
+                onChange={field.onChange}
+                champions={championList}
+                max={maxChampions}
+              />
+            )}
+          />
+
+          {errors.champion_ids && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.champion_ids.message}
+            </p>
+          )}
+        </div>
+
+        {/* Notes */}
+        <div className="mb-3">
+          <label className="font-medium">Notes</label>
+          <textarea
+            {...register("notes")}
+            className="w-full border px-2 py-1 rounded"
+            rows={3}
+          />
+        </div>
+
+        {/* Hidden fields */}
+        <input type="hidden" {...register("team_name")} value={teamName} />
+        <input type="hidden" {...register("user_id")} value={userId} />
+        <input
+          type="hidden"
+          {...register("rsl_account_id")}
+          value={rslAccountId}
         />
 
-        {errors.champion_ids && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.champion_ids.message}
-          </p>
-        )}
-      </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cursor-pointer border border-gray-500 hover:bg-gray-600 transition text-gray-500 hover:text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
 
-      {/* Notes */}
-      <div className="mb-3">
-        <label className="font-medium">Notes</label>
-        <textarea
-          {...register("notes")}
-          className="w-full border px-2 py-1 rounded"
-          rows={3}
-        />
-      </div>
-
-      {/* Hidden fields */}
-      <input type="hidden" {...register("team_name")} value={teamName} />
-      <input type="hidden" {...register("user_id")} value={userId} />
-      <input
-        type="hidden"
-        {...register("rsl_account_id")}
-        value={rslAccountId}
-      />
-
-      <div className="flex justify-end gap-2 mt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="cursor-pointer border border-gray-500 hover:bg-gray-600 transition text-gray-500 hover:text-white px-4 py-2 rounded"
-        >
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          className="cursor-pointer bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition"
-        >
-          {loading ? "Saving" : "Save"} Team
-        </button>
-      </div>
-    </form>
+          <button
+            type="submit"
+            className="cursor-pointer bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition"
+          >
+            {loading ? "Saving" : "Save"} Team
+          </button>
+        </div>
+      </form>
+    </>
   );
 }
