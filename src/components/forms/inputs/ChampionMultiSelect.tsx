@@ -3,6 +3,7 @@ import type IChampion from "../../../models/IChampion";
 import colorByRarity from "../../../helpers/colorByRarity";
 import { HiOutlineExternalLink } from "react-icons/hi";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
+import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 
 interface ChampionMultiSelectProps {
   value: string[];
@@ -55,28 +56,44 @@ export default function ChampionMultiSelect({
                       champ.rarity
                     )}`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={value.includes(champ.id.toString())}
-                      onChange={() =>
-                        champ.id && toggleChampion(champ.id.toString())
-                      }
-                    />
-                    <div>
-                      <img
-                        src={champ.imgUrl}
-                        className="h-5 w-5 object-cover rounded-full"
+                    <div className="flex-1 flex justify-start items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={value.includes(champ.id.toString())}
+                        onChange={() =>
+                          champ.id && toggleChampion(champ.id.toString())
+                        }
                       />
+                      <div>
+                        <img
+                          src={champ.imgUrl}
+                          className={`h-7 w-7 object-cover rounded-full border-2 ${
+                            checkIfChampionIsBuilt(champ)
+                              ? "border-green-500"
+                              : "border-red-500"
+                          } `}
+                        />
+                      </div>
+                      {champ.name}
                     </div>
-                    {champ.name}
-                    <div
-                      className={`w-5 h-5 flex-center text-xs text-white rounded-full ${
-                        checkIfChampionIsBuilt(champ)
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    >
-                      B
+                    <div className="flex-center">
+                      <div className="flex gap-1">
+                        {champ.role
+                          .filter((role) => ChampionRoleImageMap[role])
+                          .map((role) => (
+                            <div
+                              key={role}
+                              className="w-5 h-5 flex-center text-xs rounded-full"
+                              title={role}
+                            >
+                              <img
+                                src={ChampionRoleImageMap[role]}
+                                alt={role}
+                                className="w-full h-full object-contain rounded-full"
+                              />
+                            </div>
+                          ))}
+                      </div>
                     </div>
                   </label>
                   <a
@@ -84,7 +101,7 @@ export default function ChampionMultiSelect({
                     target="_blank"
                     className={`${colorByRarity(
                       champ.rarity
-                    )} h-8 w-8 flex-center hover:opacity-75 transition`}
+                    )} h-9 w-9 flex-center hover:opacity-75 transition`}
                   >
                     <HiOutlineExternalLink />
                   </a>

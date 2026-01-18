@@ -19,4 +19,25 @@ export const ChampionRole = {
   ARENA: "Arena",
 } as const;
 
+export const ChampionRoleImageMap: Record<ChampionRole, string> = {
+  Nuker: "img/roles/nuker.png",
+  Debuffer: "img/roles/debuffer.png",
+  Buffer: "img/roles/buffer.png",
+  "Speed Booster": "img/roles/speed_booster.png",
+  "TM Reducer": "",
+  Healer: "",
+  CC: "img/roles/cc.avif",
+  Reviver: "img/roles/reviver.png",
+  "Campaign Farmer": "",
+  "Demon Lord": "",
+  Hydra: "",
+  Chimera: "",
+  "Boss Killer": "",
+  Unkillable: "",
+  Poisoner: "img/roles/poisoner.png",
+  "HP Burner": "img/roles/hp_burner.png",
+  "Max HP DPS": "",
+  Arena: "",
+};
+
 export type ChampionRole = (typeof ChampionRole)[keyof typeof ChampionRole];
