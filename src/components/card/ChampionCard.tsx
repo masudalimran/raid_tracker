@@ -275,7 +275,18 @@ export default function ChampionCard({
                 </td>
               </tr>
 
-              <hr className="my-2"></hr>
+              <tr>
+                <td>
+                  <div className="flex justify-start items-center gap-2 w-full">
+                    Role
+                    <div className="flex-1 w-full h-full border-gray-500 border"></div>
+                  </div>
+                </td>
+                <td>
+                  <div className="flex-1 w-full h-full border-gray-500 border"></div>
+                </td>
+              </tr>
+
               <tr>
                 <td>Primary</td>
                 <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
