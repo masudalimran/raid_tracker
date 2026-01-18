@@ -21,6 +21,16 @@ import {
 import { ChampionRarity } from "../models/ChampionRarity";
 import type ITeam from "../models/ITeam";
 import EmptyChampionList from "../components/empty/EmptyChampionList";
+import type { ChampionRole } from "../models/ChampionRole";
+
+const initial_filter_info: ChampionFilter = {
+  stat: "name",
+  type: "type_all",
+  role: "role_all",
+  faction: "faction_all",
+  rarity: "rarity_all",
+  sortOrder: "desc",
+};
 
 export default function Champions() {
   const [championList, setChampionList] = useState<IChampion[]>([]);
@@ -30,13 +40,8 @@ export default function Champions() {
   const [nsfw, setNsfw] = useState<boolean>(false);
   const [onFilterMode, setOnFilterMode] = useState<boolean>(false);
 
-  const [filterInfo, setFilterInfo] = useState<ChampionFilter>({
-    stat: "name",
-    type: "type_all",
-    faction: "faction_all",
-    rarity: "rarity_all",
-    sortOrder: "desc",
-  });
+  const [filterInfo, setFilterInfo] =
+    useState<ChampionFilter>(initial_filter_info);
 
   const [teams, setTeams] = useState<ITeam[]>([]);
 
@@ -87,6 +92,10 @@ export default function Champions() {
       if (filterInfo.type !== "type_all")
         filteredChampionList = [...filteredChampionList].filter(
           (champion) => champion.type === filterInfo.type
+        );
+      if (filterInfo.role !== "role_all")
+        filteredChampionList = [...filteredChampionList].filter((champion) =>
+          champion.role.includes(filterInfo.role as ChampionRole)
         );
       if (filterInfo.rarity !== "rarity_all")
         filteredChampionList = [...filteredChampionList].filter(
@@ -154,6 +163,7 @@ export default function Champions() {
     championList,
     filterInfo.faction,
     filterInfo.type,
+    filterInfo.role,
     filterInfo.rarity,
     filterInfo.stat,
     filterInfo.sortOrder,
@@ -184,13 +194,7 @@ export default function Champions() {
     if (isTrue) {
       setOnFilterMode(true);
     } else {
-      setFilterInfo({
-        stat: "name",
-        type: "type_all",
-        faction: "faction_all",
-        rarity: "rarity_all",
-        sortOrder: "asc",
-      });
+      setFilterInfo(initial_filter_info);
       setOnFilterMode(false);
     }
   };

@@ -25,7 +25,7 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Buffer: "img/roles/buffer.png",
   "Speed Booster": "img/roles/speed_booster.png",
   "TM Reducer": "",
-  Healer: "",
+  Healer: "img/roles/healer.png",
   CC: "img/roles/cc.avif",
   Reviver: "img/roles/reviver.png",
   "Campaign Farmer": "",

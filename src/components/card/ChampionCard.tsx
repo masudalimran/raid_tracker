@@ -5,7 +5,10 @@ import { FaCheckCircle, FaEdit, FaInfoCircle, FaTrash } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
-import { ChampionRole } from "../../models/ChampionRole.ts";
+import {
+  ChampionRole,
+  ChampionRoleImageMap,
+} from "../../models/ChampionRole.ts";
 import { useState } from "react";
 import Modal from "../modals/Modal.tsx";
 import { useChampion } from "../../hooks/useChampion.ts";
@@ -264,16 +267,48 @@ export default function ChampionCard({
                   </div>
                 </td>
               </tr>
+
               <tr>
                 <td>Type</td>
                 <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
                   {champion.type}
                 </td>
               </tr>
+
+              <hr className="my-2"></hr>
               <tr>
-                <td>Role</td>
+                <td>Primary</td>
                 <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
-                  {champion.role?.join(", ")}
+                  <div className="flex justify-end item-center">
+                    <div className="flex gap-1">
+                      {champion.role
+                        .filter((role) => ChampionRoleImageMap[role])
+                        .map((role) => (
+                          <div
+                            key={role}
+                            className="w-5 h-5 flex-center text-xs rounded-full"
+                            title={role}
+                          >
+                            <img
+                              src={ChampionRoleImageMap[role]}
+                              alt={role}
+                              className="w-full h-full object-contain rounded-full"
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Secondary</td>
+                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
+                  {champion.role.filter((role) => !ChampionRoleImageMap[role])
+                    .length
+                    ? champion.role
+                        .filter((role) => !ChampionRoleImageMap[role])
+                        .join(", ")
+                    : "N/A"}
                 </td>
               </tr>
             </tbody>

@@ -6,6 +6,7 @@ export type FilterStat = keyof IChampion | "book_priority" | "mastery_priority";
 export interface ChampionFilter {
   stat: FilterStat;
   type: string;
+  role: string;
   faction: string;
   rarity: string;
   sortOrder: SortOrder;

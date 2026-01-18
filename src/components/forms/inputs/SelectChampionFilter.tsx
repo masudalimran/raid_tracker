@@ -7,6 +7,7 @@ import type {
 } from "../../../models/ChampionFilter";
 import type { Dispatch, SetStateAction } from "react";
 import { ChampionRarity } from "../../../models/ChampionRarity";
+import { ChampionRole } from "../../../models/ChampionRole";
 
 interface SelectChampionFilterProp {
   filterInfo: ChampionFilter;
@@ -30,6 +31,14 @@ export default function SelectChampionFilter({
     setFilterInfo({
       ...filterInfo,
       type: selected,
+    });
+  };
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = e.target.value as ChampionRole | "All Role";
+    setFilterInfo({
+      ...filterInfo,
+      role: selected,
     });
   };
 
@@ -107,6 +116,22 @@ export default function SelectChampionFilter({
         >
           <option value="type_all">All Type</option>
           {Object.entries(ChampionType).map(([key, label]) => (
+            <option key={key} value={label}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Champion Roles */}
+      <div className="mb-0">
+        <select
+          className="basic-select"
+          value={filterInfo.role}
+          onChange={handleRoleChange}
+        >
+          <option value="role_all">All Role</option>
+          {Object.entries(ChampionRole).map(([key, label]) => (
             <option key={key} value={label}>
               {label}
             </option>
