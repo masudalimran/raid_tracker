@@ -60,7 +60,7 @@ export default function Champions() {
     }
 
     await fetchChampions(); // ensures localStorage is up to date
-    const generated = generateChampions();
+    const generated = await generateChampions();
     setChampionList(generated);
 
     fetchTeams();

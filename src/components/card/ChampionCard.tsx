@@ -215,6 +215,19 @@ export default function ChampionCard({
                   </p>
                 </div>
               )}
+              {champion.champion_impact && !champion.priority && (
+                <div
+                  className="text-xs border border-red-400 rounded-r flex items-center gap-0"
+                  title="Priority Point"
+                >
+                  <p className="basic-padding-xs bg-red-400 text-white">
+                    Impact
+                  </p>
+                  <p className="basic-padding-xs">
+                    {Math.round(champion.champion_impact)}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex-right ">
               <div

@@ -44,7 +44,7 @@ export default function Home() {
       setLoading(true);
 
       let champions = await fetchChampions();
-      champions = generateChampions();
+      champions = await generateChampions();
       setChampionList(champions);
 
       const teams = await fetchTeams();

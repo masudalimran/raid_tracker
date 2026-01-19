@@ -39,4 +39,5 @@ export default interface IChampion {
   rsl_account_id?: string;
 
   priority?: number;
+  champion_impact?: number;
 }

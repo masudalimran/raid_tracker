@@ -88,6 +88,7 @@ export default function SelectChampionFilter({
           <option value="awaken_stars">Awaken Stars</option>
           <option value="book_priority">Book Priority</option>
           <option value="mastery_priority">Mastery Priority</option>
+          <option value="champion_impact">Champion Impact</option>
         </select>
       </div>
 

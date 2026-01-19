@@ -7,6 +7,10 @@ import { ChampionType } from "../models/ChampionType";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 
+/* ---------------------------------------------
+ * Simple sort helpers
+ * ------------------------------------------- */
+
 export function sortBySpeedDesc(champions: IChampion[]): IChampion[] {
   return [...champions].sort((a, b) => b.spd - a.spd);
 }
@@ -15,168 +19,122 @@ export function sortByLevelDesc(champions: IChampion[]): IChampion[] {
   return [...champions].sort((a, b) => b.level - a.level);
 }
 
-type PriorityRule = (champion: IChampion) => boolean;
+/* ---------------------------------------------
+ * Team impact (dominant factor)
+ * ------------------------------------------- */
 
-const COMMON_PRIORITY_RULES: PriorityRule[] = [
-  (c) => c.role?.includes(ChampionRole.NUKER) && c.level < 60,
-  (c) => c.level < 50,
-  (c) => c.is_book_needed && !c.is_booked,
-  (c) => c.is_mastery_needed && !c.has_mastery,
-  (c) => c.role?.includes(ChampionRole.DEBUFFER) && c.spd < 180,
-  (c) => c.spd < 160,
-];
+export function getTeamScore(champion: IChampion, teams: ITeam[]): number {
+  return teams.reduce((score, team) => {
+    if (!team.champion_ids.includes(String(champion.id))) return score;
 
-type PriorityScoreRule = (champion: IChampion) => number;
-
-function createTeamPriorityRule(teams: ITeam[]): PriorityScoreRule {
-  return (champion) => {
-    return teams.reduce((score, team) => {
-      if (!team.champion_ids.includes(String(champion.id))) return score;
-
-      const weight = TEAM_PRIORITY_WEIGHTS[team.team_name] ?? 5;
-      return score + weight;
-    }, 0);
-  };
+    const weight = TEAM_PRIORITY_WEIGHTS[team.team_name] ?? 5;
+    return score + weight;
+  }, 0);
 }
 
-function toScoreRules(rules: PriorityRule[]): PriorityScoreRule[] {
-  return rules.map((rule) => (champion) => rule(champion) ? 1 : 0);
+/* ---------------------------------------------
+ * Stat proximity helpers
+ * ------------------------------------------- */
+
+function statProximity(current: number, target: number): number {
+  if (target <= 0) return 1;
+  return Math.min(current / target, 1);
 }
 
-type StatRule = {
-  key: keyof Pick<
-    IChampion,
-    "hp" | "atk" | "def" | "spd" | "c_rate" | "c_dmg" | "res" | "acc"
-  >;
-  threshold: (c: IChampion) => number;
-};
+function getStatScore(c: IChampion): number {
+  let score = 0;
+  let count = 0;
 
-const STAT_PRIORITY_RULES: StatRule[] = [
-  {
-    key: "hp",
-    threshold: (c) => (c.type === ChampionType.HP ? 45000 : 30000),
-  },
-  {
-    key: "atk",
-    threshold: (c) =>
-      c.type === ChampionType.ATTACK && c.role?.includes(ChampionRole.NUKER)
-        ? 4000
-        : 0,
-  },
-  {
-    key: "def",
-    threshold: (c) => (c.type === ChampionType.DEFENSE ? 4000 : 2500),
-  },
-  {
-    key: "spd",
-    threshold: (c) => (c.role?.includes(ChampionRole.DEBUFFER) ? 180 : 160),
-  },
-  {
-    key: "c_rate",
-    threshold: (c) => (c.role?.includes(ChampionRole.NUKER) ? 100 : 0),
-  },
-  {
-    key: "c_dmg",
-    threshold: (c) => (c.role?.includes(ChampionRole.NUKER) ? 200 : 0),
-  },
-  {
-    key: "res",
-    threshold: () => 0,
-  },
-  {
-    key: "acc",
-    threshold: (c) =>
-      c.role?.includes(ChampionRole.DEBUFFER) ||
-      c.role?.includes(ChampionRole.TM_REDUCER)
-        ? 200
-        : 0,
-  },
-];
+  if (c.role?.includes(ChampionRole.DEBUFFER)) {
+    score += statProximity(c.acc, 200);
+    score += statProximity(c.spd, 180);
+    count += 2;
+  }
 
-function getStatPriorityRules(): PriorityRule[] {
-  return STAT_PRIORITY_RULES.map(
-    (rule) => (c: IChampion) =>
-      rule.threshold(c) > 0 && c[rule.key] < rule.threshold(c)
-  );
+  if (c.role?.includes(ChampionRole.TM_REDUCER)) {
+    score += statProximity(c.acc, 200);
+    score += statProximity(c.spd, 180);
+    count += 2;
+  }
+
+  if (c.role?.includes(ChampionRole.NUKER)) {
+    score += statProximity(c.c_rate, 100);
+    score += statProximity(c.c_dmg, 200);
+    count += 2;
+  }
+
+  if (c.type === ChampionType.DEFENSE) {
+    score += statProximity(c.def, 4000);
+    count += 1;
+  }
+
+  if (c.type === ChampionType.HP) {
+    score += statProximity(c.hp, 45000);
+    count += 1;
+  }
+
+  return count === 0 ? 0 : score / count;
 }
 
-const MASTERY_PRIORITY_RULES: PriorityRule[] = [
-  (c) => c.is_booked && c.is_mastery_needed && !c.has_mastery,
-];
+/* ---------------------------------------------
+ * Completion proximity
+ * ------------------------------------------- */
 
-function getMasteryPriority(champion: IChampion, teams: ITeam[]): number {
-  const baseRules: PriorityScoreRule[] = [
-    ...toScoreRules(COMMON_PRIORITY_RULES),
-    ...toScoreRules(getStatPriorityRules()),
-    ...toScoreRules(MASTERY_PRIORITY_RULES),
-    createTeamPriorityRule(teams),
-  ];
-
-  const totalPossiblePoints =
-    COMMON_PRIORITY_RULES.length +
-    getStatPriorityRules().length +
-    MASTERY_PRIORITY_RULES.length +
-    teams.length * 5; // max possible team points
-
-  const points = baseRules.reduce((sum, rule) => sum + rule(champion), 0);
-
-  return totalPossiblePoints === 0 ? 0 : points / totalPossiblePoints;
+// 📘 Book priority: mastery done = closer to finished
+function getBookCompletionScore(c: IChampion): number {
+  if (!c.is_book_needed || c.is_booked) return 0;
+  return c.has_mastery ? 1 : 0.4;
 }
+
+// 📜 Mastery priority: booked = closer to finished
+function getMasteryCompletionScore(c: IChampion): number {
+  if (!c.is_mastery_needed || c.has_mastery) return 0;
+  return c.is_booked ? 1 : 0.4;
+}
+
+/* ---------------------------------------------
+ * Priority composition
+ * ------------------------------------------- */
+
+function getMasteryPriority(c: IChampion, teams: ITeam[]): number {
+  const teamScore = getTeamScore(c, teams);
+  const statScore = getStatScore(c);
+  const completionScore = getMasteryCompletionScore(c);
+
+  return teamScore * 0.5 + statScore * 0.3 + completionScore * 0.2;
+}
+
+function getBookPriority(c: IChampion, teams: ITeam[]): number {
+  const teamScore = getTeamScore(c, teams);
+  const statScore = getStatScore(c);
+  const completionScore = getBookCompletionScore(c);
+
+  return teamScore * 0.5 + statScore * 0.3 + completionScore * 0.2;
+}
+
+/* ---------------------------------------------
+ * Public sort APIs
+ * ------------------------------------------- */
 
 export function sortByMasteryPriorityDesc(
   champions: IChampion[],
   teams: ITeam[]
 ): IChampion[] {
   return champions
+    .filter((c) => c.is_mastery_needed && !c.has_mastery)
     .map((c) => ({
       champion: c,
       priority: getMasteryPriority(c, teams),
     }))
-    .filter((c) => !c.champion.has_mastery)
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion, priority }) => {
-      return { ...champion, priority };
-    });
+    .map(({ champion, priority }) => ({ ...champion, priority }));
 }
 
 export function sortByMasteryPriorityDescTopFive(
   champions: IChampion[],
   teams: ITeam[]
 ): IChampion[] {
-  return champions
-    .map((c) => ({
-      champion: c,
-      priority: getMasteryPriority(c, teams),
-    }))
-    .filter((c) => !c.champion.has_mastery)
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, 5)
-    .map(({ champion, priority }) => {
-      return { ...champion, priority };
-    });
-}
-
-const BOOK_PRIORITY_RULES: PriorityRule[] = [
-  (c) => c.has_mastery && c.is_book_needed && !c.is_booked,
-];
-
-function getBookPriority(champion: IChampion, teams: ITeam[]): number {
-  const baseRules: PriorityScoreRule[] = [
-    ...toScoreRules(COMMON_PRIORITY_RULES),
-    ...toScoreRules(getStatPriorityRules()),
-    ...toScoreRules(BOOK_PRIORITY_RULES),
-    createTeamPriorityRule(teams),
-  ];
-
-  const totalPossiblePoints =
-    COMMON_PRIORITY_RULES.length +
-    getStatPriorityRules().length +
-    BOOK_PRIORITY_RULES.length +
-    teams.length * 5;
-
-  const points = baseRules.reduce((sum, rule) => sum + rule(champion), 0);
-
-  return totalPossiblePoints === 0 ? 0 : points / totalPossiblePoints;
+  return sortByMasteryPriorityDesc(champions, teams).slice(0, 5);
 }
 
 export function sortByBookPriorityDesc(
@@ -185,16 +143,13 @@ export function sortByBookPriorityDesc(
   rarity: ChampionRarity
 ): IChampion[] {
   return champions
+    .filter((c) => c.is_book_needed && !c.is_booked && c.rarity === rarity)
     .map((c) => ({
       champion: c,
       priority: getBookPriority(c, teams),
     }))
-    .filter((c) => !c.champion.is_booked && c.champion.rarity === rarity)
-    .filter((c) => c.champion.is_book_needed)
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion, priority }) => {
-      return { ...champion, priority };
-    });
+    .map(({ champion, priority }) => ({ ...champion, priority }));
 }
 
 export function sortByBookPriorityDescTopFive(
@@ -202,19 +157,12 @@ export function sortByBookPriorityDescTopFive(
   teams: ITeam[],
   rarity: ChampionRarity
 ): IChampion[] {
-  return champions
-    .map((c) => ({
-      champion: c,
-      priority: getBookPriority(c, teams),
-    }))
-    .filter((c) => !c.champion.is_booked && c.champion.rarity === rarity)
-    .filter((c) => c.champion.is_book_needed)
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, 5)
-    .map(({ champion, priority }) => {
-      return { ...champion, priority };
-    });
+  return sortByBookPriorityDesc(champions, teams, rarity).slice(0, 5);
 }
+
+/* ---------------------------------------------
+ * Generic stat sorting (unchanged)
+ * ------------------------------------------- */
 
 export function sortChampions(
   list: IChampion[],
@@ -225,12 +173,10 @@ export function sortChampions(
     const av = a[stat];
     const bv = b[stat];
 
-    // if stat is name → alphabetical
     if (typeof av === "string" && typeof bv === "string") {
       return order === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
     }
 
-    // numeric fallback (hp, atk, speed...)
     return order === "asc"
       ? (av as number) - (bv as number)
       : (bv as number) - (av as number);

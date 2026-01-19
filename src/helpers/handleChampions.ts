@@ -2,6 +2,7 @@ import { supabase } from "../lib/supabaseClient";
 import { ChampionRarity } from "../models/ChampionRarity";
 import type IChampion from "../models/IChampion";
 import { checkIfChampionIsBuilt } from "./checkIfChampionIsBuilt";
+import { sortChampionsByPowerDesc } from "./getChampionPowerScore";
 import { sortByLevelDesc } from "./sortChampions";
 
 export const fetchChampions = async (): Promise<IChampion[]> => {
@@ -23,7 +24,7 @@ export const fetchChampions = async (): Promise<IChampion[]> => {
   return championList;
 };
 
-export const generateChampions = (): IChampion[] => {
+export const generateChampions = async () => {
   let supabase_champion_list = JSON.parse(
     localStorage.getItem("supabase_champion_list") ?? "[]"
   );
@@ -83,5 +84,6 @@ export const generateChampions = (): IChampion[] => {
     ...champions_that_are_not_built,
   ];
 
-  return sorted_champions;
+  // return sorted_champions;
+  return await sortChampionsByPowerDesc(sorted_champions);
 };
