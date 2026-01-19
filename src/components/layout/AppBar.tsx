@@ -4,6 +4,7 @@ import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { getTotalAccountPower } from "../../helpers/getChampionPowerScore";
+import { formatNumberCompact } from "../../helpers/formatNumber";
 
 function AppBar() {
   const navigate = useNavigate();
@@ -65,7 +66,9 @@ function AppBar() {
           <p className="basic-padding-xs bg-black text-white uppercase">
             ACCOUNT POWER
           </p>
-          <p className="basic-padding-xs">{totalAccountPower}</p>
+          <p className="basic-padding-xs">
+            {formatNumberCompact(totalAccountPower)}
+          </p>
         </div>
         {nsfw ? (
           <CiImageOn

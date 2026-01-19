@@ -1,6 +1,9 @@
 import type IChampion from "../../models/IChampion.ts";
 import ChampionStar from "../utility/ChampionStar.tsx";
-import { formatNumber } from "../../helpers/formatNumber.ts";
+import {
+  formatNumber,
+  formatNumberCompact,
+} from "../../helpers/formatNumber.ts";
 import { FaCheckCircle, FaEdit, FaInfoCircle, FaTrash } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
@@ -224,7 +227,7 @@ export default function ChampionCard({
                     Impact
                   </p>
                   <p className="basic-padding-xs">
-                    {Math.round(champion.champion_impact)}
+                    {formatNumberCompact(Math.round(champion.champion_impact))}
                   </p>
                 </div>
               )}
