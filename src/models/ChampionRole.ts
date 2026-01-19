@@ -19,6 +19,7 @@ export const ChampionRole = {
   ARENA: "Arena",
   CLEANSER: "Cleanser",
   BLOCK_BUFF: "Block Buff",
+  DOOM_TOWER: "Doom Tower",
 } as const;
 
 export const ChampionRoleImageMap: Record<ChampionRole, string> = {
@@ -42,6 +43,7 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Arena: "img/roles/arena.png",
   Cleanser: "img/roles/cleanser.png",
   "Block Buff": "img/roles/Block-buffs.webp",
+  "Doom Tower": "img/roles/doom_tower.png",
 };
 
 export type ChampionRole = (typeof ChampionRole)[keyof typeof ChampionRole];
