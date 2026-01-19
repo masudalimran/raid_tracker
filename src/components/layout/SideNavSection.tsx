@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import type { NavItem } from "../modals/NavItem";
 
@@ -15,7 +15,6 @@ export function SideNavSection({
 }: SideNavSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  // If no section name → always open (Core menu)
   const isCollapsible = Boolean(sectionName);
 
   return (
@@ -34,14 +33,27 @@ export function SideNavSection({
       {(isOpen || !isCollapsible) && (
         <ul className="pl-2">
           {items.map((item) => (
-            <Link key={item.name} to={item.path}>
-              <li
-                className={`${item.className} cursor-pointer border-b-2 hover:border-black
-                border-orange-100 w-full text-nowrap `}
-              >
-                {item.name}
-              </li>
-            </Link>
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `
+                block
+                ${item.className}
+                cursor-pointer
+                border-b-2
+                w-full
+                text-nowrap
+                ${
+                  isActive
+                    ? "border-black font-semibold"
+                    : "border-orange-100 hover:border-black"
+                }
+              `
+              }
+            >
+              <li>{item.name}</li>
+            </NavLink>
           ))}
         </ul>
       )}
