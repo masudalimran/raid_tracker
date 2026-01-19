@@ -218,7 +218,7 @@ export default function ChampionCard({
               {champion.champion_impact && !champion.priority && (
                 <div
                   className="text-xs border border-red-400 rounded-r flex items-center gap-0"
-                  title="Priority Point"
+                  title="Impact on game"
                 >
                   <p className="basic-padding-xs bg-red-400 text-white">
                     Impact

@@ -3,6 +3,7 @@ import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
 import { getTeamScore } from "./sortChampions";
 import { fetchTeams } from "./handleTeams";
+import { fetchChampions, generateChampions } from "./handleChampions";
 
 /**
  * -----------------------------
@@ -164,4 +165,15 @@ export const sortChampionsByPowerDesc = async (
       champion_impact: calculateChampionPower(champion, teams),
     }))
     .sort((a, b) => (b.champion_impact ?? 0) - (a.champion_impact ?? 0));
+};
+
+export const getTotalAccountPower = async (): Promise<number> => {
+  await fetchChampions(); // ensures localStorage is up to date
+  const champions = await generateChampions();
+  const teams = await fetchTeams();
+
+  return champions.reduce((total, champion) => {
+    const power = calculateChampionPower(champion, teams);
+    return total + power;
+  }, 0);
 };

@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
+import { getTotalAccountPower } from "../../helpers/getChampionPowerScore";
 
 function AppBar() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
+  const [totalAccountPower, setTotalAccountPower] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
   const logout = () => {
@@ -27,6 +29,13 @@ function AppBar() {
   useEffect(() => {
     const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
     setNsfwStatusFromLocal();
+    // Async function to fetch and set total account power
+    const fetchAndSetPower = async () => {
+      const totalPower = await getTotalAccountPower();
+      setTotalAccountPower(totalPower);
+    };
+
+    fetchAndSetPower(); // Call it immediately
   }, []);
 
   useEffect(() => {
@@ -49,6 +58,15 @@ function AppBar() {
         ></img>
       </div>
       <div className="flex justify-end items-center">
+        <div
+          className="border border-black rounded-r flex items-center gap-0 mr-2"
+          title="Account Power"
+        >
+          <p className="basic-padding-xs bg-black text-white uppercase">
+            ACCOUNT POWER
+          </p>
+          <p className="basic-padding-xs">{totalAccountPower}</p>
+        </div>
         {nsfw ? (
           <CiImageOn
             onClick={() => handleNsfw(false)}
