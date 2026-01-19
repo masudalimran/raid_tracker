@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
-import { CiImageOff, CiImageOn, CiSearch } from "react-icons/ci";
+import { CiSearch } from "react-icons/ci";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";

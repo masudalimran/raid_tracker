@@ -17,6 +17,8 @@ export const ChampionRole = {
   HP_BURNER: "HP Burner",
   MAX_HP_DPS: "Max HP DPS",
   ARENA: "Arena",
+  CLEANSER: "Cleanser",
+  BLOCK_BUFF: "Block Buff",
 } as const;
 
 export const ChampionRoleImageMap: Record<ChampionRole, string> = {
@@ -24,20 +26,22 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Debuffer: "img/roles/debuffer.png",
   Buffer: "img/roles/buffer.png",
   "Speed Booster": "img/roles/speed_booster.png",
-  "TM Reducer": "",
+  "TM Reducer": "img/roles/tm_reduction.jpg",
   Healer: "img/roles/healer.png",
   CC: "img/roles/cc.avif",
   Reviver: "img/roles/reviver.png",
-  "Campaign Farmer": "",
-  "Demon Lord": "",
-  Hydra: "",
-  Chimera: "",
-  "Boss Killer": "",
-  Unkillable: "",
+  "Campaign Farmer": "img/roles/campaign_farmer.png",
+  "Demon Lord": "img/roles/demon_lord.png",
+  Hydra: "img/roles/hydra.png",
+  Chimera: "img/roles/chimera.png",
+  "Boss Killer": "img/roles/boss_killer.png",
+  Unkillable: "img/roles/unkillable.png",
   Poisoner: "img/roles/poisoner.png",
   "HP Burner": "img/roles/hp_burner.png",
-  "Max HP DPS": "",
-  Arena: "",
+  "Max HP DPS": "img/roles/max_hp_damage.png",
+  Arena: "img/roles/arena.png",
+  Cleanser: "img/roles/cleanser.png",
+  "Block Buff": "img/roles/Block-buffs.webp",
 };
 
 export type ChampionRole = (typeof ChampionRole)[keyof typeof ChampionRole];

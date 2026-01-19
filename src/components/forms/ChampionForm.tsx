@@ -11,7 +11,7 @@ import { ChampionAffinity } from "../../models/ChampionAffinity";
 import { ChampionType } from "../../models/ChampionType";
 import { ChampionRarity } from "../../models/ChampionRarity";
 import { ChampionFaction } from "../../models/ChampionFaction";
-import { ChampionRole } from "../../models/ChampionRole";
+import { ChampionRole, ChampionRoleImageMap } from "../../models/ChampionRole";
 import StarRatingInput from "./inputs/StartRatingInput";
 import ToggleInput from "./inputs/ToggleInput";
 import { useChampion } from "../../hooks/useChampion";
@@ -293,8 +293,22 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
           <div className="grid grid-cols-2 gap-2">
             {Object.values(ChampionRole).map((role) => (
-              <label key={role} className="flex items-center gap-2">
+              <label
+                key={role}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <input type="checkbox" value={role} {...register("role")} />
+                <div
+                  key={role}
+                  className="w-5 h-5 flex-center text-xs rounded-full"
+                  title={role}
+                >
+                  <img
+                    src={ChampionRoleImageMap[role]}
+                    alt={role}
+                    className="w-full h-full object-contain rounded-full"
+                  />
+                </div>
                 {role}
               </label>
             ))}

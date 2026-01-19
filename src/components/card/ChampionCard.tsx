@@ -289,19 +289,7 @@ export default function ChampionCard({
               </tr>
 
               <tr>
-                <td>
-                  <div className="flex justify-start items-center gap-2 w-full">
-                    Role
-                    <div className="flex-1 w-full h-full border-gray-500 border"></div>
-                  </div>
-                </td>
-                <td>
-                  <div className="flex-1 w-full h-full border-gray-500 border"></div>
-                </td>
-              </tr>
-
-              <tr>
-                <td>Primary</td>
+                <td>Role</td>
                 <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
                   <div className="flex justify-end item-center">
                     <div className="flex gap-1">
@@ -322,17 +310,6 @@ export default function ChampionCard({
                         ))}
                     </div>
                   </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Secondary</td>
-                <td className="text-right capitalize truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
-                  {champion.role.filter((role) => !ChampionRoleImageMap[role])
-                    .length
-                    ? champion.role
-                        .filter((role) => !ChampionRoleImageMap[role])
-                        .join(", ")
-                    : "N/A"}
                 </td>
               </tr>
             </tbody>
