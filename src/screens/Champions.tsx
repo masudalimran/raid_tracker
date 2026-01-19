@@ -22,6 +22,7 @@ import { ChampionRarity } from "../models/ChampionRarity";
 import type ITeam from "../models/ITeam";
 import EmptyChampionList from "../components/empty/EmptyChampionList";
 import type { ChampionRole } from "../models/ChampionRole";
+import { getNsfwStatus } from "../helpers/getNsfwStatus";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -74,6 +75,9 @@ export default function Champions() {
 
   useEffect(() => {
     fetchTeams().then(setTeams);
+
+    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
+    setNsfwStatusFromLocal();
   }, []);
 
   const filteredChampions = useMemo(() => {
@@ -226,22 +230,6 @@ export default function Champions() {
               </Fragment>
             ) : (
               <Fragment>
-                {nsfw ? (
-                  <CiImageOn
-                    onClick={() => setNsfw(false)}
-                    className="cursor-pointer hover:text-gray-500 transition"
-                    title="Hide Image"
-                    size={36}
-                  />
-                ) : (
-                  <CiImageOff
-                    onClick={() => setNsfw(true)}
-                    className="cursor-pointer hover:text-gray-500 transition"
-                    title="Show Image"
-                    size={36}
-                  />
-                )}
-
                 <div className="relative">
                   <input
                     value={searchText}

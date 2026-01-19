@@ -13,6 +13,7 @@ import TeamModal from "../modals/TeamModal";
 import ChampionModal from "../modals/ChampionModal";
 import { sortBySpeedDesc } from "../../helpers/sortChampions";
 import type { TeamIdentifier } from "../../data/team_priority_weight";
+import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -28,6 +29,7 @@ export default function BaseAreaTeam({
   maxChampions,
 }: BaseAreaTeamProps) {
   const [loading, setLoading] = useState(true);
+  const [nsfw, setNsfw] = useState<boolean>(false);
 
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showChampionModal, setShowChampionModal] = useState(false);
@@ -76,7 +78,12 @@ export default function BaseAreaTeam({
     };
 
     load();
-  }, [teamKey, reloadDetector]);
+  }, [teamKey, reloadDetector, isFaction, title]);
+
+  useEffect(() => {
+    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
+    setNsfwStatusFromLocal();
+  }, []);
 
   if (loading) return <ChampionSkeletonLoader length={maxChampions} />;
 
@@ -122,6 +129,7 @@ export default function BaseAreaTeam({
             <Fragment key={champion.id}>
               <ChampionCard
                 champion={champion}
+                nsfw={nsfw}
                 onEdit={(c) => {
                   setEditingChampion(c);
                   setShowChampionModal(true);

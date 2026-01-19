@@ -12,9 +12,11 @@ import {
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import ChampionSkeletonCard from "../components/card/ChampionSkeletonCard";
+import { getNsfwStatus } from "../helpers/getNsfwStatus";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
+  const [nsfw, setNsfw] = useState<boolean>(false);
 
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamList, setTeamList] = useState<ITeam[]>([]);
@@ -54,6 +56,11 @@ export default function Home() {
     load();
   }, [reloadDetector]);
 
+  useEffect(() => {
+    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
+    setNsfwStatusFromLocal();
+  }, []);
+
   if (loading) return <ChampionSkeletonLoader />;
 
   return (
@@ -76,6 +83,7 @@ export default function Home() {
                 champion={champion}
                 onEdit={handleEdit}
                 onDelete={() => handleCloseModal(true)}
+                nsfw={nsfw}
               />
             </Fragment>
           ))}
@@ -107,6 +115,7 @@ export default function Home() {
                 champion={champion}
                 onEdit={handleEdit}
                 onDelete={() => handleCloseModal(true)}
+                nsfw={nsfw}
               />
             </Fragment>
           ))}
@@ -138,6 +147,7 @@ export default function Home() {
                 champion={champion}
                 onEdit={handleEdit}
                 onDelete={() => handleCloseModal(true)}
+                nsfw={nsfw}
               />
             </Fragment>
           ))}
@@ -166,6 +176,7 @@ export default function Home() {
                   champion={champion}
                   onEdit={handleEdit}
                   onDelete={() => handleCloseModal(true)}
+                  nsfw={nsfw}
                 />
               </Fragment>
             )

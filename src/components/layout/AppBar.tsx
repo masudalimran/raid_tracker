@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
+import { CiImageOff, CiImageOn } from "react-icons/ci";
+import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 
 function AppBar() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<string>("");
+  const [nsfw, setNsfw] = useState<boolean>(false);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
   const logout = () => {
@@ -14,6 +17,17 @@ function AppBar() {
     setUser("");
     navigate("/login");
   };
+
+  const handleNsfw = (isNsfw: boolean) => {
+    setNsfw(isNsfw);
+    localStorage.setItem("img_nsfw", isNsfw.toString());
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
+    setNsfwStatusFromLocal();
+  }, []);
 
   useEffect(() => {
     const getUserFromLocalStorage = () => {
@@ -29,34 +43,51 @@ function AppBar() {
     <div className="flex justify-between items-center bg-orange-100 h-[5vh]">
       <div>
         <img
-          className="h-[50px] object-contain"
+          className="h-12.5 object-contain"
           src="https://preview.redd.it/whats-the-font-used-in-the-raid-shadow-legends-logo-v0-z3i9f5g5ray81.png?width=640&crop=smart&auto=webp&s=277b1eb73daeb7ae735ddf4b30124200a7d925d5"
           alt="raid-logo"
         ></img>
       </div>
-      <div className="basic-padding text-right">
-        {user ? (
-          <RslAccountForm />
+      <div className="flex justify-end items-center">
+        {nsfw ? (
+          <CiImageOn
+            onClick={() => handleNsfw(false)}
+            className="cursor-pointer hover:text-gray-500 transition"
+            title="Hide Image"
+            size={36}
+          />
         ) : (
-          <h2 className="uppercase text-2xl font-bold text-nowrap ">
-            Raid Tracker
-          </h2>
+          <CiImageOff
+            onClick={() => handleNsfw(true)}
+            className="cursor-pointer hover:text-gray-500 transition"
+            title="Show Image"
+            size={36}
+          />
         )}
-        {user && (
-          <div className="flex-right text-xs">
-            <p className="">{user}</p>
-            <p>|</p>
-            <div>
-              <button
-                type="button"
-                className="underline cursor-pointer"
-                onClick={logout}
-              >
-                Logout
-              </button>
+        <div className="basic-padding text-right">
+          {user ? (
+            <RslAccountForm />
+          ) : (
+            <h2 className="uppercase text-2xl font-bold text-nowrap ">
+              Raid Tracker
+            </h2>
+          )}
+          {user && (
+            <div className="flex-right text-xs">
+              <p className="">{user}</p>
+              <p>|</p>
+              <div>
+                <button
+                  type="button"
+                  className="underline cursor-pointer"
+                  onClick={logout}
+                >
+                  Logout
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
