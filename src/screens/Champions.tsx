@@ -23,6 +23,8 @@ import type ITeam from "../models/ITeam";
 import EmptyChampionList from "../components/empty/EmptyChampionList";
 import type { ChampionRole } from "../models/ChampionRole";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
+import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
+import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -48,7 +50,7 @@ export default function Champions() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(
-    null
+    null,
   );
 
   const loadChampions = useCallback(async (forceRefresh = false) => {
@@ -91,19 +93,19 @@ export default function Champions() {
       let filteredChampionList = [...championList];
       if (filterInfo.faction !== "faction_all")
         filteredChampionList = [...filteredChampionList].filter(
-          (champion) => champion.faction === filterInfo.faction
+          (champion) => champion.faction === filterInfo.faction,
         );
       if (filterInfo.type !== "type_all")
         filteredChampionList = [...filteredChampionList].filter(
-          (champion) => champion.type === filterInfo.type
+          (champion) => champion.type === filterInfo.type,
         );
       if (filterInfo.role !== "role_all")
         filteredChampionList = [...filteredChampionList].filter((champion) =>
-          champion.role.includes(filterInfo.role as ChampionRole)
+          champion.role.includes(filterInfo.role as ChampionRole),
         );
       if (filterInfo.rarity !== "rarity_all")
         filteredChampionList = [...filteredChampionList].filter(
-          (champion) => champion.rarity === filterInfo.rarity
+          (champion) => champion.rarity === filterInfo.rarity,
         );
 
       if (filterInfo.stat === "book_priority") {
@@ -111,27 +113,27 @@ export default function Champions() {
           ...sortByBookPriorityDesc(
             [...filteredChampionList],
             teams,
-            ChampionRarity.MYTHICAL
+            ChampionRarity.MYTHICAL,
           ),
           ...sortByBookPriorityDesc(
             [...filteredChampionList],
             teams,
-            ChampionRarity.LEGENDARY
+            ChampionRarity.LEGENDARY,
           ),
           ...sortByBookPriorityDesc(
             [...filteredChampionList],
             teams,
-            ChampionRarity.EPIC
+            ChampionRarity.EPIC,
           ),
           ...sortByBookPriorityDesc(
             [...filteredChampionList],
             teams,
-            ChampionRarity.RARE
+            ChampionRarity.RARE,
           ),
           ...sortByBookPriorityDesc(
             [...filteredChampionList],
             teams,
-            ChampionRarity.UNCOMMON
+            ChampionRarity.UNCOMMON,
           ),
         ];
         if (filterInfo.sortOrder === "desc") {
@@ -143,7 +145,7 @@ export default function Champions() {
       if (filterInfo.stat === "mastery_priority") {
         filteredChampionList = sortByMasteryPriorityDesc(
           [...filteredChampionList],
-          teams
+          teams,
         );
         if (filterInfo.sortOrder === "desc") {
           return filteredChampionList;
@@ -156,7 +158,7 @@ export default function Champions() {
         filteredChampionList = sortChampions(
           [...filteredChampionList],
           filterInfo.stat,
-          filterInfo.sortOrder
+          filterInfo.sortOrder,
         );
         return filteredChampionList;
       }
@@ -210,9 +212,21 @@ export default function Champions() {
       <div className="overflow-auto h-[92vh]">
         {/* Header */}
         <div className="flex-between sticky top-0 bg-white z-20">
-          <h1 className="text-xl">
-            Champions List ({filteredChampions?.length})
-          </h1>
+          <div>
+            <h1 className="text-xl border-b">Champions List</h1>
+            <p className="text-sm flex-center gap-2 uppercase">
+              <span className="border-r border-gray-300 pr-2">
+                Total {filteredChampions?.length}
+              </span>
+              <span className="border-r border-gray-300 pr-2">
+                {getCurrentlyInUseChampions(filteredChampions ?? []).length} in
+                use
+              </span>
+              <span>
+                {getBuiltChampionsCount(filteredChampions ?? [])} built
+              </span>
+            </p>
+          </div>
 
           <div className="m-2 flex-center gap-2">
             {onFilterMode ? (

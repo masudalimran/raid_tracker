@@ -38,11 +38,11 @@ export default function ChampionCard({
 
   // Parse teams from localStorage
   const supabase_team_list: ITeam[] = JSON.parse(
-    localStorage.getItem("supabase_team_list") || "[]"
+    localStorage.getItem("supabase_team_list") || "[]",
   );
 
   const championTeams = supabase_team_list.filter((team) =>
-    team.champion_ids.includes(String(champion.id))
+    team.champion_ids.includes(String(champion.id)),
   );
 
   const championTeamCount = championTeams.length;
@@ -53,7 +53,7 @@ export default function ChampionCard({
   let thresholdDifference = 0;
 
   const current_rsl_account = JSON.parse(
-    localStorage.getItem("supabase_rsl_account_list") ?? "[]"
+    localStorage.getItem("supabase_rsl_account_list") ?? "[]",
   ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
 
   if (!current_rsl_account) return;
@@ -128,14 +128,14 @@ export default function ChampionCard({
       await deleteChampion(champion.id.toString())
         .then((deleted) => {
           const supabase_champions = JSON.parse(
-            localStorage.getItem("supabase_champion_list") || "[]"
+            localStorage.getItem("supabase_champion_list") || "[]",
           );
           const updatedChampions = supabase_champions.filter(
-            (c: IChampion) => c.id !== deleted.id
+            (c: IChampion) => c.id !== deleted.id,
           );
           localStorage.setItem(
             "supabase_champion_list",
-            JSON.stringify(updatedChampions)
+            JSON.stringify(updatedChampions),
           );
         })
         .catch((error) => {
@@ -153,7 +153,7 @@ export default function ChampionCard({
       >
         <div
           className={`flex-between basic-padding ${colorByRarity(
-            champion.rarity
+            champion.rarity,
           )}`}
         >
           <div className="flex-left">
@@ -179,14 +179,10 @@ export default function ChampionCard({
           />
         </div>
 
-        <div
-          className={`relative w-full h-50 overflow-hidden ${
-            nsfw ? "invisible" : "visible"
-          }`}
-        >
+        <div className={`relative w-full h-50 overflow-hidden`}>
           {/* Blurred background */}
           <div
-            className="absolute inset-0 bg-center bg-cover blur-md scale-110"
+            className={`absolute inset-0 bg-center bg-cover blur-md scale-110 ${nsfw ? "invisible" : "visible"}`}
             style={{ backgroundImage: `url(${champion.imgUrl})` }}
           />
 
@@ -199,7 +195,9 @@ export default function ChampionCard({
             <img
               src={champion.imgUrl}
               alt={champion.name}
-              className="object-contain h-50 hover:scale-105 transition duration-300"
+              className={`object-contain h-50 hover:scale-105 transition duration-300 ${
+                nsfw ? "invisible" : "visible"
+              }`}
             />
           </a>
         </div>
@@ -276,7 +274,7 @@ export default function ChampionCard({
                   <div className="flex justify-end items-center gap-1">
                     <div
                       className={`h-5 w-5 rounded-full ${colorByRarity(
-                        champion.rarity
+                        champion.rarity,
                       )}`}
                     />{" "}
                     <p>{champion.rarity}</p>
@@ -328,7 +326,7 @@ export default function ChampionCard({
                   <td
                     className={`text-right ${checkBuildThreshold(
                       champion[key],
-                      threshold
+                      threshold,
                     )}`}
                   >
                     {champion[key] < threshold && (
