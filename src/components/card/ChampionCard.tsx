@@ -168,18 +168,20 @@ export default function ChampionCard({
             <p className="truncate max-w-[12ch] sm:max-w-[16ch] md:max-w-[18ch] lg:max-w-[20ch]">
               {champion.name}
             </p>
-            <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
-              {champion.level}
-            </div>
           </div>
-          <ChampionStar
-            stars={champion.stars}
-            ascension_stars={champion.ascension_stars}
-            awaken_stars={champion.awaken_stars}
-          />
+          <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
+            {champion.level}
+          </div>
         </div>
 
         <div className={`relative w-full h-50 overflow-hidden`}>
+          <div className="absolute right-0 z-20 bg-white rounded-bl-md basic-padding-xs">
+            <ChampionStar
+              stars={champion.stars}
+              ascension_stars={champion.ascension_stars}
+              awaken_stars={champion.awaken_stars}
+            />
+          </div>
           {/* Blurred background */}
           <div
             className={`absolute inset-0 bg-center bg-cover blur-md scale-110 ${nsfw ? "invisible" : "visible"}`}

@@ -15,12 +15,32 @@ export default function ChampionStar({
     <></>
   ) : (
     <>
-      <div className="flex items-center gap-0">
-        <p>{ascension_stars}</p>
-        <FaStar className="text-purple-500" />
-        <p>|</p>
-        <p>{awaken_stars}</p>
-        <FaStar className="text-red-600" />
+      <div className="flex items-center gap-1">
+        {/* Star */}
+        <div className="relative flex items-center justify-center w-6 h-6">
+          <FaStar className="text-yellow-500 w-6 h-6" />
+          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
+            {stars}
+          </span>
+        </div>
+
+        {/* Ascension */}
+        <div className="relative flex items-center justify-center w-6 h-6">
+          <FaStar className="text-purple-500 w-6 h-6" />
+          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
+            {ascension_stars}
+          </span>
+        </div>
+
+        {/* <span className="text-xs opacity-60">|</span> */}
+
+        {/* Awakening */}
+        <div className="relative flex items-center justify-center w-6 h-6">
+          <FaStar className="text-red-600 w-6 h-6" />
+          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
+            {awaken_stars}
+          </span>
+        </div>
       </div>
     </>
   );
