@@ -34,7 +34,7 @@ export default function BaseAreaTeam({
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(
-    null
+    null,
   );
   const [reloadDetector, setReloadDetector] = useState<boolean>(false);
 
@@ -57,7 +57,7 @@ export default function BaseAreaTeam({
 
       if (isFaction) {
         setChampionList(
-          champions.filter((champion) => champion.faction === title)
+          champions.filter((champion) => champion.faction === title),
         );
       } else {
         setChampionList(champions);
@@ -90,7 +90,7 @@ export default function BaseAreaTeam({
   return (
     <>
       <div className="overflow-auto h-[92vh]">
-        <div className="flex-between sticky top-0 bg-white z-20">
+        <div className="flex-between sticky top-0 bg-white z-30">
           <h1 className="text-xl">
             {title}{" "}
             {team?.clearing_stage && (

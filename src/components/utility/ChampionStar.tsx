@@ -18,7 +18,7 @@ export default function ChampionStar({
       <div className="flex items-center gap-1">
         {/* Star */}
         <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-yellow-500 w-6 h-6" />
+          <FaStar className="text-yellow-500 w-6 h-6 animate-pulse duration-75" />
           <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
             {stars}
           </span>
@@ -26,7 +26,7 @@ export default function ChampionStar({
 
         {/* Ascension */}
         <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-purple-500 w-6 h-6" />
+          <FaStar className="text-purple-500 w-6 h-6 animate-pulse duration-200" />
           <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
             {ascension_stars}
           </span>
@@ -36,7 +36,7 @@ export default function ChampionStar({
 
         {/* Awakening */}
         <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-red-600 w-6 h-6" />
+          <FaStar className="text-red-600 w-6 h-6 animate-pulse duration-600" />
           <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
             {awaken_stars}
           </span>

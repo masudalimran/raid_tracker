@@ -211,7 +211,7 @@ export default function Champions() {
     <>
       <div className="overflow-auto h-[92vh]">
         {/* Header */}
-        <div className="flex-between sticky top-0 bg-white z-20">
+        <div className="flex-between sticky top-0 bg-white z-30">
           <div>
             <h1 className="text-xl border-b">Champions List</h1>
             <p className="text-sm flex-center gap-2 uppercase">
@@ -222,8 +222,16 @@ export default function Champions() {
                 {getCurrentlyInUseChampions(filteredChampions ?? []).length} in
                 use
               </span>
-              <span>
+              <span className="border-r border-gray-300 pr-2">
                 {getBuiltChampionsCount(filteredChampions ?? [])} built
+              </span>
+              <span>
+                {
+                  (filteredChampions ?? []).filter(
+                    (champion) => champion.spd <= 120,
+                  ).length
+                }{" "}
+                Untouched
               </span>
             </p>
           </div>

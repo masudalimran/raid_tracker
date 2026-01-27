@@ -149,7 +149,7 @@ export default function ChampionCard({
   return (
     <>
       <div
-        className={`border border-gray-300 rounded-xl overflow-hidden shadow-xl`}
+        className={`border border-gray-300 rounded-xl overflow-hidden shadow-xl flex flex-col`}
       >
         <div
           className={`flex-between basic-padding ${colorByRarity(
@@ -174,7 +174,7 @@ export default function ChampionCard({
           </div>
         </div>
 
-        <div className={`relative w-full h-50 overflow-hidden`}>
+        <div className={`relative w-full h-full overflow-hidden`}>
           <div className="absolute right-0 z-20 bg-white rounded-bl-md basic-padding-xs">
             <ChampionStar
               stars={champion.stars}
@@ -409,14 +409,18 @@ export default function ChampionCard({
                 ? thresholdDifference >= thresholdDifferenceTolerance
                   ? "bg-yellow-400"
                   : "bg-green-500"
-                : "bg-red-500"
+                : champion.spd <= 120
+                  ? "bg-black"
+                  : "bg-red-500"
             }`}
           >
             {isBuilt
               ? thresholdDifference >= thresholdDifferenceTolerance
                 ? "Needs Improvement"
                 : "Built"
-              : "Not Built"}
+              : champion.spd <= 120
+                ? "Untouched"
+                : "Not Built"}
           </p>
         </div>
       </div>
