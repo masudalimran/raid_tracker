@@ -30,11 +30,11 @@ export default function TeamForm({
   teamName = toSlug(teamName);
 
   const { id: userId } = JSON.parse(
-    localStorage.getItem("supabase_auth") || "{}"
+    localStorage.getItem("supabase_auth") || "{}",
   );
 
   const current_rsl_account = JSON.parse(
-    localStorage.getItem("supabase_rsl_account_list") ?? "[]"
+    localStorage.getItem("supabase_rsl_account_list") ?? "[]",
   ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
 
   if (!current_rsl_account) return null;
@@ -62,7 +62,7 @@ export default function TeamForm({
   });
 
   const supabase_teams = JSON.parse(
-    localStorage.getItem("supabase_team_list") || "[]"
+    localStorage.getItem("supabase_team_list") || "[]",
   ) as ITeam[];
 
   const onSubmit = async (data: TeamFormData) => {
@@ -70,11 +70,11 @@ export default function TeamForm({
       await updateTeam(team.id.toString(), data)
         .then((res) => {
           const updatedTeams = supabase_teams.map((c: ITeam) =>
-            c.id === team.id ? { ...c, ...res } : c
+            c.id === team.id ? { ...c, ...res } : c,
           );
           localStorage.setItem(
             "supabase_team_list",
-            JSON.stringify(updatedTeams)
+            JSON.stringify(updatedTeams),
           );
         })
         .catch((error) => {
@@ -86,7 +86,7 @@ export default function TeamForm({
           supabase_teams.push(res);
           localStorage.setItem(
             "supabase_team_list",
-            JSON.stringify(supabase_teams)
+            JSON.stringify(supabase_teams),
           );
         })
         .catch((error) => {
@@ -101,10 +101,10 @@ export default function TeamForm({
     if (teamName.includes("_hard")) {
       const currentUserTeams = supabase_teams.filter(
         (team) =>
-          team.user_id === userId && team.rsl_account_id === rslAccountId
+          team.user_id === userId && team.rsl_account_id === rslAccountId,
       );
       const nonHardTeam = currentUserTeams.find(
-        (team) => team.team_name === teamName.replace("_hard", "")
+        (team) => team.team_name === teamName.replace("_hard", ""),
       );
       if (nonHardTeam) {
         reset({
@@ -140,7 +140,23 @@ export default function TeamForm({
         {/* Clearing Stage */}
         <div className="mb-3">
           <label className="font-medium">Clearing Stage</label>
-          <input {...register("clearing_stage")} className="input" />
+          <input
+            {...register("clearing_stage")}
+            className="input"
+            placeholder="E.g. Stage 16, Gold, 1-KEY HARD, MAX"
+          />
+          <p className="text-gray-400 text-sm mt-1">
+            Enter the stage name exactly as it appears in-game. Examples:
+            <ul className="list-disc ml-5">
+              <li>Dungeons: Stage 16, Stage 20, Stage 25(MAX)</li>
+              <li>
+                Demon Lord: 1-KEY HARD, 1-KEY NIGHTMARE, 2-KEY ULTRA-NIGHTMARE
+              </li>
+              <li>Faction Wars: Stage 7, Stage 21(MAX)</li>
+              <li>Classic Arena: Silver III, Gold IV, Platinum</li>
+              <li>Hydra: 1-KEY BRUTAL, 1-KEY NIGHTMARE</li>
+            </ul>
+          </p>
           {errors.clearing_stage && (
             <p className="text-red-500">{errors.clearing_stage.message}</p>
           )}

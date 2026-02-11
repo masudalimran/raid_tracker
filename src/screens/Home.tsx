@@ -1,204 +1,103 @@
-import { Fragment, useEffect, useState } from "react";
-import { ChampionRarity } from "../models/ChampionRarity";
-import type IChampion from "../models/IChampion";
-import type ITeam from "../models/ITeam";
-import { fetchChampions, generateChampions } from "../helpers/handleChampions";
-import { fetchTeams } from "../helpers/handleTeams";
+import { useEffect, useMemo, useState } from "react";
 import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
-import {
-  sortByBookPriorityDescTopFive,
-  sortByMasteryPriorityDescTopFive,
-} from "../helpers/sortChampions";
-import ChampionCard from "../components/card/ChampionCard";
-import ChampionModal from "../components/modals/ChampionModal";
-import ChampionSkeletonCard from "../components/card/ChampionSkeletonCard";
-import { getNsfwStatus } from "../helpers/getNsfwStatus";
+import type ITeam from "../models/ITeam";
+import { fetchTeams } from "../helpers/handleTeams";
+import { evaluateAccountProgressDetailed } from "../helpers/evaluateAccountProgress";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
-  const [nsfw, setNsfw] = useState<boolean>(false);
-
-  const [championList, setChampionList] = useState<IChampion[]>([]);
-  const [teamList, setTeamList] = useState<ITeam[]>([]);
-
-  const [reloadDetector, setReloadDetector] = useState<boolean>(false);
-
-  const [showModal, setShowModal] = useState(false);
-  const [editingChampion, setEditingChampion] = useState<IChampion | null>(
-    null
-  );
-
-  const handleEdit = (champion: IChampion) => {
-    setEditingChampion(champion);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = async (should_reload: boolean) => {
-    setShowModal(false);
-    setEditingChampion(null);
-    if (should_reload) setReloadDetector((prev) => !prev);
-  };
+  const [teams, setTeams] = useState<ITeam[]>([]);
+  const [showAllRemaining, setShowAllRemaining] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
-
-      let champions = await fetchChampions();
-      champions = await generateChampions();
-      setChampionList(champions);
-
-      const teams = await fetchTeams();
-      setTeamList(teams);
-
-      setTimeout(() => setLoading(false), 500);
+      const data = await fetchTeams();
+      setTeams(data);
+      setLoading(false);
     };
-
     load();
-  }, [reloadDetector]);
-
-  useEffect(() => {
-    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
-    setNsfwStatusFromLocal();
   }, []);
 
-  if (loading) return <ChampionSkeletonLoader />;
+  const progressData = useMemo(() => {
+    const result = evaluateAccountProgressDetailed(teams);
+    console.log("Progress evaluation:", result);
+    return result;
+  }, [teams]);
+
+  if (loading) return <ChampionSkeletonLoader length={1} />;
+
+  const { currentStage, completed, nextSteps } = progressData;
+
+  const remainingStages = Object.entries(nextSteps).filter(
+    ([stage, steps]) => steps.length > 0 && stage !== currentStage,
+  );
 
   return (
-    <>
-      <div className="overflow-auto h-[92vh]">
-        <h1 className="text-2xl font-semibold">Book Priority</h1>
-        <hr className="py-2" />
-        <h2 className="text-xl pb-2">{ChampionRarity.LEGENDARY}</h2>
+    <div className="overflow-auto h-[92vh] p-4 space-y-4">
+      <h1 className="text-2xl font-semibold pb-2">Account Progression</h1>
 
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[
-            ...sortByBookPriorityDescTopFive(
-              championList,
-              teamList,
-              ChampionRarity.LEGENDARY
-            ),
-          ].map((champion) => (
-            <Fragment key={champion.id}>
-              <ChampionCard
-                champion={champion}
-                onEdit={handleEdit}
-                onDelete={() => handleCloseModal(true)}
-                nsfw={nsfw}
-              />
-            </Fragment>
-          ))}
-          {Array.from({
-            length:
-              5 -
-              sortByBookPriorityDescTopFive(
-                championList,
-                teamList,
-                ChampionRarity.LEGENDARY
-              ).length,
-          }).map((_, idx) => (
-            <Fragment key={idx}>
-              <ChampionSkeletonCard fullWidth />
-            </Fragment>
-          ))}
-        </div>
-        <h2 className="text-xl pb-2">{ChampionRarity.EPIC}</h2>
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[
-            ...sortByBookPriorityDescTopFive(
-              championList,
-              teamList,
-              ChampionRarity.EPIC
-            ),
-          ].map((champion) => (
-            <Fragment key={champion.id}>
-              <ChampionCard
-                champion={champion}
-                onEdit={handleEdit}
-                onDelete={() => handleCloseModal(true)}
-                nsfw={nsfw}
-              />
-            </Fragment>
-          ))}
-          {Array.from({
-            length:
-              5 -
-              sortByBookPriorityDescTopFive(
-                championList,
-                teamList,
-                ChampionRarity.EPIC
-              ).length,
-          }).map((_, idx) => (
-            <Fragment key={idx}>
-              <ChampionSkeletonCard fullWidth />
-            </Fragment>
-          ))}
-        </div>
-        <h2 className="text-xl pb-2">{ChampionRarity.RARE}</h2>
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[
-            ...sortByBookPriorityDescTopFive(
-              championList,
-              teamList,
-              ChampionRarity.RARE
-            ),
-          ].map((champion) => (
-            <Fragment key={champion.id}>
-              <ChampionCard
-                champion={champion}
-                onEdit={handleEdit}
-                onDelete={() => handleCloseModal(true)}
-                nsfw={nsfw}
-              />
-            </Fragment>
-          ))}
-          {Array.from({
-            length:
-              5 -
-              sortByBookPriorityDescTopFive(
-                championList,
-                teamList,
-                ChampionRarity.RARE
-              ).length,
-          }).map((_, idx) => (
-            <Fragment key={idx}>
-              <ChampionSkeletonCard fullWidth />
-            </Fragment>
-          ))}
-        </div>
+      <p className="uppercase border-t border-b py-2">
+        Current Progression Stage:{" "}
+        <span className="font-extrabold">{currentStage}</span>
+      </p>
 
-        <h1 className="text-2xl font-semibold">Mastery Priority</h1>
-        <hr className="py-2" />
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-stretch">
-          {[...sortByMasteryPriorityDescTopFive(championList, teamList)].map(
-            (champion) => (
-              <Fragment key={champion.id}>
-                <ChampionCard
-                  champion={champion}
-                  onEdit={handleEdit}
-                  onDelete={() => handleCloseModal(true)}
-                  nsfw={nsfw}
-                />
-              </Fragment>
-            )
-          )}
-          {Array.from({
-            length:
-              5 -
-              sortByMasteryPriorityDescTopFive(championList, teamList).length,
-          }).map((_, idx) => (
-            <Fragment key={idx}>
-              <ChampionSkeletonCard fullWidth />
-            </Fragment>
-          ))}
-        </div>
+      {/* Completed Steps */}
+      <div>
+        <h2 className="font-semibold text-lg pb-2">Completed Steps</h2>
+        {completed[currentStage]?.length ? (
+          <ul className="list-disc pl-6 space-y-1">
+            {completed[currentStage].map((desc, i) => (
+              <li key={i}>{desc}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="italic text-gray-500">
+            No steps completed yet in this stage.
+          </p>
+        )}
       </div>
 
-      {showModal && (
-        <ChampionModal
-          champion={editingChampion ?? undefined}
-          onClose={handleCloseModal}
-        />
+      {/* Next Steps */}
+      <div>
+        <h2 className="font-semibold text-lg pb-2">Next Steps</h2>
+        {nextSteps[currentStage]?.length ? (
+          <ul className="list-disc pl-6 space-y-1">
+            {nextSteps[currentStage].map((desc, i) => (
+              <li key={i}>{desc}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="italic text-gray-500">
+            All steps completed in this stage!
+          </p>
+        )}
+      </div>
+
+      {/* Remaining Everything Else */}
+      {remainingStages.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowAllRemaining((prev) => !prev)}
+            className="text-blue-600 hover:underline mb-2"
+          >
+            {showAllRemaining
+              ? "Hide Remaining Stages"
+              : "Show All Remaining Stages"}
+          </button>
+
+          {showAllRemaining &&
+            remainingStages.map(([stage, steps]) => (
+              <div key={stage} className="mb-2">
+                <h3 className="font-semibold">{stage}</h3>
+                <ul className="list-disc pl-6 space-y-1">
+                  {steps.map((desc, i) => (
+                    <li key={i}>{desc}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+        </div>
       )}
-    </>
+    </div>
   );
 }
