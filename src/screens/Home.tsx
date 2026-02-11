@@ -36,10 +36,34 @@ export default function Home() {
     <div className="overflow-auto h-[92vh] p-4 space-y-4">
       <h1 className="text-2xl font-semibold pb-2">Account Progression</h1>
 
-      <p className="uppercase border-t border-b py-2">
+      <p className="uppercase border-t pt-2">
         Current Progression Stage:{" "}
         <span className="font-extrabold">{currentStage}</span>
       </p>
+
+      {/* Progression Bar */}
+      <div className="border-b pb-2 flex flex-wrap items-center gap-2">
+        {Object.keys(completed).map((stage, index, arr) => {
+          const isCurrent = stage === currentStage;
+
+          return (
+            <span key={stage} className="flex items-center gap-1">
+              <span
+                className={`font-semibold px-2 py-1 rounded ${
+                  isCurrent
+                    ? "bg-black text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {stage}
+              </span>
+              {index < arr.length - 1 && (
+                <span className="text-gray-400">→</span>
+              )}
+            </span>
+          );
+        })}
+      </div>
 
       {/* Completed Steps */}
       <div>
