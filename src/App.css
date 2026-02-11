@@ -1,0 +1,30 @@
+@keyframes fireRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fire-border {
+  padding: 2px;
+  border-radius: 9999px;
+
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 240deg,
+    #ff1a1a 270deg,
+    #ff0000 300deg,
+    #b30000 330deg,
+    #ff1a1a 360deg
+  );
+
+  animation: fireRotate 3s linear infinite;
+
+  filter: blur(1.4px);
+
+  box-shadow:
+    0 0 8px rgba(255, 0, 0, 0.9),
+    0 0 16px rgba(255, 0, 0, 0.4);
+}

@@ -91,7 +91,11 @@ export default function ChampionCard({
     {
       label: "C.DMG",
       key: "c_dmg",
-      threshold: champion.role?.includes(ChampionRole.NUKER) ? 200 : 0,
+      threshold:
+        champion.role?.includes(ChampionRole.NUKER) ||
+        champion.role?.includes(ChampionRole.MAX_HP_DPS)
+          ? 200
+          : 0,
     },
     { label: "RES", key: "res", threshold: 0 },
     {
@@ -106,7 +110,7 @@ export default function ChampionCard({
   ] as const;
 
   const checkBuildThreshold = (available: number, threshold: number) => {
-    if (available > threshold) {
+    if (available >= threshold) {
       return "text-green-500";
     } else {
       thresholdDifference++;
@@ -169,9 +173,21 @@ export default function ChampionCard({
               {champion.name}
             </p>
           </div>
-          <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
-            {champion.level}
-          </div>
+          {champion.level === 60 && champion.stars === 6 ? (
+            <div className="relative h-6 w-6 flex items-center justify-center">
+              {/* 🔥 Animated Fire Border */}
+              <div className="absolute inset-0 rounded-full fire-border"></div>
+
+              {/* Inner Circle */}
+              <div className="relative h-6 w-6 rounded-full bg-slate-100 text-black flex items-center justify-center text-xs font-semibold z-10">
+                {champion.level}
+              </div>
+            </div>
+          ) : (
+            <div className="h-6 w-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ring-1 ring-slate-500">
+              {champion.level}
+            </div>
+          )}
         </div>
 
         <div className={`relative w-full h-full overflow-hidden`}>
