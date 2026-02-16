@@ -29,13 +29,13 @@ const parseChampionData = (champion: IChampion): IChampion => {
       champion.aura = JSON.parse(champion.parsed_aura) as Aura;
     } catch (e) {
       console.error(`Failed to parse aura for champion ${champion.name}`, e);
-      champion.aura = { effect: "", active_in: "All", effectiveness: 0 };
+      champion.aura = { effect: "", active_in: "All", effectiveness: "" };
     }
   } else {
     champion.aura = champion.aura ?? {
       effect: "",
       active_in: "All",
-      effectiveness: 0,
+      effectiveness: "",
     };
   }
 

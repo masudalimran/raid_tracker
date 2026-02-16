@@ -43,6 +43,7 @@ export default function ChampionCard({
   nsfw = false,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [showAllSkills, setShowAllSkills] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
 
   // Parse teams from localStorage
@@ -289,7 +290,7 @@ export default function ChampionCard({
         <hr className="mb-2"></hr>
 
         <div className="basic-padding flex-1">
-          <table className="w-full">
+          <table className="w-full" hidden={showAllSkills}>
             <tbody>
               <tr>
                 <td>Faction</td>
@@ -353,83 +354,87 @@ export default function ChampionCard({
             </tbody>
           </table>
 
-          <hr className="mb-2"></hr>
+          <hr className="mb-2" hidden={showAllSkills}></hr>
 
-          <div className="h-20 overflow-auto pr-4">
+          <div
+            className={`overflow-auto pr-4 ${showAllSkills ? "h-60" : "h-20"}`}
+          >
             {Object.keys(groupedSkills).length > 0 ? (
-              <table className="w-full">
-                <tbody className="text-sm">
-                  {Object.entries(groupedSkills).map(
-                    ([skillIndex, skillGroup]) =>
-                      skillGroup.map((skill, skillRowIndex) => (
-                        <tr key={`${skillIndex}-${skillRowIndex}`}>
-                          {skillRowIndex === 0 && (
-                            <td
-                              rowSpan={skillGroup.length}
-                              className="align-top font-semibold text-nowrap"
-                            >
-                              Skill {skillIndex}
+              <>
+                <table className="w-full">
+                  <tbody className="text-sm">
+                    {Object.entries(groupedSkills).map(
+                      ([skillIndex, skillGroup]) =>
+                        skillGroup.map((skill, skillRowIndex) => (
+                          <tr key={`${skillIndex}-${skillRowIndex}`}>
+                            {skillRowIndex === 0 && (
+                              <td
+                                rowSpan={skillGroup.length}
+                                className="align-top font-semibold text-nowrap"
+                              >
+                                Skill {skillIndex}
+                              </td>
+                            )}
+
+                            <td className="pb-2 text-right">
+                              <div className="flex justify-end items-center flex-wrap gap-1">
+                                {skill.effects.map((effect, effectIndex) => (
+                                  <div
+                                    key={effectIndex}
+                                    className="flex items-center gap-1 border rounded w-fit overflow-hidden"
+                                    title={effect.name}
+                                  >
+                                    {effect.cool_down !== undefined && (
+                                      <p className="flex justify-between items-center bg-black text-white px-1 w-8">
+                                        {effect.cool_down}
+                                        <LuRefreshCw />
+                                      </p>
+                                    )}
+
+                                    {effect.duration !== undefined && (
+                                      <p className="flex justify-between items-center h-full bg-black text-white px-1 w-8">
+                                        {effect.duration}
+                                        <FaRegHourglass />
+                                      </p>
+                                    )}
+
+                                    {effect.land_chance !== undefined && (
+                                      <p className="flex justify-end gap-1 items-center h-full bg-white text-black px-1 w-16">
+                                        {effect.land_chance}%
+                                        <BsDice6Fill />
+                                      </p>
+                                    )}
+
+                                    {effect.target !== undefined && (
+                                      <p className="flex justify-end items-center w-8">
+                                        <span>
+                                          {effect.target === "All"
+                                            ? "🌐"
+                                            : effect.target === "Single"
+                                              ? "🎯"
+                                              : "🎯🎯"}
+                                        </span>
+                                      </p>
+                                    )}
+
+                                    <img
+                                      src={`/img/${effect.type}s/${effect.name}.png`}
+                                      className={`w-5 h-5 object-contain ${
+                                        effect.type === "buff"
+                                          ? "bg-blue-500"
+                                          : "bg-red-500"
+                                      }`}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
                             </td>
-                          )}
-
-                          <td className="pb-2 text-right">
-                            <div className="flex justify-end items-center flex-wrap gap-1">
-                              {skill.effects.map((effect, effectIndex) => (
-                                <div
-                                  key={effectIndex}
-                                  className="flex items-center gap-1 border rounded w-fit overflow-hidden"
-                                  title={effect.name}
-                                >
-                                  {effect.cool_down !== undefined && (
-                                    <p className="flex justify-between items-center bg-black text-white px-1 w-8">
-                                      {effect.cool_down}
-                                      <LuRefreshCw />
-                                    </p>
-                                  )}
-
-                                  {effect.duration !== undefined && (
-                                    <p className="flex justify-between items-center h-full bg-black text-white px-1 w-8">
-                                      {effect.duration}
-                                      <FaRegHourglass />
-                                    </p>
-                                  )}
-
-                                  {effect.land_chance !== undefined && (
-                                    <p className="flex justify-end gap-1 items-center h-full bg-white text-black px-1 w-16">
-                                      {effect.land_chance}%
-                                      <BsDice6Fill />
-                                    </p>
-                                  )}
-
-                                  {effect.target !== undefined && (
-                                    <p className="flex justify-end items-center w-8">
-                                      <span>
-                                        {effect.target === "All"
-                                          ? "🌐"
-                                          : effect.target === "Single"
-                                            ? "🎯"
-                                            : "🎯🎯"}
-                                      </span>
-                                    </p>
-                                  )}
-
-                                  <img
-                                    src={`/img/${effect.type}s/${effect.name}.png`}
-                                    className={`w-5 h-5 object-contain ${
-                                      effect.type === "buff"
-                                        ? "bg-blue-500"
-                                        : "bg-red-500"
-                                    }`}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )),
-                  )}
-                </tbody>
-              </table>
+                          </tr>
+                        )),
+                    )}
+                  </tbody>
+                </table>
+              </>
             ) : (
               <div className="flex-center h-full">
                 <p>No Skills Data...</p>
@@ -437,11 +442,22 @@ export default function ChampionCard({
             )}
           </div>
 
-          <hr className="my-2"></hr>
+          <div
+            className={`bg-white text-black border text-xs px-1 rounded cursor-pointer shadow-2xl hover:bg-gray-200 transition w-fit ml-auto mt-1 ${Object.keys(groupedSkills).length === 0 ? "invisible" : ""}`}
+            onClick={() => setShowAllSkills(!showAllSkills)}
+          >
+            <p className="text-center basic-padding-xs">
+              Show {showAllSkills ? "Less" : "More"}{" "}
+            </p>
+          </div>
+
+          <hr className="my-2" hidden={showAllSkills}></hr>
 
           {/* Aura */}
-          <p className="font-semibold">Aura</p>
-          <div className="flex flex-wrap gap-2 items-center justify-end w-full">
+          <div
+            className="flex flex-wrap gap-2 items-center justify-end w-full"
+            hidden={showAllSkills}
+          >
             <div
               className="flex items-center gap-1 border rounded p-1 w-full"
               title={champion?.aura?.effect ?? "N/A"}
@@ -453,16 +469,16 @@ export default function ChampionCard({
                 />
               ) : (
                 <p className="h-8 w-8 bg-gray-300 text-xs flex-center rounded">
-                  N/A
+                  X
                 </p>
               )}
               <div className="flex flex-col text-xs">
                 <span className="font-semibold">
-                  {champion?.aura?.effect || "N/A"}
+                  {champion?.aura?.effect || "No Aura"}
                 </span>
                 <span>
                   Active in: {champion?.aura?.active_in ?? "N/A"} |
-                  Effectiveness: {champion?.aura?.effectiveness ?? 0}%
+                  Effectiveness: {champion?.aura?.effectiveness ?? "N/A"}
                 </span>
               </div>
             </div>

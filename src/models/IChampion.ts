@@ -66,5 +66,5 @@ export type EffectTarget = "All" | "Single" | "Random_Multiple";
 export interface Aura {
   effect: string;
   active_in: "All" | "Arena" | "Dungeons" | "Faction Wars" | "Doom Tower";
-  effectiveness: number;
+  effectiveness: string;
 }

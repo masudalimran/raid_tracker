@@ -84,6 +84,11 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const previewChampion: IChampion = {
     ...(champion ?? DefaultChampionObject),
     ...watchedFormData,
+    aura: watchedFormData.aura ? {
+      ...watchedFormData.aura,
+      effect: watchedFormData.aura.effect ?? "",
+      effectiveness: watchedFormData.aura.effectiveness ?? "",
+    } : undefined,
   };
 
   const handleLookUpExisting = () => {

@@ -22,9 +22,9 @@ export const skillSchema = z.object({
 
 // Aura Schema
 export const auraSchema = z.object({
-  effect: z.string().min(1, "Aura effect name required"),
+  effect: z.string().optional(),
   active_in: z.enum(["All", "Arena", "Dungeons", "Faction Wars", "Doom Tower"]),
-  effectiveness: z.number().min(0).max(100),
+  effectiveness: z.string().optional(),
 });
 
 export const championSchema = z.object({

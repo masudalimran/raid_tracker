@@ -19,7 +19,7 @@ const AuraField: FC<AuraFieldProps> = ({ control, register, errors }) => {
   const { field } = useController({
     name: "aura",
     control,
-    defaultValue: { effect: "", active_in: "All", effectiveness: 0 },
+    defaultValue: { effect: "", active_in: "All", effectiveness: "N/A" },
   });
 
   return (
@@ -69,14 +69,12 @@ const AuraField: FC<AuraFieldProps> = ({ control, register, errors }) => {
 
         {/* Effectiveness */}
         <div>
-          <label>Effectiveness (%)</label>
+          <label>Effectiveness</label>
           <input
-            type="number"
-            inputMode="numeric"
-            {...register("aura.effectiveness", { valueAsNumber: true })}
+            {...register("aura.effectiveness")}
             className="input"
             placeholder="0-100"
-            defaultValue={field?.value?.effectiveness || 0}
+            defaultValue={field?.value?.effectiveness || "N/A"}
           />
           {errors.aura?.effectiveness && (
             <p className="text-red-500">{errors.aura.effectiveness?.message}</p>
