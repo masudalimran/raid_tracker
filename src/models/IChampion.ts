@@ -40,4 +40,31 @@ export default interface IChampion {
 
   priority?: number;
   champion_impact?: number;
+  aura?: Aura;
+  parsed_aura?: string;
+  skills?: Skill[];
+  parsed_skills?: string;
+}
+
+export interface Skill {
+  skill_index: number;
+  effects: SkillEffect[];
+}
+
+export interface SkillEffect {
+  name: string;
+  type: "buff" | "debuff";
+  cool_down: number;
+  land_chance: number;
+  duration?: number;
+  count?: number;
+  target: EffectTarget;
+}
+
+export type EffectTarget = "All" | "Single" | "Random_Multiple";
+
+export interface Aura {
+  effect: string;
+  active_in: "All" | "Arena" | "Dungeons" | "Faction Wars" | "Doom Tower";
+  effectiveness: number;
 }

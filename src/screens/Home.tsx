@@ -20,7 +20,6 @@ export default function Home() {
 
   const progressData = useMemo(() => {
     const result = evaluateAccountProgressDetailed(teams);
-    console.log("Progress evaluation:", result);
     return result;
   }, [teams]);
 

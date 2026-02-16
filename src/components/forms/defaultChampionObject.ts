@@ -33,6 +33,8 @@ export const DefaultChampionObject: Partial<IChampion> = {
   is_book_needed: true,
   has_mastery: false,
   is_mastery_needed: true,
+  skills: [],
+  aura: undefined,
 };
 
 export default DefaultChampionObject;

@@ -5,6 +5,28 @@ import { ChampionRole } from "../../models/ChampionRole";
 import { ChampionRarity } from "../../models/ChampionRarity";
 import { ChampionFaction } from "../../models/ChampionFaction";
 
+export const skillEffectSchema = z.object({
+  name: z.string().min(1, "Effect name required"),
+  type: z.enum(["buff", "debuff"]),
+  cool_down: z.number().min(0),
+  land_chance: z.number().min(0).max(100),
+  duration: z.number().optional(),
+  count: z.number().optional(),
+  target: z.enum(["All", "Single", "Random_Multiple"]),
+});
+
+export const skillSchema = z.object({
+  skill_index: z.number().min(1),
+  effects: z.array(skillEffectSchema),
+});
+
+// Aura Schema
+export const auraSchema = z.object({
+  effect: z.string().min(1, "Aura effect name required"),
+  active_in: z.enum(["All", "Arena", "Dungeons", "Faction Wars", "Doom Tower"]),
+  effectiveness: z.number().min(0).max(100),
+});
+
 export const championSchema = z.object({
   name: z.string().min(1, "Name is required"),
   imgUrl: z.string().url().optional().or(z.literal("")),
@@ -60,19 +82,22 @@ export const championSchema = z.object({
 
   level: z.number().int().min(1).max(60),
   affinity: z.enum(
-    Object.values(ChampionAffinity) as [ChampionAffinity, ...ChampionAffinity[]]
+    Object.values(ChampionAffinity) as [
+      ChampionAffinity,
+      ...ChampionAffinity[],
+    ],
   ),
   type: z.enum(
-    Object.values(ChampionType) as [ChampionType, ...ChampionType[]]
+    Object.values(ChampionType) as [ChampionType, ...ChampionType[]],
   ),
   rarity: z.enum(
-    Object.values(ChampionRarity) as [ChampionRarity, ...ChampionRarity[]]
+    Object.values(ChampionRarity) as [ChampionRarity, ...ChampionRarity[]],
   ),
   faction: z.enum(
-    Object.values(ChampionFaction) as [ChampionFaction, ...ChampionFaction[]]
+    Object.values(ChampionFaction) as [ChampionFaction, ...ChampionFaction[]],
   ),
   role: z.array(
-    z.enum(Object.values(ChampionRole) as [ChampionRole, ...ChampionRole[]])
+    z.enum(Object.values(ChampionRole) as [ChampionRole, ...ChampionRole[]]),
   ),
 
   stars: z.number().int().min(1).max(6),
@@ -86,6 +111,9 @@ export const championSchema = z.object({
 
   user_id: z.string().uuid(),
   rsl_account_id: z.string().uuid(),
+
+  skills: z.array(skillSchema),
+  aura: auraSchema.optional(),
 });
 
 export type ChampionFormData = z.infer<typeof championSchema>;

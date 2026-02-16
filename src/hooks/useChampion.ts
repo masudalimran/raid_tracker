@@ -1,17 +1,29 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import type IChampion from "../models/IChampion";
 import type { ChampionFormData } from "../lib/zod/championSchema";
+
+type ChampionApiPayload = Omit<ChampionFormData, "skills" | "aura"> & {
+  parsed_skills: string;
+  parsed_aura: string | null;
+};
 
 export const useChampion = () => {
   const [loading, setLoading] = useState(false);
 
-  // Add champion
   const addChampion = async (data: ChampionFormData) => {
     setLoading(true);
+
+    const { skills, aura, ...rest } = data;
+
+    const payload: ChampionApiPayload = {
+      ...rest,
+      parsed_skills: JSON.stringify(skills ?? []),
+      parsed_aura: aura ? JSON.stringify(aura) : null,
+    };
+
     const { data: inserted, error } = await supabase
       .from("champions")
-      .insert([data])
+      .insert([payload])
       .select()
       .single();
 
@@ -22,22 +34,31 @@ export const useChampion = () => {
     return inserted;
   };
 
-  // Update champion
-  const updateChampion = async (id: string, updates: Partial<IChampion>) => {
+  const updateChampion = async (id: string, data: ChampionFormData) => {
     setLoading(true);
+
+    const { skills, aura, ...rest } = data;
+
+    const payload: ChampionApiPayload = {
+      ...rest,
+      parsed_skills: JSON.stringify(skills ?? []),
+      parsed_aura: aura ? JSON.stringify(aura) : null,
+    };
+
     const { data: updated, error } = await supabase
       .from("champions")
-      .update(updates)
+      .update(payload)
       .eq("id", id)
       .select()
       .single();
 
     setLoading(false);
+
     if (error) throw error;
+
     return updated;
   };
 
-  // Delete champion
   const deleteChampion = async (id: string) => {
     setLoading(true);
     const { data: deletedChampion, error } = await supabase
@@ -46,6 +67,7 @@ export const useChampion = () => {
       .eq("id", id)
       .select()
       .single();
+
     setLoading(false);
 
     if (error) throw error;

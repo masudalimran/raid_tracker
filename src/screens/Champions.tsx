@@ -33,6 +33,9 @@ const initial_filter_info: ChampionFilter = {
   faction: "faction_all",
   rarity: "rarity_all",
   sortOrder: "desc",
+  buff: "",
+  debuff: "",
+  aura: "",
 };
 
 export default function Champions() {
@@ -91,6 +94,7 @@ export default function Champions() {
       }
     } else {
       let filteredChampionList = [...championList];
+
       if (filterInfo.faction !== "faction_all")
         filteredChampionList = [...filteredChampionList].filter(
           (champion) => champion.faction === filterInfo.faction,
@@ -107,6 +111,36 @@ export default function Champions() {
         filteredChampionList = [...filteredChampionList].filter(
           (champion) => champion.rarity === filterInfo.rarity,
         );
+
+      if (filterInfo.buff) {
+        filteredChampionList = filteredChampionList.filter((champion) =>
+          champion.skills?.some((skill) =>
+            skill.effects?.some(
+              (effect) =>
+                effect.type === "buff" && effect.name === filterInfo.buff,
+            ),
+          ),
+        );
+      }
+
+      if (filterInfo.debuff) {
+        filteredChampionList = filteredChampionList.filter((champion) =>
+          champion.skills?.some((skill) =>
+            skill.effects?.some(
+              (effect) =>
+                effect.type === "debuff" && effect.name === filterInfo.debuff,
+            ),
+          ),
+        );
+      }
+
+      if (filterInfo.aura) {
+        filteredChampionList = filteredChampionList.filter(
+          (champion) =>
+            champion.aura?.effect.toLowerCase() ===
+            filterInfo.aura?.toLowerCase(),
+        );
+      }
 
       if (filterInfo.stat === "book_priority") {
         filteredChampionList = [
@@ -171,6 +205,9 @@ export default function Champions() {
     filterInfo.type,
     filterInfo.role,
     filterInfo.rarity,
+    filterInfo.buff,
+    filterInfo.debuff,
+    filterInfo.aura,
     filterInfo.stat,
     filterInfo.sortOrder,
     teams,

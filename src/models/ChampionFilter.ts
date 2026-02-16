@@ -10,4 +10,7 @@ export interface ChampionFilter {
   faction: string;
   rarity: string;
   sortOrder: SortOrder;
+  buff?: string;
+  debuff?: string;
+  aura?: string;
 }

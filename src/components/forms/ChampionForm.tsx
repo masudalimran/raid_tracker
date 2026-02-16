@@ -22,6 +22,8 @@ import colorByAffinity from "../../helpers/colorByAffinity";
 import getFactionLogo from "../../helpers/getFactionLogo";
 import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
 import { CgSearchFound } from "react-icons/cg";
+import SkillsFieldArray from "./inputs/SkillsFieldArray";
+import AuraField from "./inputs/AuraField";
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -33,15 +35,15 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const { addChampion, updateChampion, loading } = useChampion();
 
   const champion_list = JSON.parse(
-    localStorage.getItem("supabase_champion_list") ?? "[]"
+    localStorage.getItem("supabase_champion_list") ?? "[]",
   ) as IChampion[];
 
   const { id: userId } = JSON.parse(
-    localStorage.getItem("supabase_auth") || "{}"
+    localStorage.getItem("supabase_auth") || "{}",
   );
 
   const current_rsl_account = JSON.parse(
-    localStorage.getItem("supabase_rsl_account_list") ?? "[]"
+    localStorage.getItem("supabase_rsl_account_list") ?? "[]",
   ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
 
   if (!current_rsl_account) return;
@@ -88,14 +90,14 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     if (!previewChampion.name) return;
 
     const championExist = champion_list.find((c: IChampion) =>
-      c.name.toLowerCase().includes(previewChampion.name.toLowerCase())
+      c.name.toLowerCase().includes(previewChampion.name.toLowerCase()),
     );
 
     if (!championExist) return;
 
     function omit<T extends object, K extends readonly (keyof T)[]>(
       obj: T,
-      keys: K
+      keys: K,
     ): Omit<T, K[number]> {
       const copy = { ...obj };
       keys.forEach((k) => delete copy[k]);
@@ -122,14 +124,14 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
       await updateChampion(champion.id.toString(), data)
         .then((res) => {
           const supabase_champions = JSON.parse(
-            localStorage.getItem("supabase_champion_list") || "[]"
+            localStorage.getItem("supabase_champion_list") || "[]",
           );
           const updatedChampions = supabase_champions.map((c: IChampion) =>
-            c.id === champion.id ? { ...c, ...res } : c
+            c.id === champion.id ? { ...c, ...res } : c,
           );
           localStorage.setItem(
             "supabase_champion_list",
-            JSON.stringify(updatedChampions)
+            JSON.stringify(updatedChampions),
           );
         })
         .catch((error) => {
@@ -139,12 +141,12 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
       await addChampion(data)
         .then((res) => {
           const supabase_champions = JSON.parse(
-            localStorage.getItem("supabase_champion_list") || "[]"
+            localStorage.getItem("supabase_champion_list") || "[]",
           );
           supabase_champions.push(res);
           localStorage.setItem(
             "supabase_champion_list",
-            JSON.stringify(supabase_champions)
+            JSON.stringify(supabase_champions),
           );
         })
         .catch((error) => {
@@ -315,6 +317,10 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           </div>
 
           {errors.role && <p className="text-red-500">{errors.role.message}</p>}
+
+          <SkillsFieldArray control={control} register={register} />
+
+          <AuraField control={control} register={register} errors={errors} />
 
           <hr className="my-2" />
           <p className="text-xl font-bold">Upgrade Specific</p>
