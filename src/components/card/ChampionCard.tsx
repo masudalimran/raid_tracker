@@ -406,7 +406,7 @@ export default function ChampionCard({
                                     )}
 
                                     {effect.target !== undefined && (
-                                      <p className="flex justify-end items-center w-8">
+                                      <p className="flex justify-end items-center w-12">
                                         <span>
                                           {effect.target === "All"
                                             ? "🌐"
