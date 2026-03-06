@@ -25,6 +25,7 @@ import type { ChampionRole } from "../models/ChampionRole";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
+import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -44,6 +45,7 @@ export default function Champions() {
 
   const [searchText, setSearchText] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
+  const [showSkills, setShowSkills] = useState<boolean>(false);
   const [onFilterMode, setOnFilterMode] = useState<boolean>(false);
 
   const [filterInfo, setFilterInfo] =
@@ -82,7 +84,10 @@ export default function Champions() {
     fetchTeams().then(setTeams);
 
     const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
+    const setShowSkillsStatusFromLocal = () =>
+      setShowSkills(getShowSkillsStatus());
     setNsfwStatusFromLocal();
+    setShowSkillsStatusFromLocal();
   }, []);
 
   const filteredChampions = useMemo(() => {
@@ -338,6 +343,7 @@ export default function Champions() {
                 <ChampionCard
                   champion={champion}
                   nsfw={nsfw}
+                  showSkills={showSkills}
                   onEdit={handleEdit}
                   onDelete={() => handleCloseModal(true)}
                 />

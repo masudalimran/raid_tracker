@@ -5,12 +5,15 @@ import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { getTotalAccountPower } from "../../helpers/getChampionPowerScore";
 import { formatNumberCompact } from "../../helpers/formatNumber";
+import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus";
+import { GiBroadsword, GiZeusSword } from "react-icons/gi";
 
 function AppBar() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
+  const [showSkills, setShowSkills] = useState<boolean>(false);
   const [totalAccountPower, setTotalAccountPower] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
@@ -27,9 +30,19 @@ function AppBar() {
     window.location.reload();
   };
 
+  const handleShowSkills = (showSkills: boolean) => {
+    localStorage.setItem("show_skills", showSkills.toString());
+    window.location.reload();
+  };
+
   useEffect(() => {
     const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
     setNsfwStatusFromLocal();
+
+    const setShowSkillsStatusFromLocal = () =>
+      setShowSkills(getShowSkillsStatus());
+    setShowSkillsStatusFromLocal();
+
     // Async function to fetch and set total account power
     const fetchAndSetPower = async () => {
       const totalPower = await getTotalAccountPower();
@@ -83,6 +96,22 @@ function AppBar() {
             className="cursor-pointer hover:text-gray-500 transition"
             title="Show Image"
             size={36}
+          />
+        )}
+
+        {showSkills ? (
+          <GiBroadsword
+            onClick={() => handleShowSkills(false)}
+            className="cursor-pointer hover:text-gray-500 transition"
+            title="Hide Skills"
+            size={30}
+          />
+        ) : (
+          <GiZeusSword
+            onClick={() => handleShowSkills(true)}
+            className="cursor-pointer hover:text-gray-500 transition"
+            title="Show Skills"
+            size={30}
           />
         )}
         <div className="basic-padding text-right">
