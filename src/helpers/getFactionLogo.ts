@@ -47,6 +47,9 @@ export const getFactionLogo = (faction: ChampionFaction): string => {
     case ChampionFaction.UNDEAD_HORDES:
       return "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQf39QI71Fhv7pk65RY-XhIyUk82ofbYq88Lg&s";
       break;
+    case ChampionFaction.ARGONITES:
+      return "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1aeTUcK6P28krnhAsZyIYzbTyD5iI9pnXlg&s";
+      break;
     default:
       return "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZEEDZjYMQAa3pAnOGCCrn-WQuy-3_MsEzhg&s";
       break;
