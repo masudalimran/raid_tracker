@@ -14,6 +14,7 @@ export const ChampionFaction = {
   DWARVES: "Dwarves",
   SHADOWKINS: "Shadowkins",
   SYLVAN_WATCHERS: "Sylvan Watchers",
+  ARGONITES: "Argonites",
 } as const;
 
 export type ChampionFaction =
