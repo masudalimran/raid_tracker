@@ -35,6 +35,7 @@ function App() {
                 teamKey={area.teamKey}
                 maxChampions={area.maxChampions}
                 isFaction={!!area.isFaction}
+                isHydra={!!area.isHydra}
               />
             }
           />

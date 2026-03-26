@@ -6,7 +6,7 @@ import {
   fetchChampions,
   generateChampions,
 } from "../../helpers/handleChampions";
-import { fetchSingleTeam } from "../../helpers/handleTeams";
+import { fetchSingleTeam, fetchTeams } from "../../helpers/handleTeams";
 import ChampionSkeletonLoader from "../loaders/ChampionSkeletonLoader";
 import ChampionCard from "../card/ChampionCard";
 import TeamModal from "../modals/TeamModal";
@@ -14,11 +14,14 @@ import ChampionModal from "../modals/ChampionModal";
 import { sortBySpeedDesc } from "../../helpers/sortChampions";
 import type { TeamIdentifier } from "../../data/team_priority_weight";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
+import { HYDRA } from "../../models/game_areas/Hydra";
+import toSlug from "../../helpers/toSlug";
 
 interface BaseAreaTeamProps {
   title: string;
   teamKey: TeamIdentifier;
   isFaction: boolean;
+  isHydra?: boolean;
   maxChampions: number;
 }
 
@@ -26,6 +29,7 @@ export default function BaseAreaTeam({
   title,
   teamKey,
   isFaction,
+  isHydra = false,
   maxChampions,
 }: BaseAreaTeamProps) {
   const [loading, setLoading] = useState(true);
@@ -40,6 +44,9 @@ export default function BaseAreaTeam({
 
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamChampionList, setTeamChampionList] = useState<IChampion[]>([]);
+
+  const [champions, setChampions] = useState<IChampion[]>([]);
+  const [teams, setTeams] = useState<ITeam[]>([]);
   const [team, setTeam] = useState<ITeam | undefined>(undefined);
 
   const onModalClose = (should_reload: boolean) => {
@@ -50,14 +57,60 @@ export default function BaseAreaTeam({
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true);
-
       let champions = await fetchChampions();
       champions = await generateChampions();
+      setChampions(champions);
+
+      fetchTeams().then(setTeams);
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
 
       if (isFaction) {
         setChampionList(
           champions.filter((champion) => champion.faction === title),
+        );
+      } else if (isHydra) {
+        const hydraTeamKeys = [
+          toSlug(HYDRA.HYDRA_A),
+          toSlug(HYDRA.HYDRA_B),
+          toSlug(HYDRA.HYDRA_C),
+        ];
+
+        const hydraTeams = teams.filter((team) =>
+          hydraTeamKeys.includes(team.team_name),
+        );
+
+        const currentHydraTeam = hydraTeams.find(
+          (team) => team.team_name === teamKey.toLowerCase(),
+        );
+
+        const otherHydraTeams = hydraTeams.filter(
+          (team) => team.team_name !== teamKey.toLowerCase(),
+        );
+
+        const currentHydraTeamChampionIds =
+          currentHydraTeam?.champion_ids ?? [];
+
+        const blockedChampionIds = otherHydraTeams.flatMap(
+          (team) => team.champion_ids,
+        );
+
+        setChampionList(
+          champions.filter((champion) => {
+            if (!champion?.id) return false;
+            const championIdString = String(champion.id);
+            const usedInOtherHydraTeam =
+              blockedChampionIds.includes(championIdString);
+            const alreadyInCurrentTeam =
+              currentHydraTeamChampionIds.includes(championIdString);
+
+            return !usedInOtherHydraTeam || alreadyInCurrentTeam;
+          }),
         );
       } else {
         setChampionList(champions);
@@ -78,7 +131,7 @@ export default function BaseAreaTeam({
     };
 
     load();
-  }, [teamKey, reloadDetector, isFaction, title]);
+  }, [teamKey, reloadDetector, isFaction, title, isHydra, champions, teams]);
 
   useEffect(() => {
     const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());

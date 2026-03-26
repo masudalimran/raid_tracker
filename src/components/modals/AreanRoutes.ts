@@ -22,6 +22,7 @@ export const AREA_ROUTES = [
 
   ...buildAreaRoutes(HYDRA, {
     maxChampions: 6,
+    isHydra: true,
   }),
 
   ...buildAreaRoutes(ARENA, {

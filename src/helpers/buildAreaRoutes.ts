@@ -7,6 +7,7 @@ export interface AreaRoute {
   teamKey: TeamIdentifier;
   maxChampions: number;
   isFaction?: boolean;
+  isHydra?: boolean;
 }
 
 export function buildAreaRoutes<T extends Record<string, string>>(
@@ -14,7 +15,8 @@ export function buildAreaRoutes<T extends Record<string, string>>(
   options: {
     maxChampions: number;
     isFaction?: boolean;
-  }
+    isHydra?: boolean;
+  },
 ): AreaRoute[] {
   return Object.keys(source).map((key) => ({
     path: toSlug(key),
@@ -22,5 +24,6 @@ export function buildAreaRoutes<T extends Record<string, string>>(
     teamKey: key as TeamIdentifier,
     maxChampions: options.maxChampions,
     isFaction: options.isFaction,
+    isHydra: options.isHydra,
   }));
 }

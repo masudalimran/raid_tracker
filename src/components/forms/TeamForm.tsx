@@ -145,7 +145,7 @@ export default function TeamForm({
             className="input"
             placeholder="E.g. Stage 16, Gold, 1-KEY HARD, MAX"
           />
-          <p className="text-gray-400 text-sm mt-1">
+          <div className="text-gray-400 text-sm mt-1">
             Enter the stage name exactly as it appears in-game. Examples:
             <ul className="list-disc ml-5">
               <li>Dungeons: Stage 16, Stage 20, Stage 25(MAX)</li>
@@ -156,7 +156,7 @@ export default function TeamForm({
               <li>Classic Arena: Silver III, Gold IV, Platinum</li>
               <li>Hydra: 1-KEY BRUTAL, 1-KEY NIGHTMARE</li>
             </ul>
-          </p>
+          </div>
           {errors.clearing_stage && (
             <p className="text-red-500">{errors.clearing_stage.message}</p>
           )}
