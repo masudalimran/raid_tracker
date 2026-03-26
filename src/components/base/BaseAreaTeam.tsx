@@ -16,6 +16,7 @@ import type { TeamIdentifier } from "../../data/team_priority_weight";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { HYDRA } from "../../models/game_areas/Hydra";
 import toSlug from "../../helpers/toSlug";
+import { is } from "zod/locales";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -61,10 +62,12 @@ export default function BaseAreaTeam({
       champions = await generateChampions();
       setChampions(champions);
 
-      fetchTeams().then(setTeams);
+      if (isHydra) {
+        fetchTeams().then(setTeams);
+      }
     };
     load();
-  }, []);
+  }, [isHydra, teamKey]);
 
   useEffect(() => {
     const load = async () => {
