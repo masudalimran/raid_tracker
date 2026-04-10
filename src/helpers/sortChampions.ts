@@ -41,39 +41,52 @@ function statProximity(current: number, target: number): number {
   return Math.min(current / target, 1);
 }
 
-function getStatScore(c: IChampion): number {
-  let score = 0;
-  let count = 0;
+export function getStatScore(c: IChampion): number {
+  const checks: number[] = [];
+  const role = c.role ?? [];
 
-  if (c.role?.includes(ChampionRole.DEBUFFER)) {
-    score += statProximity(c.acc, 200);
-    score += statProximity(c.spd, 180);
-    count += 2;
+  // Universal: speed matters for every champion
+  checks.push(statProximity(c.spd, 180));
+
+  // Accuracy-reliant roles — landing debuffs/CC requires ACC
+  if (
+    role.includes(ChampionRole.DEBUFFER) ||
+    role.includes(ChampionRole.TM_REDUCER) ||
+    role.includes(ChampionRole.CONTROL) ||
+    role.includes(ChampionRole.POISONER) ||
+    role.includes(ChampionRole.HP_BURNER) ||
+    role.includes(ChampionRole.BLOCK_BUFF) ||
+    c.type === ChampionType.SUPPORT
+  ) {
+    checks.push(statProximity(c.acc, 250));
   }
 
-  if (c.role?.includes(ChampionRole.TM_REDUCER)) {
-    score += statProximity(c.acc, 200);
-    score += statProximity(c.spd, 180);
-    count += 2;
+  // Crit-based offense — nukers and boss killers live and die by crit
+  if (
+    role.includes(ChampionRole.NUKER) ||
+    role.includes(ChampionRole.BOSS_KILLER) ||
+    c.type === ChampionType.ATTACK
+  ) {
+    checks.push(statProximity(c.c_rate, 100));
+    checks.push(statProximity(c.c_dmg, 200));
   }
 
-  if (c.role?.includes(ChampionRole.NUKER)) {
-    score += statProximity(c.c_rate, 100);
-    score += statProximity(c.c_dmg, 200);
-    count += 2;
+  // Raw attack for Attack-type champions
+  if (c.type === ChampionType.ATTACK) {
+    checks.push(statProximity(c.atk, 3500));
   }
 
+  // Defense scaling
   if (c.type === ChampionType.DEFENSE) {
-    score += statProximity(c.def, 4000);
-    count += 1;
+    checks.push(statProximity(c.def, 4000));
   }
 
-  if (c.type === ChampionType.HP) {
-    score += statProximity(c.hp, 45000);
-    count += 1;
+  // HP scaling — tanks and HP-damage dealers both care about raw HP
+  if (c.type === ChampionType.HP || role.includes(ChampionRole.MAX_HP_DPS)) {
+    checks.push(statProximity(c.hp, 45000));
   }
 
-  return count === 0 ? 0 : score / count;
+  return checks.length === 0 ? 0 : checks.reduce((a, b) => a + b, 0) / checks.length;
 }
 
 /* ---------------------------------------------

@@ -1,9 +1,9 @@
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
-import { getTeamScore } from "./sortChampions";
+import { getTeamScore, getStatScore } from "./sortChampions";
 import { fetchTeams } from "./handleTeams";
-import { fetchChampions, generateChampions } from "./handleChampions";
+import { TEAM_PRIORITY_WEIGHTS } from "../data/team_priority_weight";
 
 /**
  * -----------------------------
@@ -20,13 +20,13 @@ import { fetchChampions, generateChampions } from "./handleChampions";
 const WEIGHTS = {
   TEAM_USAGE_MULTIPLIER: 1000, // makes team usage DOMINANT
 
-  OPTIMAL_STAT: 25,
+  STAT_QUALITY: 200, // getStatScore returns 0–1; 200 = perfectly built for role
   BOOKED: 200,
   MASTERY: 120,
 
   ROLE: 40,
 
-  BUILT_BASE: 50,
+  BUILT_BASE: 50, // proportional ramp: (level / 60) * BUILT_BASE — no cliff
 
   LEVEL: 2,
   STAR: 10,
@@ -43,48 +43,6 @@ const WEIGHTS = {
   },
 };
 
-/**
- * -----------------------------
- * OPTIMAL STAT TARGETS (Lv 60)
- * -----------------------------
- */
-const OPTIMAL_STATS = {
-  hp: 40000,
-  atk: 3500,
-  def: 3500,
-  spd: 200,
-  c_rate: 100,
-  c_dmg: 200,
-  acc: 250,
-  res: 250,
-};
-
-/**
- * -----------------------------
- * STAT HELPERS
- * -----------------------------
- */
-
-const isStatCloseToOptimal = (
-  value: number,
-  optimal: number,
-  tolerance = 0.85
-): boolean => value >= optimal * tolerance;
-
-const countOptimalStats = (champion: IChampion): number => {
-  let count = 0;
-
-  if (isStatCloseToOptimal(champion.hp, OPTIMAL_STATS.hp)) count++;
-  if (isStatCloseToOptimal(champion.atk, OPTIMAL_STATS.atk)) count++;
-  if (isStatCloseToOptimal(champion.def, OPTIMAL_STATS.def)) count++;
-  if (isStatCloseToOptimal(champion.spd, OPTIMAL_STATS.spd)) count++;
-  if (isStatCloseToOptimal(champion.c_rate, OPTIMAL_STATS.c_rate)) count++;
-  if (isStatCloseToOptimal(champion.c_dmg, OPTIMAL_STATS.c_dmg)) count++;
-  if (isStatCloseToOptimal(champion.acc, OPTIMAL_STATS.acc)) count++;
-  if (isStatCloseToOptimal(champion.res, OPTIMAL_STATS.res)) count++;
-
-  return count;
-};
 
 /**
  * -----------------------------
@@ -105,10 +63,9 @@ export const calculateChampionPower = (
   power += teamScore * WEIGHTS.TEAM_USAGE_MULTIPLIER;
 
   /**
-   * 2️⃣ STAT QUALITY
+   * 2️⃣ STAT QUALITY — role-aware, sourced from sortChampions
    */
-  const optimalStats = countOptimalStats(champion);
-  power += optimalStats * WEIGHTS.OPTIMAL_STAT;
+  power += getStatScore(champion) * WEIGHTS.STAT_QUALITY;
 
   /**
    * 3️⃣ BOOKS & MASTERIES (Books > Mastery)
@@ -127,11 +84,9 @@ export const calculateChampionPower = (
   power += champion.role.length * WEIGHTS.ROLE;
 
   /**
-   * 5️⃣ BUILT STATUS
+   * 5️⃣ BUILT STATUS — smooth ramp from 0 to BUILT_BASE across levels 1–60
    */
-  if (champion.level >= 50) {
-    power += WEIGHTS.BUILT_BASE;
-  }
+  power += (champion.level / 60) * WEIGHTS.BUILT_BASE;
 
   /**
    * 6️⃣ PROGRESSION (Tie-breakers)
@@ -151,6 +106,19 @@ export const calculateChampionPower = (
 
 /**
  * -----------------------------
+ * NORMALIZATION
+ * -----------------------------
+ * Scales raw scores to a 0–1000 range relative to the current roster,
+ * so differences between champions are always perceivable.
+ */
+const normalizeToScale = (raw: number, min: number, max: number): number => {
+  const range = max - min;
+  if (range === 0) return 50;
+  return Math.round(((raw - min) / range) * 10000) / 100; // 2dp precision
+};
+
+/**
+ * -----------------------------
  * SORTING (ASYNC)
  * -----------------------------
  */
@@ -159,21 +127,43 @@ export const sortChampionsByPowerDesc = async (
 ): Promise<IChampion[]> => {
   const teams = await fetchTeams();
 
-  return [...champions]
-    .map((champion) => ({
+  const scored = champions.map((champion) => ({
+    champion,
+    raw: calculateChampionPower(champion, teams),
+  }));
+
+  const raws = scored.map((s) => s.raw);
+  const min = Math.min(...raws);
+  const max = Math.max(...raws);
+
+  return scored
+    .map(({ champion, raw }) => ({
       ...champion,
-      champion_impact: calculateChampionPower(champion, teams),
+      champion_impact: normalizeToScale(raw, min, max),
     }))
     .sort((a, b) => (b.champion_impact ?? 0) - (a.champion_impact ?? 0));
 };
 
-export const getTotalAccountPower = async (): Promise<number> => {
-  await fetchChampions(); // ensures localStorage is up to date
-  const champions = await generateChampions();
+/**
+ * Returns the percentage of weighted content areas covered by teams (0–100).
+ * Each area contributes its TEAM_PRIORITY_WEIGHT when at least one team exists for it.
+ * A score of 100% means every possible content area has a team.
+ */
+export const getAccountCoverage = async (): Promise<number> => {
   const teams = await fetchTeams();
 
-  return champions.reduce((total, champion) => {
-    const power = calculateChampionPower(champion, teams);
-    return total + power;
-  }, 0);
+  const totalPossibleWeight = Object.values(TEAM_PRIORITY_WEIGHTS).reduce(
+    (a, b) => a + b,
+    0
+  );
+
+  if (totalPossibleWeight === 0) return 0;
+
+  const coveredAreas = new Set(teams.map((t) => t.team_name));
+  const coveredWeight = [...coveredAreas].reduce(
+    (total, name) => total + (TEAM_PRIORITY_WEIGHTS[name] ?? 0),
+    0
+  );
+
+  return Math.round((coveredWeight / totalPossibleWeight) * 10000) / 100; // 2dp precision
 };

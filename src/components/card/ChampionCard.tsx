@@ -1,9 +1,6 @@
 import type IChampion from "../../models/IChampion.ts";
 import ChampionStar from "../utility/ChampionStar.tsx";
-import {
-  formatNumber,
-  formatNumberCompact,
-} from "../../helpers/formatNumber.ts";
+import { formatNumber } from "../../helpers/formatNumber.ts";
 import {
   FaCheckCircle,
   FaEdit,
@@ -265,7 +262,7 @@ export default function ChampionCard({
                     Impact
                   </p>
                   <p className="basic-padding-xs">
-                    {formatNumberCompact(Math.round(champion.champion_impact))}
+                    {champion.champion_impact.toFixed(2)}%
                   </p>
                 </div>
               )}

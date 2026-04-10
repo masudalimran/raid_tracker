@@ -35,7 +35,7 @@ export const TEAM_PRIORITY_WEIGHTS: Record<TeamIdentifier, number> = {
   demon_lord: 55, // specific override
 
   // Hydra
-  ...mapWithWeight(HYDRA, 15),
+  ...mapWithWeight(HYDRA, 30),
 
   // Arena
   ...mapWithWeight(ARENA, 35, 35), // classic = 40 override below
@@ -45,7 +45,7 @@ export const TEAM_PRIORITY_WEIGHTS: Record<TeamIdentifier, number> = {
   ...mapWithWeight(ChampionFaction, 20),
 
   // Doom Tower Boss
-  ...mapWithWeight(DOOM_TOWER_BOSS, 30, 5),
+  ...mapWithWeight(DOOM_TOWER_BOSS, 30, 15),
 };
 
 export const TEAM_IDENTIFIERS = Object.keys(

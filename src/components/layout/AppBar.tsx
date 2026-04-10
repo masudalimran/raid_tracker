@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
-import { getTotalAccountPower } from "../../helpers/getChampionPowerScore";
-import { formatNumberCompact } from "../../helpers/formatNumber";
+import { getAccountCoverage } from "../../helpers/getChampionPowerScore";
 import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus";
 import { GiBroadsword, GiZeusSword } from "react-icons/gi";
 
@@ -14,7 +13,7 @@ function AppBar() {
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   const [showSkills, setShowSkills] = useState<boolean>(false);
-  const [totalAccountPower, setTotalAccountPower] = useState<number>(0);
+  const [accountCoverage, setAccountCoverage] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
   const logout = () => {
@@ -43,13 +42,12 @@ function AppBar() {
       setShowSkills(getShowSkillsStatus());
     setShowSkillsStatusFromLocal();
 
-    // Async function to fetch and set total account power
-    const fetchAndSetPower = async () => {
-      const totalPower = await getTotalAccountPower();
-      setTotalAccountPower(totalPower);
+    const fetchAndSetCoverage = async () => {
+      const coverage = await getAccountCoverage();
+      setAccountCoverage(coverage);
     };
 
-    fetchAndSetPower(); // Call it immediately
+    fetchAndSetCoverage();
   }, []);
 
   useEffect(() => {
@@ -74,13 +72,13 @@ function AppBar() {
       <div className="flex justify-end items-center">
         <div
           className="border border-black rounded-r flex items-center gap-0 mr-2"
-          title="Account Power"
+          title="% of weighted content areas covered by teams"
         >
           <p className="basic-padding-xs bg-black text-white uppercase">
-            ACCOUNT POWER
+            CONTENT COVERED
           </p>
           <p className="basic-padding-xs">
-            {formatNumberCompact(totalAccountPower)}
+            {accountCoverage.toFixed(2)}%
           </p>
         </div>
         {nsfw ? (
