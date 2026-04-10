@@ -6,6 +6,7 @@ import { CLAN_BOSS } from "../models/game_areas/ClanBoss";
 import { DOOM_TOWER_BOSS } from "../models/game_areas/DoomTowerBoss";
 import { DUNGEON } from "../models/game_areas/Dungeon";
 import { HYDRA } from "../models/game_areas/Hydra";
+import { POTION_KEEP } from "../models/game_areas/PotionKeep";
 import { fromSlug } from "./fromSlug";
 
 /* ============================================================
@@ -111,6 +112,20 @@ const DOOM_TOWER_HARD = [
 
 const PROGRESS_RULES: ProgressRuleSet[] = [
   {
+    stage: ProgressStage.BEGINNING,
+    rules: [
+      {
+        description: "First dungeon team created",
+        test: (teams) => hasTeam(teams, COMMON_DUNGEONS, () => true),
+      },
+      {
+        description: "Potion Keep teams started",
+        test: (teams) =>
+          hasTeam(teams, Object.values(POTION_KEEP), () => true),
+      },
+    ],
+  },
+  {
     stage: ProgressStage.EARLY_GAME,
     rules: [
       {
@@ -146,6 +161,14 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
             return s.includes("SILVER") || s.includes("GOLD");
           }),
       },
+      {
+        description: "All 3 Hydra heads have a team",
+        test: (teams) => allTeams(teams, HYDRA_HEADS, () => true),
+      },
+      {
+        description: "Chimera team created",
+        test: (teams) => hasTeam(teams, [CLAN_BOSS.CHIMERA], () => true),
+      },
     ],
   },
   {
@@ -178,7 +201,7 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           }),
       },
       {
-        description: "Faction Wars Max",
+        description: "Faction Wars Max (Stage 21)",
         test: (teams) =>
           allTeams(teams, FACTIONS, (t) =>
             t.clearing_stage.toUpperCase().includes("MAX"),
@@ -189,6 +212,48 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
         test: (teams) =>
           hasTeam(teams, [ARENA.CLASSIC_ARENA], (t) =>
             t.clearing_stage.toUpperCase().includes("GOLD"),
+          ),
+      },
+      {
+        description: "Sand Devil ≥ Stage 15",
+        test: (teams) =>
+          hasTeam(teams, [DUNGEON.SAND_DEVIL], (t) =>
+            stageAtLeast(t.clearing_stage, 15),
+          ),
+      },
+      {
+        description: "Shogun ≥ Stage 15",
+        test: (teams) =>
+          hasTeam(teams, [DUNGEON.SHOGUN], (t) =>
+            stageAtLeast(t.clearing_stage, 15),
+          ),
+      },
+      {
+        description: "Iron Twin ≥ Stage 15",
+        test: (teams) =>
+          hasTeam(teams, [DUNGEON.IRON_TWIN], (t) =>
+            stageAtLeast(t.clearing_stage, 15),
+          ),
+      },
+      {
+        description: "All Hydra heads ≥ 3-Key Brutal",
+        test: (teams) =>
+          allTeams(teams, HYDRA_HEADS, (t) => {
+            const s = t.clearing_stage.toUpperCase();
+            return (
+              s.includes("3-KEY BRUTAL") ||
+              s.includes("1-KEY BRUTAL") ||
+              s.includes("NIGHTMARE")
+            );
+          }),
+      },
+      {
+        description: "Tag Arena team created",
+        test: (teams) =>
+          hasTeam(
+            teams,
+            [ARENA.TAG_ARENA_A, ARENA.TAG_ARENA_B, ARENA.TAG_ARENA_C],
+            () => true,
           ),
       },
     ],
@@ -223,10 +288,43 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           ),
       },
       {
-        description: "1-Key Brutal Hydra",
+        description: "1-Key Brutal Hydra (all heads)",
         test: (teams) =>
-          hasTeam(teams, HYDRA_HEADS, (t) =>
+          allTeams(teams, HYDRA_HEADS, (t) =>
             t.clearing_stage.toUpperCase().includes("1-KEY BRUTAL"),
+          ),
+      },
+      {
+        description: "Hard Dungeons ≥ Stage 10",
+        test: (teams) =>
+          allTeams(teams, COMMON_DUNGEONS_HARD, (t) =>
+            stageAtLeast(t.clearing_stage, 10),
+          ),
+      },
+      {
+        description: "Sand Devil ≥ Stage 20",
+        test: (teams) =>
+          hasTeam(teams, [DUNGEON.SAND_DEVIL], (t) =>
+            stageAtLeast(t.clearing_stage, 20),
+          ),
+      },
+      {
+        description: "Chimera ≥ 1-Key Nightmare",
+        test: (teams) =>
+          hasTeam(teams, [CLAN_BOSS.CHIMERA], (t) => {
+            const s = t.clearing_stage.toUpperCase();
+            return (
+              s.includes("1-KEY NIGHTMARE") ||
+              s.includes("1-KEY ULTRA-NIGHTMARE") ||
+              s.includes("3-KEY ULTRA-NIGHTMARE")
+            );
+          }),
+      },
+      {
+        description: "Classic Arena Platinum",
+        test: (teams) =>
+          hasTeam(teams, [ARENA.CLASSIC_ARENA], (t) =>
+            t.clearing_stage.toUpperCase().includes("PLATINUM"),
           ),
       },
     ],
@@ -249,17 +347,40 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           ),
       },
       {
-        description: "Classic Arena Platinum",
+        description: "Classic Arena Diamond",
         test: (teams) =>
           hasTeam(teams, [ARENA.CLASSIC_ARENA], (t) =>
-            t.clearing_stage.toUpperCase().includes("PLATINUM"),
+            t.clearing_stage.toUpperCase().includes("DIAMOND"),
           ),
       },
       {
-        description: "Nightmare Hydra 1-Key",
+        description: "Nightmare Hydra 1-Key (all heads)",
         test: (teams) =>
-          hasTeam(teams, HYDRA_HEADS, (t) =>
+          allTeams(teams, HYDRA_HEADS, (t) =>
             t.clearing_stage.toUpperCase().includes("1-KEY NIGHTMARE"),
+          ),
+      },
+      {
+        description: "Tag Arena Platinum",
+        test: (teams) =>
+          hasTeam(
+            teams,
+            [ARENA.TAG_ARENA_A, ARENA.TAG_ARENA_B, ARENA.TAG_ARENA_C],
+            (t) => t.clearing_stage.toUpperCase().includes("PLATINUM"),
+          ),
+      },
+      {
+        description: "Sand Devil ≥ Stage 25",
+        test: (teams) =>
+          hasTeam(teams, [DUNGEON.SAND_DEVIL], (t) =>
+            stageAtLeast(t.clearing_stage, 25),
+          ),
+      },
+      {
+        description: "Chimera ≥ 1-Key Eternal Nightmare",
+        test: (teams) =>
+          hasTeam(teams, [CLAN_BOSS.CHIMERA], (t) =>
+            t.clearing_stage.toUpperCase().includes("ETERNAL NIGHTMARE"),
           ),
       },
     ],
@@ -293,6 +414,7 @@ export function evaluateAccountProgressDetailed(
   }
 
   let currentStage: ProgressStage = ProgressStage.BEGINNING;
+  let stageFound = false;
 
   for (const ruleSet of PROGRESS_RULES) {
     const stageCompleted: string[] = [];
@@ -307,9 +429,10 @@ export function evaluateAccountProgressDetailed(
     completed[ruleSet.stage] = stageCompleted;
     nextSteps[ruleSet.stage] = stageNext;
 
-    // first incomplete stage becomes current
-    if (stageNext.length > 0 && currentStage === ProgressStage.BEGINNING) {
+    // first stage with any incomplete rule is the current stage
+    if (stageNext.length > 0 && !stageFound) {
       currentStage = ruleSet.stage;
+      stageFound = true;
     }
   }
 
