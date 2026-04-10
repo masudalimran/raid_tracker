@@ -171,7 +171,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           </div>
         </>
       ) : (
-        <div className="max-h-[70vh] overflow-auto px-8 ">
+        <div className="max-h-[70vh] overflow-auto px-2 sm:px-8">
           <hr className="my-2" />
           <p className="text-xl font-bold">Basic Info</p>
           <hr className="my-2" />
@@ -215,7 +215,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             )}
           </div>
 
-          <div className="w-75 h-75 m-auto">
+          <div className="w-full max-w-xs aspect-square m-auto">
             {previewChampion.imgUrl ? (
               <img
                 src={previewChampion.imgUrl}

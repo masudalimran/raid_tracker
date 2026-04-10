@@ -256,7 +256,7 @@ export default function Champions() {
         <div className="flex-between sticky top-0 bg-white z-30">
           <div>
             <h1 className="text-xl border-b">Champions List</h1>
-            <p className="text-sm flex-center gap-2 uppercase">
+            <p className="text-sm flex flex-wrap justify-start items-center gap-2 uppercase">
               <span className="border-r border-gray-300 pr-2">
                 Total {filteredChampions?.length}
               </span>
@@ -334,7 +334,7 @@ export default function Champions() {
         <hr className="my-2" />
 
         {/* Champion grid */}
-        <div className="grid sm:grid-cols-1 md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {filteredChampions?.length === 0 ? (
             <EmptyChampionList />
           ) : (

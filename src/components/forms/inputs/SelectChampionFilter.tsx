@@ -65,7 +65,7 @@ export default function SelectChampionFilter({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg space-y-3 max-h-[70vh] overflow-y-auto">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-72 p-4 bg-white border rounded-lg shadow-lg space-y-3 max-h-[70vh] overflow-y-auto">
           {/* Champion Stat */}
           <select
             className="basic-select w-full"
