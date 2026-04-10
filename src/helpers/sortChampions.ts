@@ -133,14 +133,22 @@ export function sortByMasteryPriorityDesc(
   champions: IChampion[],
   teams: ITeam[]
 ): IChampion[] {
-  return champions
-    .filter((c) => c.is_mastery_needed && !c.has_mastery)
-    .map((c) => ({
-      champion: c,
-      priority: getMasteryPriority(c, teams),
-    }))
+  const scored = champions
+    .filter((c) => c.is_mastery_needed && !c.has_mastery && getTeamScore(c, teams) > 0)
+    .map((c) => ({ champion: c, priority: getMasteryPriority(c, teams) }));
+
+  const priorities = scored.map((s) => s.priority);
+  const min = Math.min(...priorities);
+  const max = Math.max(...priorities);
+  const range = max - min;
+
+  return scored
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion, priority }) => ({ ...champion, priority }));
+    .map(({ champion, priority }) => ({
+      ...champion,
+      priority:
+        range === 0 ? 50 : Math.round(((priority - min) / range) * 10000) / 100,
+    }));
 }
 
 export function sortByMasteryPriorityDescTopFive(
@@ -155,14 +163,22 @@ export function sortByBookPriorityDesc(
   teams: ITeam[],
   rarity: ChampionRarity
 ): IChampion[] {
-  return champions
-    .filter((c) => c.is_book_needed && !c.is_booked && c.rarity === rarity)
-    .map((c) => ({
-      champion: c,
-      priority: getBookPriority(c, teams),
-    }))
+  const scored = champions
+    .filter((c) => c.is_book_needed && !c.is_booked && c.rarity === rarity && getTeamScore(c, teams) > 0)
+    .map((c) => ({ champion: c, priority: getBookPriority(c, teams) }));
+
+  const priorities = scored.map((s) => s.priority);
+  const min = Math.min(...priorities);
+  const max = Math.max(...priorities);
+  const range = max - min;
+
+  return scored
     .sort((a, b) => b.priority - a.priority)
-    .map(({ champion, priority }) => ({ ...champion, priority }));
+    .map(({ champion, priority }) => ({
+      ...champion,
+      priority:
+        range === 0 ? 50 : Math.round(((priority - min) / range) * 10000) / 100,
+    }));
 }
 
 export function sortByBookPriorityDescTopFive(

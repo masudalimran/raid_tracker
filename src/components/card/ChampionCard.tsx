@@ -249,11 +249,11 @@ export default function ChampionCard({
                 >
                   <p className="basic-padding-xs bg-pink-400 text-white">PP</p>
                   <p className="basic-padding-xs">
-                    {Math.round(champion.priority * 100)}
+                    {champion.priority.toFixed(2)}%
                   </p>
                 </div>
               )}
-              {champion.champion_impact && !champion.priority && (
+              {champion.champion_impact && !champion.priority ? (
                 <div
                   className="text-xs border border-red-400 rounded-r flex items-center gap-0"
                   title="Impact on game"
@@ -265,6 +265,8 @@ export default function ChampionCard({
                     {champion.champion_impact.toFixed(2)}%
                   </p>
                 </div>
+              ) : (
+                <></>
               )}
             </div>
             <div className="flex-right ">

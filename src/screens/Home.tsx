@@ -191,20 +191,49 @@ export default function Home() {
             Completed Stages
           </h2>
           <div className="space-y-2">
-            {ALL_STAGES.slice(0, currentStageIndex).map((stage) => (
-              <div
-                key={stage}
-                className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-200"
-              >
-                <FaCheckCircle className="text-green-500 shrink-0" />
-                <span className="text-sm font-medium text-green-800">
-                  {stage}
-                </span>
-                <span className="ml-auto text-xs text-green-600">
-                  {completed[stage]?.length ?? 0} milestones ✓
-                </span>
-              </div>
-            ))}
+            {ALL_STAGES.slice(0, currentStageIndex).map((stage) => {
+              const stageDone = completed[stage] ?? [];
+              const isExpanded = expandedStages.has(stage);
+              const stageColor = STAGE_COLORS[stage];
+
+              return (
+                <div key={stage} className="border rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => toggleStage(stage)}
+                    className="w-full flex justify-between items-center p-3 bg-green-50 hover:bg-green-100 transition text-left"
+                  >
+                    <span className="flex items-center gap-2 font-semibold text-sm text-green-700">
+                      <FaCheckCircle size={13} className="text-green-500 shrink-0" />
+                      {stage}
+                      <span className="text-xs font-normal text-green-500">
+                        ({stageDone.length} milestones ✓)
+                      </span>
+                    </span>
+                    {isExpanded ? (
+                      <FaChevronUp size={12} className="text-gray-400" />
+                    ) : (
+                      <FaChevronDown size={12} className="text-gray-400" />
+                    )}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 border-t">
+                      {stageDone.map((desc) => (
+                        <div
+                          key={desc}
+                          className={`flex items-center gap-2 p-2 rounded border-l-4 bg-green-50
+                            ${STAGE_CARD[stageColor] ?? "border-green-400"}`}
+                        >
+                          <FaCheckCircle className="text-green-500 shrink-0" size={13} />
+                          <span className="text-xs text-green-700">{desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

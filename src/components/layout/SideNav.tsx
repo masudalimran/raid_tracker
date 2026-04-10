@@ -8,6 +8,8 @@ import type { NavItem } from "../modals/NavItem";
 import buildNavItems from "../../helpers/buildNavItems";
 import { SideNavSection } from "./SideNavSection";
 import { DOOM_TOWER_BOSS } from "../../models/game_areas/DoomTowerBoss";
+import type ITeam from "../../models/ITeam";
+import toSlug from "../../helpers/toSlug";
 
 const CoreSideNavItems: NavItem[] = [
   { name: "Home", path: "/", className: "" },
@@ -19,10 +21,34 @@ const DungeonNavItems = buildNavItems(DUNGEON);
 const ClanBossNavItems = buildNavItems(CLAN_BOSS);
 const HydraNavItems = buildNavItems(HYDRA);
 const ArenaNavItems = buildNavItems(ARENA);
-const FactionNavItems = buildNavItems(ChampionFaction);
 const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS);
 
 function SideNav() {
+  const allTeams: ITeam[] = JSON.parse(
+    localStorage.getItem("supabase_team_list") || "[]",
+  );
+  const currentAccount = JSON.parse(
+    localStorage.getItem("supabase_rsl_account_list") ?? "[]",
+  ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
+  const teams: ITeam[] = currentAccount
+    ? allTeams.filter((t) => t.rsl_account_id === currentAccount.id)
+    : allTeams;
+
+  const FactionNavItems: NavItem[] = Object.keys(ChampionFaction).map((key) => {
+    const slug = toSlug(key);
+    const factionName = ChampionFaction[key as keyof typeof ChampionFaction];
+    const isMaxed = teams.some(
+      (t) =>
+        t.team_name === slug &&
+        t.clearing_stage?.toUpperCase().includes("MAX"),
+    );
+    return {
+      name: isMaxed ? `${factionName} (Max)` : factionName,
+      path: `/${slug}`,
+      className: "",
+    };
+  });
+
   return (
     <aside className="bg-orange-100 h-full border-t-2 border-white px-2 overflow-y-auto w-45">
       <ul className="text-sm">
