@@ -44,11 +44,10 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     const factionName = ChampionFaction[key as keyof typeof ChampionFaction];
     const isMaxed = teams.some(
       (t) =>
-        t.team_name === slug &&
-        t.clearing_stage?.toUpperCase().includes("MAX"),
+        t.team_name === slug && t.clearing_stage?.toUpperCase().includes("MAX"),
     );
     return {
-      name: isMaxed ? `${factionName} (Max)` : factionName,
+      name: isMaxed ? `${factionName}  ✅` : factionName,
       path: `/${slug}`,
       className: "",
     };
