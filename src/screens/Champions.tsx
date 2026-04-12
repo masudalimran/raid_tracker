@@ -46,10 +46,13 @@ export default function Champions() {
   const [nsfw, setNsfw] = useState<boolean>(false);
   const [showSkills, setShowSkills] = useState<boolean>(false);
   const [onFilterMode, setOnFilterMode] = useState<boolean>(false);
-  const [filterInfo, setFilterInfo] = useState<ChampionFilter>(initial_filter_info);
+  const [filterInfo, setFilterInfo] =
+    useState<ChampionFilter>(initial_filter_info);
   const [teams, setTeams] = useState<ITeam[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(
+    null,
+  );
 
   const loadChampions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -88,19 +91,25 @@ export default function Champions() {
     if (filterInfo.type !== "type_all")
       list = list.filter((c) => c.type === filterInfo.type);
     if (filterInfo.role !== "role_all")
-      list = list.filter((c) => c.role.includes(filterInfo.role as ChampionRole));
+      list = list.filter((c) =>
+        c.role.includes(filterInfo.role as ChampionRole),
+      );
     if (filterInfo.rarity !== "rarity_all")
       list = list.filter((c) => c.rarity === filterInfo.rarity);
     if (filterInfo.buff)
       list = list.filter((c) =>
         c.skills?.some((s) =>
-          s.effects?.some((e) => e.type === "buff" && e.name === filterInfo.buff),
+          s.effects?.some(
+            (e) => e.type === "buff" && e.name === filterInfo.buff,
+          ),
         ),
       );
     if (filterInfo.debuff)
       list = list.filter((c) =>
         c.skills?.some((s) =>
-          s.effects?.some((e) => e.type === "debuff" && e.name === filterInfo.debuff),
+          s.effects?.some(
+            (e) => e.type === "debuff" && e.name === filterInfo.debuff,
+          ),
         ),
       );
     if (filterInfo.aura)
@@ -126,14 +135,29 @@ export default function Champions() {
       return sortChampions([...list], filterInfo.stat, filterInfo.sortOrder);
     }
   }, [
-    onFilterMode, searchText, championList,
-    filterInfo.faction, filterInfo.type, filterInfo.role, filterInfo.rarity,
-    filterInfo.buff, filterInfo.debuff, filterInfo.aura,
-    filterInfo.stat, filterInfo.sortOrder, teams,
+    onFilterMode,
+    searchText,
+    championList,
+    filterInfo.faction,
+    filterInfo.type,
+    filterInfo.role,
+    filterInfo.rarity,
+    filterInfo.buff,
+    filterInfo.debuff,
+    filterInfo.aura,
+    filterInfo.stat,
+    filterInfo.sortOrder,
+    teams,
   ]);
 
-  const handleAdd = () => { setEditingChampion(null); setShowModal(true); };
-  const handleEdit = (champion: IChampion) => { setEditingChampion(champion); setShowModal(true); };
+  const handleAdd = () => {
+    setEditingChampion(null);
+    setShowModal(true);
+  };
+  const handleEdit = (champion: IChampion) => {
+    setEditingChampion(champion);
+    setShowModal(true);
+  };
   const handleCloseModal = async (should_reload: boolean) => {
     setShowModal(false);
     setEditingChampion(null);
@@ -141,7 +165,10 @@ export default function Champions() {
   };
   const handleFilterMode = (isTrue: boolean) => {
     if (isTrue) setOnFilterMode(true);
-    else { setFilterInfo(initial_filter_info); setOnFilterMode(false); }
+    else {
+      setFilterInfo(initial_filter_info);
+      setOnFilterMode(false);
+    }
   };
 
   if (loading) return <ChampionSkeletonLoader />;
@@ -149,21 +176,39 @@ export default function Champions() {
   const total = filteredChampions?.length ?? 0;
   const inUse = getCurrentlyInUseChampions(filteredChampions ?? []).length;
   const built = getBuiltChampionsCount(filteredChampions ?? []);
-  const untouched = (filteredChampions ?? []).filter((c) => c.spd <= 120).length;
+  const untouched = (filteredChampions ?? []).filter(
+    (c) => c.spd <= 120,
+  ).length;
 
   return (
     <>
       <div className="flex flex-col h-full">
         {/* ── Sticky header ── */}
-        <div className="page-header">
+        <div className="page-header flex-col md:flex-row">
           <div className="min-w-0">
             <h1 className="text-base font-bold text-gray-900">Champions</h1>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {[
-                { label: "Total", value: total, color: "bg-gray-100 text-gray-600" },
-                { label: "In Use", value: inUse, color: "bg-blue-50 text-blue-600" },
-                { label: "Built", value: built, color: "bg-green-50 text-green-600" },
-                { label: "Untouched", value: untouched, color: "bg-gray-50 text-gray-400" },
+                {
+                  label: "Total",
+                  value: total,
+                  color: "bg-gray-100 text-gray-600",
+                },
+                {
+                  label: "In Use",
+                  value: inUse,
+                  color: "bg-blue-50 text-blue-600",
+                },
+                {
+                  label: "Built",
+                  value: built,
+                  color: "bg-green-50 text-green-600",
+                },
+                {
+                  label: "Untouched",
+                  value: untouched,
+                  color: "bg-gray-50 text-gray-400",
+                },
               ].map(({ label, value, color }) => (
                 <span
                   key={label}
