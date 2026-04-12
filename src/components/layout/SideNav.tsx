@@ -44,7 +44,8 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     const factionName = ChampionFaction[key as keyof typeof ChampionFaction];
     const isMaxed = teams.some(
       (t) =>
-        t.team_name === slug && t.clearing_stage?.toUpperCase().includes("MAX"),
+        t.team_name === slug &&
+        t.clearing_stage?.toUpperCase().includes("MAX"),
     );
     return {
       name: isMaxed ? `${factionName}  ✅` : factionName,
@@ -54,7 +55,7 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
   });
 
   const navContent = (
-    <ul className="text-sm">
+    <ul className="text-sm py-2 space-y-0.5">
       <SideNavSection items={CoreSideNavItems} sectionName="Core" defaultOpen />
       <SideNavSection items={PotionKeepNavItems} sectionName="Potion Keeps" />
       <SideNavSection items={DungeonNavItems} sectionName="Dungeons" />
@@ -66,20 +67,24 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     </ul>
   );
 
+  const asideClass =
+    "bg-gray-900 h-full overflow-y-auto shrink-0 border-r border-white/5";
+
   return (
     <>
-      {/* Desktop sidebar — always visible on md+ */}
-      <aside className="hidden md:block bg-orange-100 h-full border-t-2 border-white px-2 overflow-y-auto w-45 shrink-0">
+      {/* Desktop sidebar */}
+      <aside className={`hidden md:block w-45 px-2 ${asideClass}`}>
         {navContent}
       </aside>
 
-      {/* Mobile drawer — slides in from left */}
+      {/* Mobile drawer */}
       <aside
         className={`
-          fixed top-0 left-0 z-40 h-full w-64 bg-orange-100 border-r-2 border-white px-2 overflow-y-auto
+          fixed top-0 left-0 z-40 h-full w-64 px-2
           transform transition-transform duration-300 ease-in-out
           md:hidden
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          ${asideClass}
         `}
         onClick={onClose}
       >

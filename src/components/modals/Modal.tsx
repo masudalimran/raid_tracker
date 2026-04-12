@@ -16,24 +16,25 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 bg-opacity-50">
-      <div className="bg-white rounded shadow-lg p-6 w-full max-w-lg">
-        <div className="flex justify-between items-start gap-2">
-          <h2 className="text-xl font-bold mb-4">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 bg-gray-900 border-b border-white/10">
+          <h2 className="font-bold text-white text-base">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-white transition cursor-pointer p-0.5 rounded"
           >
             <AiFillCloseSquare
-              size={32}
+              size={26}
               title="Close"
-              className="text-red-400 hover:text-red-500 transition cursor-pointer"
+              className="text-gray-400 hover:text-red-400 transition"
             />
           </button>
         </div>
 
-        {/* Modal content */}
-        {children}
+        {/* Content */}
+        <div className="px-5 py-4">{children}</div>
       </div>
     </div>
   );

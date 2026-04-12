@@ -34,51 +34,38 @@ function AppBar({ onMenuToggle }: AppBarProps) {
     window.location.reload();
   };
 
-  const handleShowSkills = (showSkills: boolean) => {
-    localStorage.setItem("show_skills", showSkills.toString());
+  const handleShowSkills = (show: boolean) => {
+    localStorage.setItem("show_skills", show.toString());
     window.location.reload();
   };
 
   useEffect(() => {
-    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
-    setNsfwStatusFromLocal();
-
-    const setShowSkillsStatusFromLocal = () =>
-      setShowSkills(getShowSkillsStatus());
-    setShowSkillsStatusFromLocal();
-
-    const fetchAndSetCoverage = async () => {
-      const coverage = await getAccountCoverage();
-      setAccountCoverage(coverage);
-    };
-
-    fetchAndSetCoverage();
+    setNsfw(getNsfwStatus());
+    setShowSkills(getShowSkillsStatus());
+    getAccountCoverage().then(setAccountCoverage);
   }, []);
 
   useEffect(() => {
-    const getUserFromLocalStorage = () => {
-      if (supabase_auth) {
-        const { email } = JSON.parse(supabase_auth);
-        setUser(email);
-      }
-    };
-    getUserFromLocalStorage();
+    if (supabase_auth) {
+      const { email } = JSON.parse(supabase_auth);
+      setUser(email);
+    }
   }, [supabase_auth]);
 
   return (
-    <div className="flex justify-between items-center bg-orange-100 h-[5vh] min-h-11 px-2">
-      {/* Left: hamburger (mobile) + logo */}
+    <header className="flex justify-between items-center bg-gray-900 h-[5vh] min-h-11 px-3 text-white shrink-0">
+      {/* Left: hamburger + logo */}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onMenuToggle}
-          className="md:hidden p-1 rounded hover:bg-orange-200 transition"
+          className="md:hidden p-1.5 rounded-md hover:bg-white/10 transition"
           aria-label="Toggle navigation"
         >
-          <RxHamburgerMenu size={22} />
+          <RxHamburgerMenu size={20} />
         </button>
         <img
-          className="h-10 object-contain"
+          className="h-8 object-contain"
           src="https://preview.redd.it/whats-the-font-used-in-the-raid-shadow-legends-logo-v0-z3i9f5g5ray81.png?width=640&crop=smart&auto=webp&s=277b1eb73daeb7ae735ddf4b30124200a7d925d5"
           alt="raid-logo"
         />
@@ -86,67 +73,78 @@ function AppBar({ onMenuToggle }: AppBarProps) {
 
       {/* Right: actions */}
       <div className="flex items-center gap-1">
-        {/* Content coverage — hide label on mobile */}
+        {/* Coverage badge */}
         <div
-          className="border border-black rounded-r flex items-center gap-0"
+          className="flex items-center overflow-hidden rounded-md text-xs border border-amber-500/40"
           title="% of weighted content areas covered by teams"
         >
-          <p className="basic-padding-xs bg-black text-white uppercase hidden sm:block text-xs">
-            CONTENT COVERED
-          </p>
-          <p className="basic-padding-xs text-xs">
-            {accountCoverage.toFixed(2)}%
-          </p>
+          <span className="hidden sm:block px-2 py-1 bg-amber-500 text-white font-semibold uppercase tracking-wide text-[10px]">
+            Coverage
+          </span>
+          <span className="px-2 py-1 text-amber-400 font-bold">
+            {accountCoverage.toFixed(1)}%
+          </span>
         </div>
 
+        {/* Image toggle */}
         {nsfw ? (
-          <CiImageOn
+          <button
+            type="button"
             onClick={() => handleNsfw(false)}
-            className="cursor-pointer hover:text-gray-500 transition"
-            title="Hide Image"
-            size={30}
-          />
+            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
+            title="Hide Images"
+          >
+            <CiImageOn size={22} />
+          </button>
         ) : (
-          <CiImageOff
+          <button
+            type="button"
             onClick={() => handleNsfw(true)}
-            className="cursor-pointer hover:text-gray-500 transition"
-            title="Show Image"
-            size={30}
-          />
+            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
+            title="Show Images"
+          >
+            <CiImageOff size={22} />
+          </button>
         )}
 
+        {/* Skills toggle */}
         {showSkills ? (
-          <GiBroadsword
+          <button
+            type="button"
             onClick={() => handleShowSkills(false)}
-            className="cursor-pointer hover:text-gray-500 transition"
+            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
             title="Hide Skills"
-            size={26}
-          />
+          >
+            <GiBroadsword size={20} />
+          </button>
         ) : (
-          <GiZeusSword
+          <button
+            type="button"
             onClick={() => handleShowSkills(true)}
-            className="cursor-pointer hover:text-gray-500 transition"
+            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
             title="Show Skills"
-            size={26}
-          />
+          >
+            <GiZeusSword size={20} />
+          </button>
         )}
 
-        <div className="basic-padding text-right">
+        {/* Account */}
+        <div className="pl-2 pr-1 text-right border-l border-white/10 ml-1">
           {user ? (
             <RslAccountForm />
           ) : (
-            <h2 className="uppercase text-base sm:text-2xl font-bold text-nowrap">
+            <span className="text-sm font-bold uppercase tracking-widest text-amber-400">
               Raid Tracker
-            </h2>
+            </span>
           )}
           {user && (
-            <div className="flex-right text-xs">
-              <p className="hidden sm:block truncate max-w-[16ch]">{user}</p>
-              <p className="hidden sm:block">|</p>
+            <div className="flex items-center justify-end gap-1.5 text-[11px] text-gray-400">
+              <span className="hidden sm:block truncate max-w-[14ch]">{user}</span>
+              <span className="hidden sm:block text-gray-600">·</span>
               <button
                 type="button"
-                className="underline cursor-pointer"
                 onClick={logout}
+                className="text-gray-400 hover:text-amber-400 transition cursor-pointer underline"
               >
                 Logout
               </button>
@@ -154,7 +152,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
           )}
         </div>
       </div>
-    </div>
+    </header>
   );
 }
 

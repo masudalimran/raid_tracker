@@ -7,21 +7,20 @@ export default function MainLayout() {
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
   return (
-    <div>
+    <div className="bg-gray-50">
       <AppBar onMenuToggle={() => setSideNavOpen((prev) => !prev)} />
 
       <div className="flex h-[95vh]">
         <SideNav isOpen={sideNavOpen} onClose={() => setSideNavOpen(false)} />
 
-        {/* Backdrop overlay on mobile when nav is open */}
         {sideNavOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            className="fixed inset-0 z-30 bg-black/50 md:hidden"
             onClick={() => setSideNavOpen(false)}
           />
         )}
 
-        <main className="border-2 border-white h-full w-full p-2 overflow-auto">
+        <main className="flex-1 h-full overflow-auto">
           <Outlet />
         </main>
       </div>

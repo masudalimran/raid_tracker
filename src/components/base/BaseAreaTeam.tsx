@@ -34,17 +34,12 @@ export default function BaseAreaTeam({
 }: BaseAreaTeamProps) {
   const [loading, setLoading] = useState(true);
   const [nsfw, setNsfw] = useState<boolean>(false);
-
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showChampionModal, setShowChampionModal] = useState(false);
-  const [editingChampion, setEditingChampion] = useState<IChampion | null>(
-    null,
-  );
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
   const [reloadDetector, setReloadDetector] = useState<boolean>(false);
-
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamChampionList, setTeamChampionList] = useState<IChampion[]>([]);
-
   const [champions, setChampions] = useState<IChampion[]>([]);
   const [teams, setTeams] = useState<ITeam[]>([]);
   const [team, setTeam] = useState<ITeam | undefined>(undefined);
@@ -57,13 +52,10 @@ export default function BaseAreaTeam({
 
   useEffect(() => {
     const load = async () => {
-      let champions = await fetchChampions();
-      champions = await generateChampions();
-      setChampions(champions);
-
-      if (isHydra) {
-        fetchTeams().then(setTeams);
-      }
+      let champs = await fetchChampions();
+      champs = await generateChampions();
+      setChampions(champs);
+      if (isHydra) fetchTeams().then(setTeams);
     };
     load();
   }, [isHydra, teamKey]);
@@ -73,45 +65,28 @@ export default function BaseAreaTeam({
       setLoading(true);
 
       if (isFaction) {
-        setChampionList(
-          champions.filter((champion) => champion.faction === title),
-        );
+        setChampionList(champions.filter((c) => c.faction === title));
       } else if (isHydra) {
         const hydraTeamKeys = [
           toSlug(HYDRA.HYDRA_A),
           toSlug(HYDRA.HYDRA_B),
           toSlug(HYDRA.HYDRA_C),
         ];
-
-        const hydraTeams = teams.filter((team) =>
-          hydraTeamKeys.includes(team.team_name),
-        );
-
+        const hydraTeams = teams.filter((t) => hydraTeamKeys.includes(t.team_name));
         const currentHydraTeam = hydraTeams.find(
-          (team) => team.team_name === teamKey.toLowerCase(),
+          (t) => t.team_name === teamKey.toLowerCase(),
         );
-
         const otherHydraTeams = hydraTeams.filter(
-          (team) => team.team_name !== teamKey.toLowerCase(),
+          (t) => t.team_name !== teamKey.toLowerCase(),
         );
-
-        const currentHydraTeamChampionIds =
-          currentHydraTeam?.champion_ids ?? [];
-
-        const blockedChampionIds = otherHydraTeams.flatMap(
-          (team) => team.champion_ids,
-        );
+        const currentHydraTeamChampionIds = currentHydraTeam?.champion_ids ?? [];
+        const blockedChampionIds = otherHydraTeams.flatMap((t) => t.champion_ids);
 
         setChampionList(
-          champions.filter((champion) => {
-            if (!champion?.id) return false;
-            const championIdString = String(champion.id);
-            const usedInOtherHydraTeam =
-              blockedChampionIds.includes(championIdString);
-            const alreadyInCurrentTeam =
-              currentHydraTeamChampionIds.includes(championIdString);
-
-            return !usedInOtherHydraTeam || alreadyInCurrentTeam;
+          champions.filter((c) => {
+            if (!c?.id) return false;
+            const id = String(c.id);
+            return !blockedChampionIds.includes(id) || currentHydraTeamChampionIds.includes(id);
           }),
         );
       } else {
@@ -125,74 +100,83 @@ export default function BaseAreaTeam({
         const mapped = fetchedTeam.champion_ids
           .map((id) => champions.find((c) => c.id === id))
           .filter(Boolean) as IChampion[];
-
         setTeamChampionList(sortBySpeedDesc(mapped));
       } else setTeamChampionList([]);
 
       setTimeout(() => setLoading(false), 500);
     };
-
     load();
   }, [teamKey, reloadDetector, isFaction, title, isHydra, champions, teams]);
 
   useEffect(() => {
-    const setNsfwStatusFromLocal = () => setNsfw(getNsfwStatus());
-    setNsfwStatusFromLocal();
+    setNsfw(getNsfwStatus());
   }, []);
 
   if (loading) return <ChampionSkeletonLoader length={maxChampions} />;
 
   return (
     <>
-      <div className="overflow-auto h-[92vh]">
-        <div className="flex-between sticky top-0 bg-white z-30">
-          <h1 className="text-xl">
-            {title}{" "}
+      <div className="flex flex-col h-full">
+        {/* ── Header ── */}
+        <div className="page-header">
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="text-base font-bold text-gray-900 truncate">{title}</h1>
             {team?.clearing_stage && (
-              <span className="ml-1 basic-padding bg-black text-white">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 shrink-0">
                 {team.clearing_stage}
               </span>
             )}
-          </h1>
+          </div>
 
-          {team ? (
-            <FaEdit
-              size={36}
-              className="cursor-pointer"
-              onClick={() => setShowTeamModal(true)}
-            />
-          ) : (
-            <FaPlusSquare
-              size={36}
-              className="cursor-pointer"
-              onClick={() => setShowTeamModal(true)}
-            />
-          )}
+          <button
+            type="button"
+            onClick={() => setShowTeamModal(true)}
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0
+              ${team
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                : "btn-primary"
+              }`}
+          >
+            {team ? (
+              <><FaEdit size={13} /> Edit Team</>
+            ) : (
+              <><FaPlusSquare size={13} /> Add Team</>
+            )}
+          </button>
         </div>
 
-        <hr className="my-2" />
-
+        {/* ── Notes ── */}
         {team?.notes && (
-          <div>
-            <p className="text-red-400">{team.notes}</p>
-            <hr className="my-2" />
+          <div className="mx-4 mt-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            {team.notes}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {teamChampionList.map((champion) => (
-            <Fragment key={champion.id}>
-              <ChampionCard
-                champion={champion}
-                nsfw={nsfw}
-                onEdit={(c) => {
-                  setEditingChampion(c);
-                  setShowChampionModal(true);
-                }}
-                onDelete={() => setShowChampionModal(false)}
-              />
-            </Fragment>
-          ))}
+        {/* ── Grid ── */}
+        <div className="flex-1 overflow-auto p-4">
+          {teamChampionList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <p className="text-3xl mb-2">⚔️</p>
+              <p className="text-gray-500 text-sm font-medium">No champions in this team yet.</p>
+              <p className="text-gray-400 text-xs mt-1">Add a team to get started.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {teamChampionList.map((champion) => (
+                <Fragment key={champion.id}>
+                  <ChampionCard
+                    champion={champion}
+                    nsfw={nsfw}
+                    onEdit={(c) => {
+                      setEditingChampion(c);
+                      setShowChampionModal(true);
+                    }}
+                    onDelete={() => setShowChampionModal(false)}
+                  />
+                </Fragment>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

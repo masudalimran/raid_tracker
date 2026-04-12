@@ -14,7 +14,6 @@ export function SideNavSection({
   defaultOpen = false,
 }: SideNavSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-
   const isCollapsible = Boolean(sectionName);
 
   return (
@@ -23,33 +22,28 @@ export function SideNavSection({
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className="cursor-pointer w-full text-left font-semibold py-2 px-1 flex justify-between items-center hover:bg-orange-200"
+          className="w-full text-left flex justify-between items-center
+                     px-2 py-2 rounded-md transition cursor-pointer
+                     text-[10px] font-semibold uppercase tracking-wider
+                     text-gray-500 hover:text-amber-400 hover:bg-white/5"
         >
           <span>{sectionName}</span>
-          <span className="text-xs">{isOpen ? "▲" : "▼"}</span>
+          <span className="text-[9px] opacity-60">{isOpen ? "▲" : "▼"}</span>
         </button>
       )}
 
       {(isOpen || !isCollapsible) && (
-        <ul className="pl-2">
+        <ul className="pl-1 pb-1">
           {items.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `
-                block
-                ${item.className}
-                cursor-pointer
-                border-b-2
-                w-full
-                text-nowrap
-                ${
-                  isActive
-                    ? "border-black font-semibold"
-                    : "border-orange-100 hover:border-black"
-                }
-              `
+                `block text-sm py-1.5 px-2 rounded-md transition cursor-pointer text-nowrap
+                 ${isActive
+                   ? "text-amber-400 font-semibold bg-white/10 border-l-2 border-amber-400"
+                   : "text-gray-400 hover:text-amber-300 hover:bg-white/5 border-l-2 border-transparent"
+                 }`
               }
             >
               <li>{item.name}</li>
