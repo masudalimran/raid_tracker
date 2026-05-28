@@ -2,6 +2,8 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
+import { MdChecklist, MdClose } from "react-icons/md";
+import { supabase } from "../lib/supabaseClient";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
@@ -52,9 +54,43 @@ export default function Champions() {
     useState<ChampionFilter>(initial_filter_info);
   const [teams, setTeams] = useState<ITeam[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingChampion, setEditingChampion] = useState<IChampion | null>(
-    null,
-  );
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+
+  // Bulk edit
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  const toggleSelect = (id: string | number) => {
+    const sid = String(id);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(sid)) next.delete(sid);
+      else next.add(sid);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const allIds = (filteredChampions ?? []).map((c) => String(c.id));
+    const allSelected = allIds.every((id) => selected.has(id));
+    setSelected(allSelected ? new Set() : new Set(allIds));
+  };
+
+  const exitBulkMode = () => { setBulkMode(false); setSelected(new Set()); };
+
+  const batchUpdate = async (fields: Record<string, boolean>) => {
+    if (selected.size === 0 || bulkUpdating) return;
+    setBulkUpdating(true);
+    const ids = Array.from(selected);
+    const { error } = await supabase.from("champions").update(fields).in("id", ids);
+    if (!error) {
+      localStorage.removeItem("supabase_champion_list");
+      await loadChampions();
+      setSelected(new Set());
+    }
+    setBulkUpdating(false);
+  };
 
   const loadChampions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -282,7 +318,39 @@ export default function Champions() {
                 >
                   <MdFilterAlt size={22} />
                 </button>
+                <button
+                  type="button"
+                  title="Bulk edit"
+                  onClick={() => setBulkMode(true)}
+                  className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600 transition"
+                >
+                  <MdChecklist size={22} />
+                </button>
               </>
+            )}
+            {bulkMode && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-violet-600">
+                  {selected.size} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="text-xs px-2.5 py-1 rounded-lg border border-violet-300 text-violet-600 hover:bg-violet-50 transition cursor-pointer"
+                >
+                  {(filteredChampions ?? []).every((c) => selected.has(String(c.id)))
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+                <button
+                  type="button"
+                  onClick={exitBulkMode}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+                  title="Exit bulk edit"
+                >
+                  <MdClose size={20} />
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -293,17 +361,45 @@ export default function Champions() {
             {filteredChampions?.length === 0 ? (
               <EmptyChampionList />
             ) : (
-              filteredChampions?.map((champion) => (
-                <Fragment key={champion.id}>
-                  <ChampionCard
-                    champion={champion}
-                    nsfw={nsfw}
-                    showSkills={showSkills}
-                    onEdit={handleEdit}
-                    onDelete={() => handleCloseModal(true)}
-                  />
-                </Fragment>
-              ))
+              filteredChampions?.map((champion) => {
+                const sid = String(champion.id);
+                const isSelected = selected.has(sid);
+                return (
+                  <Fragment key={champion.id}>
+                    <div
+                      className={`relative ${bulkMode ? "cursor-pointer select-none" : ""}`}
+                      onClick={bulkMode && champion.id != null ? () => toggleSelect(champion.id!) : undefined}
+                    >
+                      {/* Selection ring + check */}
+                      {bulkMode && (
+                        <>
+                          <div
+                            className={`absolute inset-0 rounded-2xl z-10 pointer-events-none border-4 transition-all
+                              ${isSelected ? "border-violet-500 bg-violet-500/5" : "border-gray-200"}`}
+                          />
+                          <div
+                            className={`absolute top-2.5 left-2.5 z-20 w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                              ${isSelected ? "bg-violet-500 border-violet-500" : "bg-white/90 border-gray-400"}`}
+                          >
+                            {isSelected && (
+                              <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      <ChampionCard
+                        champion={champion}
+                        nsfw={nsfw}
+                        showSkills={showSkills}
+                        onEdit={bulkMode ? undefined : handleEdit}
+                        onDelete={bulkMode ? undefined : () => handleCloseModal(true)}
+                      />
+                    </div>
+                  </Fragment>
+                );
+              })
             )}
           </div>
         </div>
@@ -314,6 +410,44 @@ export default function Champions() {
           champion={editingChampion ?? undefined}
           onClose={handleCloseModal}
         />
+      )}
+
+      {/* ── Bulk edit action bar ── */}
+      {bulkMode && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 flex-wrap justify-center
+          bg-gray-900 text-white rounded-2xl shadow-2xl px-4 py-3 border border-white/10 max-w-[95vw]">
+          <span className="text-xs font-semibold text-gray-400 shrink-0">
+            {selected.size} selected
+          </span>
+          <div className="w-px h-4 bg-white/20 shrink-0" />
+          {(
+            [
+              { label: "+ Needs Book",    fields: { is_book_needed: true } },
+              { label: "+ Needs Mastery", fields: { is_mastery_needed: true } },
+              { label: "✓ Booked",        fields: { is_booked: true } },
+              { label: "✓ Mastered",      fields: { has_mastery: true } },
+            ] as { label: string; fields: Record<string, boolean> }[]
+          ).map(({ label, fields }) => (
+            <button
+              key={label}
+              type="button"
+              disabled={selected.size === 0 || bulkUpdating}
+              onClick={() => batchUpdate(fields)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20
+                disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer whitespace-nowrap"
+            >
+              {bulkUpdating ? "…" : label}
+            </button>
+          ))}
+          <div className="w-px h-4 bg-white/20 shrink-0" />
+          <button
+            type="button"
+            onClick={exitBulkMode}
+            className="text-xs px-3 py-1.5 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+          >
+            Exit
+          </button>
+        </div>
       )}
     </>
   );

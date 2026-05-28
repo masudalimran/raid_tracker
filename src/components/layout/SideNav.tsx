@@ -19,6 +19,7 @@ interface SideNavProps {
 const CoreSideNavItems: NavItem[] = [
   { name: "Home", path: "/", className: "" },
   { name: "Champion List", path: "/champions", className: "" },
+  { name: "Priority Queue", path: "/priority-queue", className: "" },
   { name: "Analytics", path: "/analytics", className: "" },
   { name: "Shard Log", path: "/shard-log", className: "" },
 ];

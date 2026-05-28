@@ -19,23 +19,48 @@ const RARITY_ORDER = [
   ChampionRarity.COMMON,
 ];
 
+// Tailwind classes for bar chart
 const RARITY_COLORS: Record<string, string> = {
-  [ChampionRarity.MYTHICAL]: "bg-red-500",
+  [ChampionRarity.MYTHICAL]:  "bg-red-500",
   [ChampionRarity.LEGENDARY]: "bg-amber-500",
-  [ChampionRarity.EPIC]: "bg-purple-500",
-  [ChampionRarity.RARE]: "bg-blue-500",
-  [ChampionRarity.UNCOMMON]: "bg-green-500",
-  [ChampionRarity.COMMON]: "bg-gray-400",
+  [ChampionRarity.EPIC]:      "bg-purple-500",
+  [ChampionRarity.RARE]:      "bg-blue-500",
+  [ChampionRarity.UNCOMMON]:  "bg-green-500",
+  [ChampionRarity.COMMON]:    "bg-gray-400",
 };
 
 const RARITY_TEXT: Record<string, string> = {
-  [ChampionRarity.MYTHICAL]: "text-red-600",
+  [ChampionRarity.MYTHICAL]:  "text-red-600",
   [ChampionRarity.LEGENDARY]: "text-amber-600",
-  [ChampionRarity.EPIC]: "text-purple-600",
-  [ChampionRarity.RARE]: "text-blue-600",
-  [ChampionRarity.UNCOMMON]: "text-green-600",
-  [ChampionRarity.COMMON]: "text-gray-500",
+  [ChampionRarity.EPIC]:      "text-purple-600",
+  [ChampionRarity.RARE]:      "text-blue-600",
+  [ChampionRarity.UNCOMMON]:  "text-green-600",
+  [ChampionRarity.COMMON]:    "text-gray-500",
 };
+
+// Hex colors for SVG (Tailwind doesn't work inside SVG attributes)
+const RARITY_HEX: Record<string, string> = {
+  [ChampionRarity.MYTHICAL]:  "#ef4444",
+  [ChampionRarity.LEGENDARY]: "#f97316",
+  [ChampionRarity.EPIC]:      "#a855f7",
+  [ChampionRarity.RARE]:      "#3b82f6",
+  [ChampionRarity.UNCOMMON]:  "#22c55e",
+  [ChampionRarity.COMMON]:    "#9ca3af",
+};
+
+const BUILD_STATUS_HEX: Record<string, string> = {
+  "Built ✓":           "#22c55e",
+  "Needs Improvement": "#fbbf24",
+  "Not Built":         "#f87171",
+  "Untouched":         "#d1d5db",
+};
+
+// Cycling palette for role distribution
+const ROLE_PIE_PALETTE = [
+  "#8b5cf6","#06b6d4","#f59e0b","#10b981",
+  "#f43f5e","#3b82f6","#84cc16","#ec4899",
+  "#14b8a6","#f97316","#6366f1","#a3e635",
+];
 
 const ALL_ROLES = Object.values(ChampionRole).filter(
   (r) =>
@@ -100,10 +125,82 @@ function BarRow({
   );
 }
 
+// ── SVG Donut chart ───────────────────────────────────────────────────────────
+
+interface PieSegment { label: string; count: number; color: string }
+
+const DONUT_R = 52;
+const DONUT_CX = 70;
+const DONUT_CY = 70;
+const DONUT_C = 2 * Math.PI * DONUT_R;
+
+function DonutChart({ segments }: { segments: PieSegment[] }) {
+  const total = segments.reduce((s, seg) => s + seg.count, 0);
+  let cumulative = 0;
+  const active = segments.filter((s) => s.count > 0);
+
+  return (
+    <svg viewBox="0 0 140 140" className="w-36 h-36 shrink-0">
+      {active.length === 0 ? (
+        <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R} fill="none" stroke="#f3f4f6" strokeWidth="18" />
+      ) : (
+        active.map((seg, i) => {
+          const len = (seg.count / total) * DONUT_C;
+          const offset = -cumulative;
+          cumulative += len;
+          return (
+            <circle
+              key={i}
+              cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth="18"
+              strokeDasharray={`${len} ${DONUT_C - len}`}
+              strokeDashoffset={offset}
+              transform={`rotate(-90 ${DONUT_CX} ${DONUT_CY})`}
+            />
+          );
+        })
+      )}
+      <text x={DONUT_CX} y={DONUT_CY - 5} textAnchor="middle" fontSize="22" fontWeight="bold" fill="#111827">
+        {total}
+      </text>
+      <text x={DONUT_CX} y={DONUT_CY + 13} textAnchor="middle" fontSize="10" fill="#9ca3af">
+        total
+      </text>
+    </svg>
+  );
+}
+
+function PieChartBlock({ segments }: { segments: PieSegment[] }) {
+  const total = segments.reduce((s, seg) => s + seg.count, 0);
+  return (
+    <div className="bg-white border rounded-xl p-4 flex items-center gap-5 flex-wrap">
+      <DonutChart segments={segments} />
+      <div className="flex-1 min-w-0 space-y-2">
+        {segments.filter((s) => s.count > 0).map((seg) => {
+          const pct = total > 0 ? Math.round((seg.count / total) * 100) : 0;
+          return (
+            <div key={seg.label} className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+              <span className="text-xs text-gray-600 flex-1 truncate">{seg.label}</span>
+              <span className="text-xs font-semibold text-gray-800">{seg.count}</span>
+              <span className="text-[10px] text-gray-400 w-8 text-right">({pct}%)</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [champions, setChampions] = useState<IChampion[]>([]);
   const [teams, setTeams] = useState<ITeam[]>([]);
+  const [showPie, setShowPie] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -193,7 +290,25 @@ export default function Analytics() {
 
   return (
     <div className="overflow-scroll h-[92vh] p-4 space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-xl font-bold">Roster Analytics</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-xl font-bold">Roster Analytics</h1>
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setShowPie(false)}
+            className={`px-3 py-1 rounded text-xs font-semibold transition ${!showPie ? "bg-white shadow text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
+          >
+            Bar
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPie(true)}
+            className={`px-3 py-1 rounded text-xs font-semibold transition ${showPie ? "bg-white shadow text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
+          >
+            Pie
+          </button>
+        </div>
+      </div>
 
       {/* ── Overview ── */}
       <section className="space-y-2">
@@ -228,43 +343,27 @@ export default function Analytics() {
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
           Build Status
         </h2>
-        <div className="bg-white border rounded-xl p-4 space-y-3">
-          {[
-            {
-              label: "Built ✓",
-              count: stats.built,
-              colorClass: "bg-green-500",
-              textClass: "text-green-600",
-            },
-            {
-              label: "Needs Improvement",
-              count: stats.improving,
-              colorClass: "bg-amber-400",
-              textClass: "text-amber-600",
-            },
-            {
-              label: "Not Built",
-              count: stats.notBuilt,
-              colorClass: "bg-red-400",
-              textClass: "text-red-500",
-            },
-            {
-              label: "Untouched",
-              count: stats.untouched,
-              colorClass: "bg-gray-300",
-              textClass: "text-gray-400",
-            },
-          ].map(({ label, count, colorClass, textClass }) => (
-            <BarRow
-              key={label}
-              label={label}
-              count={count}
-              max={stats.total}
-              colorClass={colorClass}
-              textClass={textClass}
-            />
-          ))}
-        </div>
+        {showPie ? (
+          <PieChartBlock
+            segments={[
+              { label: "Built ✓",           count: stats.built,       color: BUILD_STATUS_HEX["Built ✓"] },
+              { label: "Needs Improvement",  count: stats.improving,   color: BUILD_STATUS_HEX["Needs Improvement"] },
+              { label: "Not Built",          count: stats.notBuilt,    color: BUILD_STATUS_HEX["Not Built"] },
+              { label: "Untouched",          count: stats.untouched,   color: BUILD_STATUS_HEX["Untouched"] },
+            ]}
+          />
+        ) : (
+          <div className="bg-white border rounded-xl p-4 space-y-3">
+            {[
+              { label: "Built ✓",           count: stats.built,     colorClass: "bg-green-500", textClass: "text-green-600" },
+              { label: "Needs Improvement",  count: stats.improving, colorClass: "bg-amber-400", textClass: "text-amber-600" },
+              { label: "Not Built",          count: stats.notBuilt,  colorClass: "bg-red-400",   textClass: "text-red-500" },
+              { label: "Untouched",          count: stats.untouched, colorClass: "bg-gray-300",  textClass: "text-gray-400" },
+            ].map(({ label, count, colorClass, textClass }) => (
+              <BarRow key={label} label={label} count={count} max={stats.total} colorClass={colorClass} textClass={textClass} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── By Rarity ── */}
@@ -272,18 +371,28 @@ export default function Analytics() {
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
           By Rarity
         </h2>
-        <div className="bg-white border rounded-xl p-4 space-y-3">
-          {RARITY_ORDER.map((rarity) => (
-            <BarRow
-              key={rarity}
-              label={rarity}
-              count={stats.byRarity[rarity] ?? 0}
-              max={stats.total}
-              colorClass={RARITY_COLORS[rarity]}
-              textClass={RARITY_TEXT[rarity]}
-            />
-          ))}
-        </div>
+        {showPie ? (
+          <PieChartBlock
+            segments={RARITY_ORDER.map((rarity) => ({
+              label: rarity,
+              count: stats.byRarity[rarity] ?? 0,
+              color: RARITY_HEX[rarity],
+            }))}
+          />
+        ) : (
+          <div className="bg-white border rounded-xl p-4 space-y-3">
+            {RARITY_ORDER.map((rarity) => (
+              <BarRow
+                key={rarity}
+                label={rarity}
+                count={stats.byRarity[rarity] ?? 0}
+                max={stats.total}
+                colorClass={RARITY_COLORS[rarity]}
+                textClass={RARITY_TEXT[rarity]}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── Role distribution ── */}
@@ -292,18 +401,21 @@ export default function Analytics() {
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
             Role Distribution
           </h2>
-          <div className="bg-white border rounded-xl p-4 space-y-3">
-            {stats.topRoles.map(([role, count]) => (
-              <BarRow
-                key={role}
-                label={role}
-                count={count}
-                max={stats.total}
-                colorClass="bg-violet-400"
-                textClass="text-violet-700"
-              />
-            ))}
-          </div>
+          {showPie ? (
+            <PieChartBlock
+              segments={stats.topRoles.map(([role, count], i) => ({
+                label: role,
+                count,
+                color: ROLE_PIE_PALETTE[i % ROLE_PIE_PALETTE.length],
+              }))}
+            />
+          ) : (
+            <div className="bg-white border rounded-xl p-4 space-y-3">
+              {stats.topRoles.map(([role, count]) => (
+                <BarRow key={role} label={role} count={count} max={stats.total} colorClass="bg-violet-400" textClass="text-violet-700" />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
