@@ -2,15 +2,20 @@ import { supabase } from "../lib/supabaseClient";
 import { ChampionRarity } from "../models/ChampionRarity";
 import type { Aura } from "../models/IChampion";
 import type IChampion from "../models/IChampion";
+import type { IGear } from "../models/IGear";
 import { checkIfChampionIsBuilt } from "./checkIfChampionIsBuilt";
 import { sortChampionsByPowerDesc } from "./getChampionPowerScore";
 import { sortByLevelDesc } from "./sortChampions";
 
-/**
- * Utility to parse the stored `parsed_skills` string into `skills` array
- * and `parsed_aura` string into `aura` object
- */
-const parseChampionData = (champion: IChampion): IChampion => {
+function loadGearStore(): Record<string, IGear[]> {
+  try {
+    return JSON.parse(localStorage.getItem("rtk_gear_data") ?? "{}") as Record<string, IGear[]>;
+  } catch {
+    return {};
+  }
+}
+
+const parseChampionData = (champion: IChampion, gearStore: Record<string, IGear[]>): IChampion => {
   // Parse skills
   if (champion.parsed_skills && typeof champion.parsed_skills === "string") {
     try {
@@ -39,6 +44,11 @@ const parseChampionData = (champion: IChampion): IChampion => {
     };
   }
 
+  // Attach gear from RTK localStorage store
+  if (!champion.gear) {
+    champion.gear = gearStore[champion.name?.toLowerCase() ?? ""] ?? [];
+  }
+
   return champion;
 };
 
@@ -59,8 +69,8 @@ export const fetchChampions = async (): Promise<IChampion[]> => {
     }
   }
 
-  // Parse skills and aura for all champions
-  return championList.map(parseChampionData);
+  const gearStore = loadGearStore();
+  return championList.map((c) => parseChampionData(c, gearStore));
 };
 
 export const generateChampions = async (): Promise<IChampion[]> => {
@@ -74,9 +84,10 @@ export const generateChampions = async (): Promise<IChampion[]> => {
 
   if (!current_rsl_account) return [];
 
+  const gearStore = loadGearStore();
   supabase_champion_list = [...supabase_champion_list]
     .filter((champion) => champion.rsl_account_id === current_rsl_account.id)
-    .map(parseChampionData); // parse skills and aura here as well
+    .map((c) => parseChampionData(c, gearStore));
 
   const mythical_champions = supabase_champion_list.filter(
     (champion) => champion.rarity === ChampionRarity.MYTHICAL,

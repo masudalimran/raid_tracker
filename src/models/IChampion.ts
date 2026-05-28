@@ -3,6 +3,7 @@ import type { ChampionAffinity } from "./ChampionAffinity.ts";
 import type { ChampionType } from "./ChampionType.ts";
 import type { ChampionRarity } from "./ChampionRarity.ts";
 import type { ChampionFaction } from "./ChampionFaction.ts";
+import type { IGear } from "./IGear.ts";
 
 export default interface IChampion {
   id?: number | string;
@@ -44,6 +45,7 @@ export default interface IChampion {
   parsed_aura?: string;
   skills?: Skill[];
   parsed_skills?: string;
+  gear?: IGear[];
 }
 
 export interface Skill {

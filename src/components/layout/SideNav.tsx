@@ -19,6 +19,9 @@ interface SideNavProps {
 const CoreSideNavItems: NavItem[] = [
   { name: "Home", path: "/", className: "" },
   { name: "Champion List", path: "/champions", className: "" },
+  { name: "Import JSON", path: "/import-json", className: "" },
+  { name: "RTK Sync", path: "/rtk-sync", className: "" },
+  { name: "Shard Log", path: "/shard-log", className: "" },
 ];
 
 const PotionKeepNavItems = buildNavItems(POTION_KEEP);

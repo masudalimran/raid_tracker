@@ -1,6 +1,7 @@
 import type IChampion from "../../models/IChampion.ts";
 import ChampionStar from "../utility/ChampionStar.tsx";
 import { formatNumber } from "../../helpers/formatNumber.ts";
+import { getSetInfo } from "../../helpers/gearSetMap.ts";
 import {
   FaCheckCircle,
   FaEdit,
@@ -472,6 +473,24 @@ export default function ChampionCard({
             </div>
           </div>
         </div>
+
+        {/* ── GEAR SETS ── */}
+        {champion.gear && champion.gear.length > 0 && (
+          <div className="flex flex-wrap gap-1 px-3 pb-2" hidden={showAllSkills}>
+            {champion.gear.map((g) => {
+              const setInfo = getSetInfo(g.setKindId);
+              return (
+                <span
+                  key={g.artifactId}
+                  title={`${g.slot} — ${setInfo.name} +${g.level}`}
+                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${setInfo.color} ${setInfo.textColor}`}
+                >
+                  {setInfo.name}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         {/* ── EDIT / DELETE ── */}
         {onEdit && onDelete && (
