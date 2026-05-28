@@ -24,6 +24,7 @@ export interface IShardPull {
   pulledAt: string; // ISO date string
   isFragment?: boolean;
   notes?: string;
+  imgUrl?: string;
 }
 
 // Pity thresholds (guaranteed legendary pull) by shard type

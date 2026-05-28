@@ -1,0 +1,430 @@
+/**
+ * Key roles each game area needs covered.
+ *
+ * Keys are the ENUM KEYS (e.g. "DEMON_LORD", "DRAGON", "BANNER_LORDS")
+ * because buildAreaRoutes passes Object.keys(source) as the teamKey prop.
+ *
+ * Coverage is detected from:
+ *  1. champion.role[]           — works immediately if champion roles are tagged
+ *  2. champion.skills[].effects — used when skill data has been entered
+ */
+
+import { ChampionRole } from "../models/ChampionRole";
+import type { TeamIdentifier } from "./team_priority_weight";
+import type IChampion from "../models/IChampion";
+
+export interface AreaRoleReq {
+  label: string;
+  tip: string;
+  matchRoles?: ChampionRole[];
+  matchEffects?: string[];
+}
+
+const r = (
+  label: string,
+  tip: string,
+  matchRoles: ChampionRole[] = [],
+  matchEffects: string[] = [],
+): AreaRoleReq => ({ label, tip, matchRoles, matchEffects });
+
+// ── Faction Wars (same composition for all — Epyre Cob guide) ────────────────
+const FACTION_WARS_REQS: AreaRoleReq[] = [
+  r("Reviver",       "Most important role in FW — recovers from deaths",
+    [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  r("Speed Booster", "Go first and control tempo",
+    [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+  r("Cleanser",      "Remove debuffs applied by the FW boss",
+    [ChampionRole.CLEANSER], ["Block Debuffs"]),
+  r("Nuker / DPS",   "Deal damage to clear the stage",
+    [ChampionRole.NUKER], []),
+  r("Healer",        "Sustain the team through multi-wave content",
+    [ChampionRole.HEALER], ["Continuous Heal"]),
+];
+
+// ── Potion Keep (same for all four) ──────────────────────────────────────────
+const POTION_KEEP_REQS: AreaRoleReq[] = [
+  r("Buffer",    "Increase allies' stats to push through waves",
+    [ChampionRole.BUFFER], ["Increase ATK", "Increase DEF", "Increase SPD"]),
+  r("Debuffer",  "Weaken enemies to take less damage and deal more",
+    [ChampionRole.DEBUFFER], ["Decrease ATK", "Decrease DEF", "Weaken"]),
+  r("Nuker",     "Burst down waves quickly",
+    [ChampionRole.NUKER], []),
+];
+
+export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[]>> = {
+
+  // ── Potion Keep ───────────────────────────────────────────────────────────
+  ARCANE_POTION: POTION_KEEP_REQS,
+  SPIRIT_POTION: POTION_KEEP_REQS,
+  VOID_POTION:   POTION_KEEP_REQS,
+  FORCE_POTION:  POTION_KEEP_REQS,
+
+  // ── Clan Boss ─────────────────────────────────────────────────────────────
+  DEMON_LORD: [
+    r("Decrease ATK",  "Reduces Clan Boss ATK — critical for survival",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Decrease DEF",  "Amplifies all damage dealt to the boss",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Weaken",        "Further damage amplification",
+      [ChampionRole.DEBUFFER], ["Weaken"]),
+    r("Poison / DoT",  "Core damage source for CB",
+      [ChampionRole.POISONER], ["Poison", "HP Burn"]),
+    r("HP Burn",       "Percentage-based damage every turn",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Speed Booster", "Ensures the team acts frequently",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+    r("Unkillable",    "Prevents deaths — needed for max damage runs",
+      [ChampionRole.UNKILLABLE], ["Unkillable", "Block Damage"]),
+    r("TM Reduction",  "Slows boss turn meter",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+  ],
+  CHIMERA: [
+    r("Decrease ATK",  "Reduces Chimera's ATK",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Decrease SPD",  "Slows Chimera's cycle",
+      [ChampionRole.TM_REDUCER], ["Decrease SPD", "TM Reduction"]),
+    r("Poison / DoT",  "Sustained damage",
+      [ChampionRole.POISONER], ["Poison"]),
+    r("HP Burn",       "Stacks with Poison for big damage",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("TM Reduction",  "Controls Chimera's pace",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Block Buffs",   "Prevents Chimera buffing itself",
+      [ChampionRole.BLOCK_BUFF], ["Block Buffs"]),
+    r("Reviver",       "Keeps the team alive",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  ],
+
+  // ── Dungeons ──────────────────────────────────────────────────────────────
+  DRAGON: [
+    r("Poison",        "Primary damage source for Dragon",
+      [ChampionRole.POISONER], ["Poison"]),
+    r("HP Burn",       "Additional DoT layer",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Decrease ATK",  "Reduces Dragon's ATK to survive hits",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Decrease DEF",  "Amplifies all damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Weaken",        "Further amplification",
+      [ChampionRole.DEBUFFER], ["Weaken"]),
+  ],
+  DRAGON_HARD: [
+    r("Poison",        "Primary damage source",
+      [ChampionRole.POISONER], ["Poison"]),
+    r("Decrease ATK",  "Reduces Dragon's massive ATK",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Decrease DEF",  "Amplifies damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Speed Booster", "Outpace Dragon's waves",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+    r("Reviver",       "Hard mode requires sustain",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  ],
+  ICE_GOLEM: [
+    r("Decrease ATK",  "Reduces golem and adds' ATK",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Crowd Control", "Freeze / Stun adds",
+      [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
+    r("Reviver",       "Ice Golem AoE can wipe teams",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Healer",        "Sustained healing for lengthy fight",
+      [ChampionRole.HEALER], ["Continuous Heal"]),
+  ],
+  ICE_GOLEM_HARD: [
+    r("Decrease ATK",  "Critical — hard adds hit very hard",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Crowd Control", "Stun / Freeze adds immediately",
+      [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
+    r("Reviver",       "Mandatory at hard difficulty",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Block Buffs",   "Golem hard buffs itself",
+      [ChampionRole.BLOCK_BUFF], ["Block Buffs"]),
+  ],
+  SPIDER: [
+    r("AoE Nuker",     "Kill spiderlings quickly each wave",
+      [ChampionRole.NUKER], []),
+    r("TM Reduction",  "Prevent spiderlings from taking too many turns",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Crowd Control", "Freeze / Stun spiderlings to control waves",
+      [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
+    r("HP Burn",       "Tick damage on boss and spiderlings",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Decrease DEF",  "Required to burst the boss",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+  ],
+  SPIDER_HARD: [
+    r("AoE Nuker",     "Spiderlings hit harder — clear fast",
+      [ChampionRole.NUKER], []),
+    r("TM Reduction",  "Control spiderling turn meter",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Crowd Control", "Lock down spiderlings",
+      [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
+    r("HP Burn",       "Sustained boss damage",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Decrease DEF",  "Amplifies burst",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+  ],
+  FIRE_KNIGHT: [
+    r("TM Reduction",      "Breaks the Fire Knight's shield faster",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Single Target DPS", "Must hit the boss between shields",
+      [ChampionRole.NUKER], []),
+    r("Decrease DEF",      "Amplifies damage between shields",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+  ],
+  FIRE_KNIGHT_HARD: [
+    r("TM Reduction",      "Essential — shield recharges fast",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Single Target DPS", "Burst between shield windows",
+      [ChampionRole.NUKER], []),
+    r("Decrease DEF",      "Amplifies damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Speed Booster",     "Outpace the boss",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+  ],
+  SAND_DEVIL: [
+    r("HP Burn",       "Percentage-based damage — core Sand Devil mechanic",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Decrease DEF",  "Increases all damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Sleep",         "Sleep debuff to control Sand Devil's phase rotation",
+      [ChampionRole.SLEEP_DEBUFFER], ["Sleep"]),
+    r("Reviver",       "Sand Devil's AoE can wipe the team",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  ],
+  SHOGUN: [
+    r("Decrease ATK",  "Mitigate Shogun's massive ATK",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("TM Reduction",  "Critical — Shogun is very fast",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("AoE DPS",       "Clear waves quickly",
+      [ChampionRole.NUKER], []),
+    r("Reviver",       "Shogun executioner mechanic",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  ],
+  IRON_TWIN: [
+    r("Decrease DEF",  "Required for damage phases",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Decrease SPD",  "Slow Iron Twin to control its deadly turn cycles",
+      [ChampionRole.TM_REDUCER], ["Decrease SPD", "TM Reduction"]),
+    r("Healer",        "Iron Twin reflects damage — need sustain",
+      [ChampionRole.HEALER], ["Continuous Heal"]),
+    r("Speed Booster", "Act before Iron Twin's deadly turns",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+  ],
+
+  // ── Hydra ─────────────────────────────────────────────────────────────────
+  HYDRA_A: [
+    r("Block Buffs",      "Stops Hydra heads from buffing",
+      [ChampionRole.BLOCK_BUFF, ChampionRole.HYDRA], ["Block Buffs"]),
+    r("Provoker",         "Keep heads focused and limit their actions",
+      [ChampionRole.PROVOKER], ["Provoke"]),
+    r("Leech",            "Counters Hydra's healing mechanic",
+      [ChampionRole.LEECH], ["Leech"]),
+    r("Decrease DEF",     "Amplifies all head damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Poison / HP Burn", "Sustained damage across all heads",
+      [ChampionRole.POISONER, ChampionRole.HP_BURNER], ["Poison", "HP Burn"]),
+  ],
+  HYDRA_B: [
+    r("Block Buffs",      "Essential — same as head A",
+      [ChampionRole.BLOCK_BUFF, ChampionRole.HYDRA], ["Block Buffs"]),
+    r("Provoker",         "Keep heads focused and limit their actions",
+      [ChampionRole.PROVOKER], ["Provoke"]),
+    r("Leech",            "Counters Hydra healing",
+      [ChampionRole.LEECH], ["Leech"]),
+    r("Decrease ATK",     "Reduce incoming damage",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Poison / HP Burn", "Core Hydra damage",
+      [ChampionRole.POISONER, ChampionRole.HP_BURNER], ["Poison", "HP Burn"]),
+  ],
+  HYDRA_C: [
+    r("Block Buffs",      "Essential for all Hydra heads",
+      [ChampionRole.BLOCK_BUFF, ChampionRole.HYDRA], ["Block Buffs"]),
+    r("Provoker",         "Keep heads focused and limit their actions",
+      [ChampionRole.PROVOKER], ["Provoke"]),
+    r("Leech",            "Counters Hydra healing",
+      [ChampionRole.LEECH], ["Leech"]),
+    r("Decrease DEF",     "Amplifies damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Reviver",          "Third head should sustain the team",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+  ],
+
+  // ── Arena ─────────────────────────────────────────────────────────────────
+  CLASSIC_ARENA: [
+    r("Speed Opener",  "Fastest champion acts first and sets up the team",
+      [ChampionRole.ARENA, ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+    r("Nuker",         "One-shots or bursts the enemy team",
+      [ChampionRole.NUKER, ChampionRole.ARENA], []),
+    r("Crowd Control", "Stun / freeze / sleep the enemy team",
+      [ChampionRole.CONTROL], ["Stun", "Freeze", "Sleep", "Provoke"]),
+    r("Decrease DEF",  "Required to enable the nuker",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+  ],
+  TAG_ARENA_A: [
+    r("Nuker",         "Tag Arena rewards burst damage",
+      [ChampionRole.NUKER, ChampionRole.ARENA], []),
+    r("Speed Booster", "Get the team moving first",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+    r("Crowd Control", "Lock down enemy waves",
+      [ChampionRole.CONTROL], ["Stun", "Freeze"]),
+  ],
+  TAG_ARENA_B: [
+    r("Nuker",          "Burst damage in Tag Arena waves",
+      [ChampionRole.NUKER, ChampionRole.ARENA], []),
+    r("Decrease DEF",   "Enable nuke damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Healer / Shield","Sustain through multiple waves",
+      [ChampionRole.HEALER], ["Continuous Heal", "Shield"]),
+  ],
+  TAG_ARENA_C: [
+    r("Nuker",        "Close out rounds fast",
+      [ChampionRole.NUKER, ChampionRole.ARENA], []),
+    r("Reviver",      "Third team needs longevity",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Decrease DEF", "Enable burst",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+  ],
+
+  // ── Doom Tower Normal ─────────────────────────────────────────────────────
+  SCARAB_KING: [
+    r("Crowd Control", "Stun / freeze adds to stop their attacks",
+      [ChampionRole.CONTROL], ["Stun", "Freeze", "Sleep", "Provoke"]),
+    r("TM Reduction",  "Slow Scarab and adds' turn meter",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Shield",        "Protect the team from Scarab's heavy hits",
+      [ChampionRole.SHIELDER], ["Shield", "Ally Protector"]),
+  ],
+  MAGMA_DRAGON: [
+    r("Poison",       "Primary damage — Dragon immune during phases",
+      [ChampionRole.POISONER], ["Poison"]),
+    r("HP Burn",      "Stacks with Poison",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Decrease DEF", "Amplifies damage in vulnerable phases",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Block Buffs",  "Stops self-buffing in later floors",
+      [ChampionRole.BLOCK_BUFF], ["Block Buffs"]),
+  ],
+  NETHER_SPIDER: [
+    r("AoE Nuker",    "Kill spiderlings — same mechanic as Dungeon Spider",
+      [ChampionRole.NUKER, ChampionRole.DOOM_TOWER], []),
+    r("Reviver",      "Spiderlings drain HP rapidly",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Healer",       "Sustain through web phases",
+      [ChampionRole.HEALER], ["Continuous Heal"]),
+    r("Cleanser",     "Clear web debuffs — 2 recommended",
+      [ChampionRole.CLEANSER], ["Block Debuffs"]),
+    r("2nd Cleanser", "Web stacks require a second cleanser to keep up",
+      [ChampionRole.CLEANSER], ["Block Debuffs"]),
+  ],
+  GRYPHON: [
+    r("Decrease ATK", "Gryphon ATK shreds without mitigation",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Decrease SPD", "Slow the Gryphon's cycle further",
+      [ChampionRole.TM_REDUCER], ["Decrease SPD"]),
+    r("TM Reduction", "Slow the Gryphon's turn meter",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Reviver",      "Gryphon can one-shot champions",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Block Buffs",  "Stops Gryphon's shields",
+      [ChampionRole.BLOCK_BUFF], ["Block Buffs"]),
+  ],
+  BOMMAL: [
+    r("Bomb Defuse",  "Block Debuffs / cleanse to survive bombs",
+      [ChampionRole.CLEANSER, ChampionRole.DOOM_TOWER], ["Block Debuffs"]),
+    r("Decrease ATK", "Reduce Bommal's strike damage",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+    r("Reviver",      "Bombs will kill without defuse",
+      [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+    r("Unkillable",   "Unkillable comps ignore bombs entirely",
+      [ChampionRole.UNKILLABLE], ["Unkillable", "Block Damage"]),
+  ],
+  DARK_FAE: [
+    r("TM Reduction",  "Critical — Dark Fae copies champion skills",
+      [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
+    r("Speed Booster", "Ensure your team acts before Dark Fae",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+    r("AoE Nuker",     "Burst down Dark Fae quickly",
+      [ChampionRole.NUKER], []),
+    r("Crowd Control", "Stun / freeze the Dark Fae",
+      [ChampionRole.CONTROL], ["Stun", "Freeze", "Provoke"]),
+  ],
+  ETERNAL_DRAGON: [
+    r("Poison",       "Main damage vector",
+      [ChampionRole.POISONER], ["Poison"]),
+    r("Decrease DEF", "Amplify all damage",
+      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+    r("Speed Booster","Outpace Dragon's damage waves",
+      [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+  ],
+  FROST_SPIDER: [
+    r("AoE Nuker",    "Burst spiderlings fast",
+      [ChampionRole.NUKER, ChampionRole.DOOM_TOWER], []),
+    r("HP Burner",    "Sustained percentage damage on boss and spiderlings",
+      [ChampionRole.HP_BURNER], ["HP Burn"]),
+    r("Healer",       "Web effects drain constantly",
+      [ChampionRole.HEALER], ["Continuous Heal"]),
+    r("Decrease ATK", "Frost Spider hits hard",
+      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+  ],
+
+  // ── Doom Tower Hard — same roles as normal ────────────────────────────────
+};
+
+Object.assign(AREA_ROLE_REQUIREMENTS, {
+  SCARAB_KING_HARD:    AREA_ROLE_REQUIREMENTS.SCARAB_KING,
+  MAGMA_DRAGON_HARD:   AREA_ROLE_REQUIREMENTS.MAGMA_DRAGON,
+  NETHER_SPIDER_HARD:  AREA_ROLE_REQUIREMENTS.NETHER_SPIDER,
+  GRYPHON_HARD:        AREA_ROLE_REQUIREMENTS.GRYPHON,
+  BOMMAL_HARD:         AREA_ROLE_REQUIREMENTS.BOMMAL,
+  DARK_FAE_HARD:       AREA_ROLE_REQUIREMENTS.DARK_FAE,
+  ETERNAL_DRAGON_HARD: AREA_ROLE_REQUIREMENTS.ETERNAL_DRAGON,
+  FROST_SPIDER_HARD:   AREA_ROLE_REQUIREMENTS.FROST_SPIDER,
+
+  // ── Faction Wars ──────────────────────────────────────────────────────────
+  ARGONITES:        FACTION_WARS_REQS,
+  BANNER_LORDS:     FACTION_WARS_REQS,
+  BARBARIANS:       FACTION_WARS_REQS,
+  DARK_ELVES:       FACTION_WARS_REQS,
+  DEMON_SPAWNS:     FACTION_WARS_REQS,
+  DWARVES:          FACTION_WARS_REQS,
+  HIGH_ELVES:       FACTION_WARS_REQS,
+  KNIGHTS_REVENANT: FACTION_WARS_REQS,
+  LIZARDMEN:        FACTION_WARS_REQS,
+  OGRYN_TRIBES:     FACTION_WARS_REQS,
+  ORCS:             FACTION_WARS_REQS,
+  SACRED_ORDER:     FACTION_WARS_REQS,
+  SHADOWKINS:       FACTION_WARS_REQS,
+  SKIN_WALKERS:     FACTION_WARS_REQS,
+  SYLVAN_WATCHERS:  FACTION_WARS_REQS,
+  UNDEAD_HORDES:    FACTION_WARS_REQS,
+});
+
+// ── Coverage checker ──────────────────────────────────────────────────────────
+
+export interface CoverageResult {
+  req: AreaRoleReq;
+  coveredBy: string[];
+}
+
+export function checkTeamCoverage(
+  requirements: AreaRoleReq[],
+  teamChampions: IChampion[],
+): CoverageResult[] {
+  return requirements.map((req) => {
+    const coveredBy: string[] = [];
+    for (const champ of teamChampions) {
+      const roleMatch = req.matchRoles?.some((role) => champ.role?.includes(role));
+      if (roleMatch) { coveredBy.push(champ.name); continue; }
+
+      if (req.matchEffects?.length && champ.skills && champ.skills.length > 0) {
+        const effectMatch = champ.skills.some((s) =>
+          s.effects?.some((e) => req.matchEffects!.includes(e.name)),
+        );
+        if (effectMatch) coveredBy.push(champ.name);
+      }
+    }
+    return { req, coveredBy };
+  });
+}

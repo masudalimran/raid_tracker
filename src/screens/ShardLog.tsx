@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { MdCasino } from "react-icons/md";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
@@ -10,8 +10,36 @@ import {
   getShardStats,
 } from "../helpers/handleShardPulls";
 
+// ── Champion lookup ───────────────────────────────────────────────────────────
+
+interface ChampionInfo { rarity: string; imgUrl: string }
+
+function loadChampionLookup(): Map<string, ChampionInfo> {
+  try {
+    const raw = JSON.parse(localStorage.getItem("supabase_champion_list") ?? "[]");
+    return new Map(
+      (raw as { name?: string; rarity?: string; imgUrl?: string }[])
+        .filter((c) => c.name)
+        .map((c) => [c.name!.toLowerCase(), { rarity: c.rarity ?? "", imgUrl: c.imgUrl ?? "" }]),
+    );
+  } catch {
+    return new Map();
+  }
+}
+
+const PULL_RARITY_MAP: Partial<Record<string, PullRarity>> = {
+  Mythical:  PullRarity.MYTHICAL,
+  Legendary: PullRarity.LEGENDARY,
+  Epic:      PullRarity.EPIC,
+  Rare:      PullRarity.RARE,
+};
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
 const ALL_SHARD_TYPES = Object.values(ShardType);
-const ALL_RARITIES = Object.values(PullRarity).filter((r) => r !== "Common" && r !== "Uncommon");
+const ALL_RARITIES = Object.values(PullRarity).filter(
+  (r) => r !== "Common" && r !== "Uncommon",
+);
 
 const SHARD_COLOR: Record<string, string> = {
   Ancient: "bg-amber-500",
@@ -28,6 +56,8 @@ const RARITY_COLOR: Record<string, string> = {
   Legendary: "bg-amber-100 text-amber-800 font-semibold",
   Mythical:  "bg-red-100 text-red-700 font-semibold",
 };
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 function PityBar({ count, max }: { count: number; max: number }) {
   const pct = Math.min((count / max) * 100, 100);
@@ -51,9 +81,46 @@ function PityBar({ count, max }: { count: number; max: number }) {
   );
 }
 
+function ChampionAvatar({
+  name,
+  imgUrl,
+  size = 44,
+}: {
+  name: string;
+  imgUrl: string;
+  size?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+  const initial = (name || "?").charAt(0).toUpperCase();
+
+  if (imgUrl && !failed) {
+    return (
+      <img
+        src={imgUrl}
+        alt={name}
+        onError={() => setFailed(true)}
+        className="rounded-full object-cover bg-gray-100 shrink-0 border border-gray-200"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="rounded-full bg-green-600 flex items-center justify-center text-white font-bold shrink-0 border-2 border-green-400"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
+    >
+      {initial}
+    </div>
+  );
+}
+
+// ── Main screen ───────────────────────────────────────────────────────────────
+
 export default function ShardLog() {
   const [pulls, setPulls] = useState<IShardPull[]>(() => loadShardPulls());
   const [activeTab, setActiveTab] = useState<string>(ShardType.ANCIENT);
+  const championLookup = useMemo(() => loadChampionLookup(), []);
 
   const [form, setForm] = useState({
     championName: "",
@@ -61,7 +128,11 @@ export default function ShardLog() {
     isFragment: false,
     notes: "",
   });
+  const [previewUrl, setPreviewUrl] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const tabPulls = useMemo(
     () => pulls.filter((p) => p.shardType === activeTab),
@@ -73,8 +144,42 @@ export default function ShardLog() {
     [pulls, activeTab],
   );
 
+  const handleNameChange = (value: string) => {
+    setForm((f) => ({ ...f, championName: value }));
+    setPreviewUrl("");
+    if (value.trim().length >= 2) {
+      const lower = value.toLowerCase();
+      const rawNames = JSON.parse(
+        localStorage.getItem("supabase_champion_list") ?? "[]",
+      ) as { name?: string }[];
+      const nameCased = rawNames
+        .filter((c) => c.name?.toLowerCase().includes(lower))
+        .map((c) => c.name!)
+        .slice(0, 6);
+      setSuggestions(nameCased);
+      setShowSuggestions(nameCased.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (name: string) => {
+    const info = championLookup.get(name.toLowerCase());
+    const mappedRarity = info ? PULL_RARITY_MAP[info.rarity] : undefined;
+    setForm((f) => ({
+      ...f,
+      championName: name,
+      rarity: (mappedRarity && (ALL_RARITIES as string[]).includes(mappedRarity)) ? mappedRarity : f.rarity,
+    }));
+    setPreviewUrl(info?.imgUrl ?? "");
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  };
+
   const handleAdd = () => {
     if (!form.championName.trim()) return;
+    setShowSuggestions(false);
+    const info = championLookup.get(form.championName.toLowerCase());
     const entry = addShardPull({
       shardType:    activeTab as IShardPull["shardType"],
       championName: form.championName.trim(),
@@ -82,9 +187,11 @@ export default function ShardLog() {
       pulledAt:     new Date().toISOString(),
       isFragment:   form.isFragment,
       notes:        form.notes.trim() || undefined,
+      imgUrl:       info?.imgUrl,
     });
     setPulls((prev) => [entry, ...prev]);
     setForm({ championName: "", rarity: PullRarity.EPIC, isFragment: false, notes: "" });
+    setPreviewUrl("");
     setShowForm(false);
   };
 
@@ -133,10 +240,10 @@ export default function ShardLog() {
         {/* ── Stats row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Total Pulls",  value: stats.total,           color: "text-gray-700" },
-            { label: "Legendary",    value: stats.legendary,        color: "text-amber-600" },
-            { label: "Epic",         value: stats.epic,             color: "text-purple-600" },
-            { label: "Leg. Rate",    value: `${stats.legendaryRate}%`, color: "text-green-600" },
+            { label: "Total Pulls", value: stats.total,                    color: "text-gray-700" },
+            { label: "Legendary",   value: stats.legendary,                 color: "text-amber-600" },
+            { label: "Epic",        value: stats.epic,                      color: "text-purple-600" },
+            { label: "Leg. Rate",   value: `${stats.legendaryRate}%`,        color: "text-green-600" },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white border rounded-xl p-3 text-center shadow-sm">
               <p className={`text-xl font-bold ${color}`}>{value}</p>
@@ -153,23 +260,59 @@ export default function ShardLog() {
         {/* ── Log pull form ── */}
         {showForm && (
           <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
-            <h3 className="text-sm font-semibold">Log a Pull — {activeTab} Shard</h3>
+            <div className="flex items-center gap-3">
+              <ChampionAvatar name={form.championName || "?"} imgUrl={previewUrl} size={52} />
+              <h3 className="text-sm font-semibold">
+                Log a Pull — {activeTab} Shard
+                {form.championName && (
+                  <span className="ml-1 text-gray-400 font-normal">· {form.championName}</span>
+                )}
+              </h3>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
+              <div className="space-y-1 relative">
                 <label className="text-xs font-medium text-gray-600">Champion Name</label>
                 <input
+                  ref={inputRef}
                   value={form.championName}
-                  onChange={(e) => setForm({ ...form, championName: e.target.value })}
+                  onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="e.g. Kael"
                   className="basic-input w-full"
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  autoComplete="off"
                 />
+                {showSuggestions && (
+                  <ul className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                    {suggestions.map((name) => {
+                      const info = championLookup.get(name.toLowerCase());
+                      return (
+                        <li
+                          key={name}
+                          onMouseDown={() => selectSuggestion(name)}
+                          className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition"
+                        >
+                          <ChampionAvatar name={name} imgUrl={info?.imgUrl ?? ""} size={28} />
+                          <div className="min-w-0">
+                            <span className="text-sm">{name}</span>
+                            {info?.rarity && (
+                              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full ${RARITY_COLOR[info.rarity] ?? ""}`}>
+                                {info.rarity}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-600">Rarity</label>
                 <select
                   value={form.rarity}
-                  onChange={(e) => setForm({ ...form, rarity: e.target.value as PullRarity })}
+                  onChange={(e) => setForm((f) => ({ ...f, rarity: e.target.value as PullRarity }))}
                   className="basic-input w-full"
                 >
                   {ALL_RARITIES.map((r) => (
@@ -178,24 +321,27 @@ export default function ShardLog() {
                 </select>
               </div>
             </div>
+
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-600">Notes (optional)</label>
               <input
                 value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 placeholder="Event, lucky pull, etc."
                 className="basic-input w-full"
               />
             </div>
+
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.isFragment}
-                onChange={(e) => setForm({ ...form, isFragment: e.target.checked })}
+                onChange={(e) => setForm((f) => ({ ...f, isFragment: e.target.checked }))}
                 className="rounded"
               />
               Fragment fusion
             </label>
+
             <div className="flex gap-2">
               <button
                 type="button"
@@ -206,7 +352,7 @@ export default function ShardLog() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => { setShowForm(false); setPreviewUrl(""); }}
                 className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
               >
                 Cancel
@@ -223,39 +369,47 @@ export default function ShardLog() {
           </div>
         ) : (
           <div className="space-y-2">
-            {tabPulls.map((pull) => (
-              <div
-                key={pull.id}
-                className="flex items-center gap-3 bg-white border rounded-xl px-4 py-3 shadow-sm"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-sm truncate">{pull.championName}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
-                      {pull.rarity}
-                    </span>
-                    {pull.isFragment && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600">
-                        Fragment
+            {tabPulls.map((pull) => {
+              const imgUrl = (pull as IShardPull & { imgUrl?: string }).imgUrl
+                ?? championLookup.get(pull.championName.toLowerCase())?.imgUrl
+                ?? "";
+              return (
+                <div
+                  key={pull.id}
+                  className="flex items-center gap-3 bg-white border rounded-xl px-3 py-2.5 shadow-sm"
+                >
+                  <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={40} />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm truncate">{pull.championName}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
+                        {pull.rarity}
                       </span>
+                      {pull.isFragment && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600">
+                          Fragment
+                        </span>
+                      )}
+                    </div>
+                    {pull.notes && (
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{pull.notes}</p>
                     )}
                   </div>
-                  {pull.notes && (
-                    <p className="text-xs text-gray-400 mt-0.5 truncate">{pull.notes}</p>
-                  )}
+
+                  <span className="text-[10px] text-gray-400 shrink-0">
+                    {new Date(pull.pulledAt).toLocaleDateString()}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(pull.id)}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition cursor-pointer shrink-0"
+                  >
+                    <FaTrash size={12} />
+                  </button>
                 </div>
-                <span className="text-[10px] text-gray-400 shrink-0">
-                  {new Date(pull.pulledAt).toLocaleDateString()}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(pull.id)}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition cursor-pointer shrink-0"
-                >
-                  <FaTrash size={12} />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

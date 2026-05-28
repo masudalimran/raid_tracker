@@ -16,6 +16,10 @@ import type { TeamIdentifier } from "../../data/team_priority_weight";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { HYDRA } from "../../models/game_areas/Hydra";
 import toSlug from "../../helpers/toSlug";
+import {
+  AREA_ROLE_REQUIREMENTS,
+  checkTeamCoverage,
+} from "../../data/areaRoleRequirements";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -151,6 +155,44 @@ export default function BaseAreaTeam({
             {team.notes}
           </div>
         )}
+
+        {/* ── Role Coverage ── */}
+        {(() => {
+          const reqs = AREA_ROLE_REQUIREMENTS[teamKey];
+          if (!reqs || teamChampionList.length === 0) return null;
+          const coverage = checkTeamCoverage(reqs, teamChampionList);
+          return (
+            <div className="mx-4 mt-3">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
+                Role Coverage
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {coverage.map(({ req, coveredBy }) => {
+                  const covered = coveredBy.length > 0;
+                  return (
+                    <div
+                      key={req.label}
+                      title={`${req.tip}${covered ? `\nCovered by: ${coveredBy.join(", ")}` : "\nNot detected in this team"}`}
+                      className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition cursor-default
+                        ${covered
+                          ? "bg-green-50 border-green-300 text-green-700"
+                          : "bg-gray-50 border-gray-200 text-gray-400"
+                        }`}
+                    >
+                      <span>{covered ? "✓" : "✗"}</span>
+                      <span>{req.label}</span>
+                      {covered && (
+                        <span className="hidden group-hover:block absolute bottom-full left-0 mb-2 bg-gray-800 text-white text-[10px] rounded-lg px-2.5 py-1.5 z-50 whitespace-nowrap shadow-xl">
+                          {coveredBy.join(" · ")}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Grid ── */}
         <div className="flex-1 overflow-auto p-4">

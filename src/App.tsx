@@ -8,6 +8,7 @@ import PageNotFound from "./screens/PageNotFound.tsx";
 import RtkSync from "./screens/RtkSync.tsx";
 import ShardLog from "./screens/ShardLog.tsx";
 import ImportJson from "./screens/ImportJson.tsx";
+import Analytics from "./screens/Analytics.tsx";
 import { useEffect } from "react";
 import { AREA_ROUTES } from "./components/modals/AreanRoutes.ts";
 import BaseAreaTeam from "./components/base/BaseAreaTeam.tsx";
@@ -29,6 +30,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/champions" element={<Champions />} />
         <Route path="/import-json" element={<ImportJson />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/rtk-sync" element={<RtkSync />} />
         <Route path="/shard-log" element={<ShardLog />} />
         {AREA_ROUTES.map((area) => (

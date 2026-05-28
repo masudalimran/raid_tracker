@@ -26,6 +26,8 @@ import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus";
+import { needsImprovement } from "../helpers/getChampionBuildQuality";
+import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -176,8 +178,9 @@ export default function Champions() {
   const total = filteredChampions?.length ?? 0;
   const inUse = getCurrentlyInUseChampions(filteredChampions ?? []).length;
   const built = getBuiltChampionsCount(filteredChampions ?? []);
-  const untouched = (filteredChampions ?? []).filter(
-    (c) => c.spd <= 120,
+  const untouched = (filteredChampions ?? []).filter((c) => c.spd <= 120).length;
+  const improving = (filteredChampions ?? []).filter(
+    (c) => checkIfChampionIsBuilt(c) && needsImprovement(c),
   ).length;
 
   return (
@@ -203,6 +206,11 @@ export default function Champions() {
                   label: "Built",
                   value: built,
                   color: "bg-green-50 text-green-600",
+                },
+                {
+                  label: "Needs Work",
+                  value: improving,
+                  color: "bg-amber-50 text-amber-600",
                 },
                 {
                   label: "Untouched",

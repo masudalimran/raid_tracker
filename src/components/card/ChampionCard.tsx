@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
+import { needsImprovement } from "../../helpers/getChampionBuildQuality.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import {
   ChampionRole,
@@ -57,8 +58,8 @@ export default function ChampionCard({
   const championTeamNames = championTeams.map((t) => t.team_name);
 
   const isBuilt = checkIfChampionIsBuilt(champion);
-  const thresholdDifferenceTolerance: number = 2;
-  let thresholdDifference = 0;
+  const championNeedsImprovement = isBuilt && needsImprovement(champion);
+  let thresholdDifference = 0; // still used for per-stat colour only
 
   const current_rsl_account = JSON.parse(
     localStorage.getItem("supabase_rsl_account_list") ?? "[]",
@@ -159,7 +160,7 @@ export default function ChampionCard({
   };
 
   const statusBg = isBuilt
-    ? thresholdDifference >= thresholdDifferenceTolerance
+    ? championNeedsImprovement
       ? "bg-amber-400"
       : "bg-green-500"
     : champion.spd <= 120
@@ -167,7 +168,7 @@ export default function ChampionCard({
       : "bg-red-500";
 
   const statusLabel = isBuilt
-    ? thresholdDifference >= thresholdDifferenceTolerance
+    ? championNeedsImprovement
       ? "Needs Improvement"
       : "Built ✓"
     : champion.spd <= 120
