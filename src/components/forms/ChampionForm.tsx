@@ -22,8 +22,8 @@ import colorByAffinity from "../../helpers/colorByAffinity";
 import getFactionLogo from "../../helpers/getFactionLogo";
 import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
 import { CgSearchFound } from "react-icons/cg";
-import SkillsFieldArray from "./inputs/SkillsFieldArray";
-import AuraField from "./inputs/AuraField";
+// import SkillsFieldArray from "./inputs/SkillsFieldArray"; // skills hidden
+// import AuraField from "./inputs/AuraField"; // skills hidden
 
 interface ChampionFormProps {
   champion?: Partial<IChampion>;
@@ -323,9 +323,8 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
           {errors.role && <p className="text-red-500">{errors.role.message}</p>}
 
-          <SkillsFieldArray control={control} register={register} />
-
-          <AuraField control={control} register={register} errors={errors} />
+          {/* <SkillsFieldArray control={control} register={register} /> */}
+          {/* <AuraField control={control} register={register} errors={errors} /> */}
 
           <hr className="my-2" />
           <p className="text-xl font-bold">Upgrade Specific</p>

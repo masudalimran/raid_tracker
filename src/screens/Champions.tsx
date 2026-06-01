@@ -27,7 +27,7 @@ import type { ChampionRole } from "../models/ChampionRole";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
-import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus";
+// import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 
@@ -48,7 +48,7 @@ export default function Champions() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
-  const [showSkills, setShowSkills] = useState<boolean>(false);
+  // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
   const [onFilterMode, setOnFilterMode] = useState<boolean>(false);
   const [filterInfo, setFilterInfo] =
     useState<ChampionFilter>(initial_filter_info);
@@ -112,7 +112,7 @@ export default function Champions() {
   useEffect(() => {
     fetchTeams().then(setTeams);
     setNsfw(getNsfwStatus());
-    setShowSkills(getShowSkillsStatus());
+    // setShowSkills(getShowSkillsStatus()); // skills hidden
   }, []);
 
   const filteredChampions = useMemo(() => {
@@ -392,7 +392,6 @@ export default function Champions() {
                       <ChampionCard
                         champion={champion}
                         nsfw={nsfw}
-                        showSkills={showSkills}
                         onEdit={bulkMode ? undefined : handleEdit}
                         onDelete={bulkMode ? undefined : () => handleCloseModal(true)}
                       />

@@ -74,6 +74,24 @@ export function getSetInfo(setKindId: string): GearSetInfo {
   return GEAR_SET_MAP[setKindId] ?? { name: setKindId, color: "bg-gray-300", textColor: "text-gray-700" };
 }
 
+// Reverse lookup by display name (for gear recommendations)
+let _nameIndex: Map<string, GearSetInfo> | null = null;
+function getNameIndex(): Map<string, GearSetInfo> {
+  if (!_nameIndex) {
+    _nameIndex = new Map(
+      Object.values(GEAR_SET_MAP).map((info) => [info.name.toLowerCase(), info]),
+    );
+  }
+  return _nameIndex;
+}
+
+export function getSetInfoByName(displayName: string): GearSetInfo {
+  return (
+    getNameIndex().get(displayName.toLowerCase()) ??
+    { name: displayName, color: "bg-gray-200", textColor: "text-gray-600" }
+  );
+}
+
 // Artifact slot kindId → display name
 export const SLOT_DISPLAY_MAP: Record<string, string> = {
   Helmet:    "Helmet",

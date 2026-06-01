@@ -1,3 +1,4 @@
+// NOT CURRENTLY IN USE — retained for potential future re-enabling.
 import {
   useFieldArray,
   type Control,

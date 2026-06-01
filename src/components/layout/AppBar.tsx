@@ -4,8 +4,8 @@ import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { getAccountCoverage } from "../../helpers/getChampionPowerScore";
-import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus";
-import { GiBroadsword, GiZeusSword } from "react-icons/gi";
+// import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus"; // skills hidden
+// import { GiBroadsword, GiZeusSword } from "react-icons/gi"; // skills hidden
 import { RxHamburgerMenu } from "react-icons/rx";
 
 interface AppBarProps {
@@ -17,7 +17,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
 
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
-  const [showSkills, setShowSkills] = useState<boolean>(false);
+  // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
   const [accountCoverage, setAccountCoverage] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
@@ -34,14 +34,14 @@ function AppBar({ onMenuToggle }: AppBarProps) {
     window.location.reload();
   };
 
-  const handleShowSkills = (show: boolean) => {
-    localStorage.setItem("show_skills", show.toString());
-    window.location.reload();
-  };
+  // const handleShowSkills = (show: boolean) => { // skills hidden
+  //   localStorage.setItem("show_skills", show.toString());
+  //   window.location.reload();
+  // };
 
   useEffect(() => {
     setNsfw(getNsfwStatus());
-    setShowSkills(getShowSkillsStatus());
+    // setShowSkills(getShowSkillsStatus()); // skills hidden
     getAccountCoverage().then(setAccountCoverage);
   }, []);
 
@@ -107,26 +107,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
           </button>
         )}
 
-        {/* Skills toggle */}
-        {showSkills ? (
-          <button
-            type="button"
-            onClick={() => handleShowSkills(false)}
-            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
-            title="Hide Skills"
-          >
-            <GiBroadsword size={20} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => handleShowSkills(true)}
-            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
-            title="Show Skills"
-          >
-            <GiZeusSword size={20} />
-          </button>
-        )}
+        {/* Skills toggle — hidden; skills tracking removed from UI */}
 
         {/* Account */}
         <div className="pl-2 pr-1 text-right border-l border-white/10 ml-1">

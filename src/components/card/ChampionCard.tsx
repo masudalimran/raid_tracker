@@ -6,7 +6,6 @@ import {
   FaCheckCircle,
   FaEdit,
   FaInfoCircle,
-  FaRegHourglass,
   FaTrash,
 } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
@@ -24,16 +23,12 @@ import type ITeam from "../../models/ITeam.ts";
 import { fromSlug } from "../../helpers/fromSlug.ts";
 import colorByRarity from "../../helpers/colorByRarity.ts";
 import getFactionLogo from "../../helpers/getFactionLogo.ts";
-import type { Skill } from "../../models/IChampion.ts";
-import { LuRefreshCw } from "react-icons/lu";
-import { BsDice6Fill } from "react-icons/bs";
 
 interface ChampionCardProps {
   champion: IChampion;
   onEdit?: (champion: IChampion) => void;
   onDelete?: () => void;
   nsfw?: boolean;
-  showSkills?: boolean;
 }
 
 export default function ChampionCard({
@@ -41,10 +36,8 @@ export default function ChampionCard({
   onEdit,
   onDelete,
   nsfw = false,
-  showSkills = false,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
-  const [showAllSkills, setShowAllSkills] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
 
   const supabase_team_list: ITeam[] = JSON.parse(
@@ -66,14 +59,6 @@ export default function ChampionCard({
   ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
 
   if (!current_rsl_account) return;
-
-  const groupedSkills = !champion.skills
-    ? []
-    : champion.skills.reduce<Record<number, Skill[]>>((acc, skill) => {
-        if (!acc[skill.skill_index]) acc[skill.skill_index] = [];
-        acc[skill.skill_index].push(skill);
-        return acc;
-      }, {});
 
   const stats = [
     {
@@ -260,8 +245,7 @@ export default function ChampionCard({
         {/* ── IDENTITY STRIP: Faction · Rarity dot · Type · Roles ── */}
         <div
           className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border-b border-gray-100"
-          hidden={showAllSkills}
-        >
+                  >
           <div className="flex items-center gap-1.5 min-w-0">
             <img
               src={getFactionLogo(champion.faction)}
@@ -294,114 +278,8 @@ export default function ChampionCard({
         {/* ── BODY ── */}
         <div className="flex-1 px-3 py-2 space-y-2">
 
-          {/* Skills */}
-          {showSkills && (
-            <>
-              <div className={`overflow-auto pr-1 ${showAllSkills ? "h-60" : "h-20"}`}>
-                {Object.keys(groupedSkills).length > 0 ? (
-                  <table className="w-full">
-                    <tbody className="text-sm">
-                      {Object.entries(groupedSkills).map(([skillIndex, skillGroup]) =>
-                        skillGroup.map((skill, skillRowIndex) => (
-                          <tr key={`${skillIndex}-${skillRowIndex}`}>
-                            {skillRowIndex === 0 && (
-                              <td
-                                rowSpan={skillGroup.length}
-                                className="align-top font-semibold text-nowrap pr-2"
-                              >
-                                Skill {skillIndex}
-                              </td>
-                            )}
-                            <td className="pb-2 text-right">
-                              <div className="flex justify-end items-center flex-wrap gap-1">
-                                {skill.effects.map((effect, effectIndex) => (
-                                  <div
-                                    key={effectIndex}
-                                    className="flex items-center gap-0.5 border rounded-md overflow-hidden shadow-sm"
-                                    title={effect.name}
-                                  >
-                                    {effect.cool_down !== undefined && (
-                                      <span className="flex items-center bg-slate-800 text-white px-1.5 py-0.5 text-[10px] gap-0.5">
-                                        {effect.cool_down}<LuRefreshCw size={10} />
-                                      </span>
-                                    )}
-                                    {effect.duration !== undefined && (
-                                      <span className="flex items-center bg-slate-800 text-white px-1.5 py-0.5 text-[10px] gap-0.5">
-                                        {effect.duration}<FaRegHourglass size={9} />
-                                      </span>
-                                    )}
-                                    {effect.land_chance !== undefined && (
-                                      <span className="flex items-center px-1.5 py-0.5 text-[10px] gap-0.5">
-                                        {effect.land_chance}%<BsDice6Fill size={10} />
-                                      </span>
-                                    )}
-                                    {effect.target !== undefined && (
-                                      <span className="px-1 text-[11px]">
-                                        {effect.target === "All"
-                                          ? "🌐"
-                                          : effect.target === "Single"
-                                            ? "🎯"
-                                            : "🎯🎯"}
-                                      </span>
-                                    )}
-                                    <img
-                                      src={`/img/${effect.type}s/${effect.name}.png`}
-                                      className={`w-5 h-5 object-contain ${effect.type === "buff" ? "bg-blue-500" : "bg-red-500"}`}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                    No Skills Data...
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                className={`text-xs px-3 py-0.5 border rounded-full ml-auto block hover:bg-gray-100 transition cursor-pointer ${Object.keys(groupedSkills).length === 0 ? "invisible" : ""}`}
-                onClick={() => setShowAllSkills(!showAllSkills)}
-              >
-                {showAllSkills ? "Show Less ▲" : "Show More ▼"}
-              </button>
-
-              {/* Aura */}
-              <div
-                className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50"
-                hidden={showAllSkills}
-                title={champion?.aura?.effect ?? "N/A"}
-              >
-                {champion?.aura?.effect ? (
-                  <img
-                    src={`/img/auras/${champion.aura.effect}.webp`}
-                    className="w-6 h-6 object-contain shrink-0"
-                  />
-                ) : (
-                  <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-[10px] text-gray-400 shrink-0">
-                    X
-                  </div>
-                )}
-                <div className="text-xs min-w-0">
-                  <p className="font-semibold truncate">
-                    {champion?.aura?.effect || "No Aura"}
-                  </p>
-                  <p className="text-gray-400 truncate">
-                    {champion?.aura?.active_in ?? "N/A"} · {champion?.aura?.effectiveness ?? "N/A"}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
           {/* ── STATS with progress bars ── */}
-          <div className="space-y-1.5" hidden={showAllSkills}>
+          <div className="space-y-1.5">
             {stats.map(({ label, key, threshold }) => {
               const value = champion[key];
               const colorClass = checkBuildThreshold(value, threshold);
@@ -435,7 +313,7 @@ export default function ChampionCard({
           </div>
 
           {/* ── BOOK · MASTERY · TEAMS ── */}
-          <div className="flex items-center gap-2 flex-wrap pt-1" hidden={showAllSkills}>
+          <div className="flex items-center gap-2 flex-wrap pt-1">
             <span
               className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium
                 ${champion.is_booked
@@ -475,9 +353,9 @@ export default function ChampionCard({
           </div>
         </div>
 
-        {/* ── GEAR SETS ── */}
+        {/* ── GEAR SETS (equipped — from RTK sync) ── */}
         {champion.gear && champion.gear.length > 0 && (
-          <div className="flex flex-wrap gap-1 px-3 pb-2" hidden={showAllSkills}>
+          <div className="flex flex-wrap gap-1 px-3 pb-1">
             {champion.gear.map((g) => {
               const setInfo = getSetInfo(g.setKindId);
               return (

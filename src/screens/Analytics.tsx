@@ -8,7 +8,7 @@ import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
-import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus";
+// import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 
 const RARITY_ORDER = [
   ChampionRarity.MYTHICAL,
@@ -258,11 +258,6 @@ export default function Analytics() {
       (c) => !checkIfChampionIsBuilt(c) && c.spd > 120,
     ).length;
 
-    // Skill data coverage
-    const withSkills = champions.filter(
-      (c) => c.skills && c.skills.length > 0,
-    ).length;
-
     return {
       total,
       inUse,
@@ -275,7 +270,6 @@ export default function Analytics() {
       topFactions,
       improving,
       notBuilt,
-      withSkills,
     };
   }, [champions, teams]);
 
@@ -439,38 +433,7 @@ export default function Analytics() {
         </div>
       </section>
 
-      {/* ── Data health — only shown when skill tracking is enabled ── */}
-      {getShowSkillsStatus() && (
-        <section className="space-y-2">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-            Data Health
-          </h2>
-          <div className="bg-white border rounded-xl p-4 space-y-3">
-            <BarRow
-              label="Skill Data"
-              count={stats.withSkills}
-              max={stats.total}
-              colorClass={
-                stats.withSkills / stats.total >= 0.5
-                  ? "bg-green-400"
-                  : "bg-amber-400"
-              }
-              textClass="text-gray-600"
-            />
-            <p className="text-xs text-gray-400">
-              Champions with skill data get richer role coverage analysis on
-              area team screens.
-              {stats.withSkills < stats.total && (
-                <span className="text-amber-600">
-                  {" "}
-                  {stats.total - stats.withSkills} champions have no skills
-                  entered yet.
-                </span>
-              )}
-            </p>
-          </div>
-        </section>
-      )}
+      {/* Data Health section removed — skill tracking hidden */}
     </div>
   );
 }
