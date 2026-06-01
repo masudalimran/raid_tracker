@@ -1,4 +1,16 @@
-import { FaStar } from "react-icons/fa";
+/**
+ * RSL-style star display:
+ *   Gold    = base star rank (1–stars)
+ *   Fuchsia = ascended beyond base (stars+1–ascension_stars... wait, ascension fills from left)
+ *
+ * In RSL, all three share the same 6 positions, highest state wins:
+ *   Red     (awaken)    takes priority
+ *   Fuchsia (ascension) next
+ *   Gold    (base rank) next
+ *   Gray    (empty)     remainder
+ */
+
+const MAX = 6;
 
 interface ChampionStarProps {
   stars: number;
@@ -11,37 +23,20 @@ export default function ChampionStar({
   ascension_stars = 0,
   awaken_stars = 0,
 }: ChampionStarProps) {
-  return stars < ascension_stars || stars < awaken_stars ? (
-    <></>
-  ) : (
-    <>
-      <div className="flex items-center gap-1">
-        {/* Star */}
-        <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-yellow-500 w-6 h-6 animate-pulse duration-75" />
-          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
-            {stars}
-          </span>
-        </div>
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: MAX }, (_, i) => {
+        const pos = i + 1;
+        let color: string;
+        if (pos <= awaken_stars)     color = "text-red-500";
+        else if (pos <= ascension_stars) color = "text-fuchsia-400";
+        else if (pos <= stars)       color = "text-amber-400";
+        else                         color = "text-gray-600 opacity-40";
 
-        {/* Ascension */}
-        <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-purple-500 w-6 h-6 animate-pulse duration-200" />
-          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
-            {ascension_stars}
-          </span>
-        </div>
-
-        {/* <span className="text-xs opacity-60">|</span> */}
-
-        {/* Awakening */}
-        <div className="relative flex items-center justify-center w-6 h-6">
-          <FaStar className="text-red-600 w-6 h-6 animate-pulse duration-600" />
-          <span className="absolute mt-1 text-[10px] font-bold text-white leading-none">
-            {awaken_stars}
-          </span>
-        </div>
-      </div>
-    </>
+        return (
+          <span key={pos} className={`text-sm leading-none ${color}`}>★</span>
+        );
+      })}
+    </div>
   );
 }

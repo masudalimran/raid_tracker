@@ -30,6 +30,7 @@ import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { clearRoleReqCache } from "../helpers/teamRoleOverrides";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -97,6 +98,7 @@ export default function Champions() {
     if (forceRefresh) {
       localStorage.removeItem("supabase_champion_list");
       localStorage.removeItem("supabase_team_list");
+      clearRoleReqCache();
     }
     await fetchChampions();
     const generated = await generateChampions();
@@ -228,31 +230,11 @@ export default function Champions() {
             <h1 className="text-base font-bold text-gray-900">Champions</h1>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {[
-                {
-                  label: "Total",
-                  value: total,
-                  color: "bg-gray-100 text-gray-600",
-                },
-                {
-                  label: "In Use",
-                  value: inUse,
-                  color: "bg-blue-50 text-blue-600",
-                },
-                {
-                  label: "Built",
-                  value: built,
-                  color: "bg-green-50 text-green-600",
-                },
-                {
-                  label: "Needs Work",
-                  value: improving,
-                  color: "bg-amber-50 text-amber-600",
-                },
-                {
-                  label: "Untouched",
-                  value: untouched,
-                  color: "bg-gray-50 text-gray-400",
-                },
+                { label: "Total",      value: total,    color: "bg-gray-100 text-gray-600" },
+                { label: "In Use",     value: inUse,    color: "bg-blue-50 text-blue-600" },
+                { label: "Built",      value: built,    color: "bg-green-50 text-green-600" },
+                { label: "Needs Work", value: improving, color: "bg-amber-50 text-amber-600" },
+                { label: "Untouched",  value: untouched, color: "bg-gray-50 text-gray-400" },
               ].map(({ label, value, color }) => (
                 <span
                   key={label}
@@ -262,6 +244,32 @@ export default function Champions() {
                 </span>
               ))}
             </div>
+
+            {/* ── Stacked build-status bar ── */}
+            {total > 0 && (() => {
+              const perfectBuilt = built - improving;
+              const notBuilt     = total - built - untouched;
+              const segments = [
+                { pct: (perfectBuilt / total) * 100, bg: "bg-green-500", label: `Built ✓: ${perfectBuilt}` },
+                { pct: (improving    / total) * 100, bg: "bg-amber-400", label: `Needs Work: ${improving}` },
+                { pct: (notBuilt     / total) * 100, bg: "bg-red-400",   label: `Not Built: ${notBuilt}` },
+                { pct: (untouched    / total) * 100, bg: "bg-gray-300",  label: `Untouched: ${untouched}` },
+              ];
+              return (
+                <div className="flex h-1.5 rounded-full overflow-hidden mt-2 gap-px">
+                  {segments.map(({ pct, bg, label }) =>
+                    pct > 0 ? (
+                      <div
+                        key={label}
+                        title={label}
+                        className={`${bg} transition-all duration-500`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    ) : null
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">

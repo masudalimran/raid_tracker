@@ -29,6 +29,8 @@ interface ChampionCardProps {
   onEdit?: (champion: IChampion) => void;
   onDelete?: () => void;
   nsfw?: boolean;
+  /** Role labels this champion satisfies for the current team. Undefined = no team context. */
+  matchedRoles?: string[];
 }
 
 export default function ChampionCard({
@@ -36,6 +38,7 @@ export default function ChampionCard({
   onEdit,
   onDelete,
   nsfw = false,
+  matchedRoles,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
@@ -194,34 +197,6 @@ export default function ChampionCard({
               awaken_stars={champion.awaken_stars}
             />
           </div>
-
-          {/* PP / Impact – bottom-left, overlaid on image */}
-          {(champion.priority || champion.champion_impact) && (
-            <div className="absolute bottom-2 left-2 z-20 flex gap-1">
-              {champion.priority && (
-                <div
-                  className="flex items-center overflow-hidden rounded-full shadow-lg border border-pink-400 text-xs"
-                  title="Priority Point"
-                >
-                  <span className="px-2 py-0.5 bg-pink-500 text-white font-semibold">PP</span>
-                  <span className="px-2 py-0.5 bg-white/95 text-pink-600 font-semibold">
-                    {champion.priority.toFixed(1)}%
-                  </span>
-                </div>
-              )}
-              {champion.champion_impact && !champion.priority && (
-                <div
-                  className="flex items-center overflow-hidden rounded-full shadow-lg border border-orange-400 text-xs"
-                  title="Impact on game"
-                >
-                  <span className="px-2 py-0.5 bg-orange-500 text-white font-semibold">Impact</span>
-                  <span className="px-2 py-0.5 bg-white/95 text-orange-600 font-semibold">
-                    {champion.champion_impact.toFixed(1)}%
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Blurred background */}
           <div
@@ -396,6 +371,28 @@ export default function ChampionCard({
           {statusLabel}
         </div>
       </div>
+
+      {/* ── TEAM ROLE MATCH — outside card border, one per line ── */}
+      {matchedRoles !== undefined && (
+        <div className="mt-1.5 space-y-1">
+          {matchedRoles.length > 0 ? (
+            matchedRoles.map((role) => (
+              <div
+                key={role}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-green-50 border-green-300 text-green-700"
+              >
+                <span>✓</span>
+                <span>{role}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-gray-50 border-gray-200 text-gray-400">
+              <span>—</span>
+              <span>no required role match</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {deleteModalOpen && (
         <Modal

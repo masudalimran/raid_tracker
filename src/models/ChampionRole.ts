@@ -24,6 +24,9 @@ export const ChampionRole = {
   LEECH: "Leech",
   SHIELDER: "Shielder",
   SLEEP_DEBUFFER: "Sleep Debuffer",
+  DECREASE_ATK: "Decrease ATK",
+  DECREASE_DEF: "Decrease DEF",
+  WEAKEN: "Weaken",
 } as const;
 
 export const ChampionRoleImageMap: Record<ChampionRole, string> = {
@@ -52,6 +55,9 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Leech: "img/debuffs/Leech.png",
   Shielder: "img/buffs/Shield.png",
   "Sleep Debuffer": "img/debuffs/Sleep.png",
+  "Decrease ATK": "img/debuffs/Decrease ATK.png",
+  "Decrease DEF": "img/debuffs/Decrease DEF.png",
+  Weaken: "img/debuffs/Weaken.png",
 };
 
 export type ChampionRole = (typeof ChampionRole)[keyof typeof ChampionRole];

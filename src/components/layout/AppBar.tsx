@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
-import { getAccountCoverage } from "../../helpers/getChampionPowerScore";
+import { fetchTeams } from "../../helpers/handleTeams";
 // import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus"; // skills hidden
 // import { GiBroadsword, GiZeusSword } from "react-icons/gi"; // skills hidden
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -18,7 +18,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
-  const [accountCoverage, setAccountCoverage] = useState<number>(0);
+  const [teamCount, setTeamCount] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
   const logout = () => {
@@ -42,7 +42,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   useEffect(() => {
     setNsfw(getNsfwStatus());
     // setShowSkills(getShowSkillsStatus()); // skills hidden
-    getAccountCoverage().then(setAccountCoverage);
+    fetchTeams().then((teams) => setTeamCount(teams.length));
   }, []);
 
   useEffect(() => {
@@ -73,16 +73,16 @@ function AppBar({ onMenuToggle }: AppBarProps) {
 
       {/* Right: actions */}
       <div className="flex items-center gap-1">
-        {/* Coverage badge */}
+        {/* Team count */}
         <div
           className="flex items-center overflow-hidden rounded-md text-xs border border-amber-500/40"
-          title="% of weighted content areas covered by teams"
+          title="Number of area teams you have built"
         >
           <span className="hidden sm:block px-2 py-1 bg-amber-500 text-white font-semibold uppercase tracking-wide text-[10px]">
-            Coverage
+            Teams
           </span>
           <span className="px-2 py-1 text-amber-400 font-bold">
-            {accountCoverage.toFixed(1)}%
+            {teamCount}
           </span>
         </div>
 

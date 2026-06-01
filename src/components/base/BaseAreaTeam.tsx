@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useState } from "react";
-import { FaEdit, FaPlusSquare } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaEdit, FaPlusSquare, FaCheck, FaUndo, FaPlus, FaTimes } from "react-icons/fa";
 import type IChampion from "../../models/IChampion";
 import type ITeam from "../../models/ITeam";
 import {
@@ -17,9 +17,19 @@ import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { HYDRA } from "../../models/game_areas/Hydra";
 import toSlug from "../../helpers/toSlug";
 import {
-  AREA_ROLE_REQUIREMENTS,
   checkTeamCoverage,
+  getChampionRoleMatches,
+  getTeamRequirements,
 } from "../../data/areaRoleRequirements";
+import type { AreaRoleReq } from "../../data/areaRoleRequirements";
+import {
+  saveTeamOverride,
+  clearTeamOverride,
+  hasOverride,
+  ensureRoleRequirementsLoaded,
+} from "../../helpers/teamRoleOverrides";
+import { ChampionRole } from "../../models/ChampionRole";
+import { ROLE_CATEGORIES } from "../../data/roleCategories";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -42,6 +52,11 @@ export default function BaseAreaTeam({
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
   const [reloadDetector, setReloadDetector] = useState<boolean>(false);
+
+  // Role editor state
+  const [editingRoles, setEditingRoles] = useState(false);
+  const [draftReqs, setDraftReqs] = useState<AreaRoleReq[]>(() => getTeamRequirements(teamKey));
+  const [addingRole, setAddingRole] = useState<string>("");
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamChampionList, setTeamChampionList] = useState<IChampion[]>([]);
   const [champions, setChampions] = useState<IChampion[]>([]);
@@ -56,6 +71,7 @@ export default function BaseAreaTeam({
 
   useEffect(() => {
     const load = async () => {
+      await ensureRoleRequirementsLoaded();
       let champs = await fetchChampions();
       champs = await generateChampions();
       setChampions(champs);
@@ -156,39 +172,160 @@ export default function BaseAreaTeam({
           </div>
         )}
 
-        {/* ── Role Coverage ── */}
+        {/* ── Role Coverage + Editor ── */}
         {(() => {
-          const reqs = AREA_ROLE_REQUIREMENTS[teamKey];
-          if (!reqs || teamChampionList.length === 0) return null;
-          const coverage = checkTeamCoverage(reqs, teamChampionList);
+          const activeReqs = editingRoles ? draftReqs : getTeamRequirements(teamKey);
+          const showPanel  = activeReqs.length > 0 || editingRoles;
+          if (!showPanel) return null;
+
+          const coverage = teamChampionList.length > 0
+            ? checkTeamCoverage(activeReqs, teamChampionList)
+            : [];
+
+          const handleSave = async () => {
+            await saveTeamOverride(teamKey, draftReqs);
+            setEditingRoles(false);
+          };
+          const handleReset = async () => {
+            await clearTeamOverride(teamKey);
+            setDraftReqs(getTeamRequirements(teamKey));
+            setEditingRoles(false);
+          };
+          const removeReq = (label: string) =>
+            setDraftReqs((prev) => prev.filter((r) => r.label !== label));
+          const addReq = () => {
+            if (!addingRole) return;
+            const exists = draftReqs.some((r) => r.label === addingRole);
+            if (!exists) {
+              setDraftReqs((prev) => [
+                ...prev,
+                {
+                  label: addingRole,
+                  tip: `${addingRole} required in this team`,
+                  matchRoles: [addingRole as ChampionRole],
+                  matchEffects: [],
+                },
+              ]);
+            }
+            setAddingRole("");
+          };
+
           return (
-            <div className="mx-4 mt-3">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
-                Role Coverage
-              </p>
+            <div className="mx-4 mt-3 space-y-2">
+              {/* Header row */}
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                  Role Requirements
+                  {hasOverride(teamKey) && !editingRoles && (
+                    <span className="ml-2 text-amber-500 normal-case font-normal">· customised</span>
+                  )}
+                </p>
+                {!editingRoles ? (
+                  <button
+                    type="button"
+                    onClick={() => { setDraftReqs(getTeamRequirements(teamKey)); setEditingRoles(true); }}
+                    className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                  >
+                    <FaEdit size={10} /> Edit
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="flex items-center gap-1 text-[10px] text-green-600 hover:text-green-700 font-semibold cursor-pointer"
+                    >
+                      <FaCheck size={10} /> Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600 cursor-pointer"
+                    >
+                      <FaUndo size={10} /> Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingRoles(false)}
+                      className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-red-500 cursor-pointer"
+                    >
+                      <FaTimes size={10} /> Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Coverage badges / edit chips */}
               <div className="flex flex-wrap gap-1.5">
-                {coverage.map(({ req, coveredBy }) => {
-                  const covered = coveredBy.length > 0;
+                {(editingRoles ? draftReqs : activeReqs).map((req) => {
+                  const result = coverage.find((c) => c.req.label === req.label);
+                  const covered = (result?.coveredBy.length ?? 0) > 0;
                   return (
                     <div
                       key={req.label}
-                      title={`${req.tip}${covered ? `\nCovered by: ${coveredBy.join(", ")}` : "\nNot detected in this team"}`}
-                      className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition cursor-default
-                        ${covered
-                          ? "bg-green-50 border-green-300 text-green-700"
-                          : "bg-gray-50 border-gray-200 text-gray-400"
+                      title={editingRoles ? undefined : `${req.tip}${covered ? `\nCovered by: ${result?.coveredBy.join(", ")}` : "\nNot detected in this team"}`}
+                      className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition
+                        ${editingRoles
+                          ? "bg-white border-gray-300 text-gray-600"
+                          : covered
+                            ? "bg-green-50 border-green-300 text-green-700 cursor-default"
+                            : "bg-gray-50 border-gray-200 text-gray-400 cursor-default"
                         }`}
                     >
-                      <span>{covered ? "✓" : "✗"}</span>
+                      {!editingRoles && <span>{covered ? "✓" : "✗"}</span>}
                       <span>{req.label}</span>
-                      {covered && (
+                      {editingRoles && (
+                        <button
+                          type="button"
+                          onClick={() => removeReq(req.label)}
+                          className="text-gray-400 hover:text-red-500 transition cursor-pointer"
+                        >
+                          <FaTimes size={9} />
+                        </button>
+                      )}
+                      {!editingRoles && covered && (
                         <span className="hidden group-hover:block absolute bottom-full left-0 mb-2 bg-gray-800 text-white text-[10px] rounded-lg px-2.5 py-1.5 z-50 whitespace-nowrap shadow-xl">
-                          {coveredBy.join(" · ")}
+                          {result?.coveredBy.join(" · ")}
                         </span>
                       )}
                     </div>
                   );
                 })}
+
+                {/* Add role input */}
+                {editingRoles && (
+                  <div className="flex items-center gap-1">
+                    <select
+                      value={addingRole}
+                      onChange={(e) => setAddingRole(e.target.value)}
+                      className="text-xs border border-gray-200 rounded-full px-2 py-0.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    >
+                      <option value="">+ Add role…</option>
+                      {ROLE_CATEGORIES.map(({ label, roles }) => {
+                        const available = roles.filter(
+                          (r) => !draftReqs.some((d) => d.label === r),
+                        );
+                        if (available.length === 0) return null;
+                        return (
+                          <optgroup key={label} label={`── ${label} ──`}>
+                            {available.map((r) => (
+                              <option key={r} value={r}>{r}</option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
+                    {addingRole && (
+                      <button
+                        type="button"
+                        onClick={addReq}
+                        className="flex items-center gap-0.5 text-[10px] text-amber-600 font-semibold cursor-pointer"
+                      >
+                        <FaPlus size={9} /> Add
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -203,20 +340,27 @@ export default function BaseAreaTeam({
               <p className="text-gray-400 text-xs mt-1">Add a team to get started.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {teamChampionList.map((champion) => (
-                <Fragment key={champion.id}>
-                  <ChampionCard
-                    champion={champion}
-                    nsfw={nsfw}
-                    onEdit={(c) => {
-                      setEditingChampion(c);
-                      setShowChampionModal(true);
-                    }}
-                    onDelete={() => setShowChampionModal(false)}
-                  />
-                </Fragment>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start">
+              {teamChampionList.map((champion) => {
+                const activeReqs = getTeamRequirements(teamKey);
+                const matched = activeReqs.length > 0
+                  ? getChampionRoleMatches(champion, activeReqs)
+                  : undefined;
+                return (
+                  <div key={String(champion.id)} className="flex flex-col">
+                    <ChampionCard
+                      champion={champion}
+                      nsfw={nsfw}
+                      matchedRoles={matched}
+                      onEdit={(c) => {
+                        setEditingChampion(c);
+                        setShowChampionModal(true);
+                      }}
+                      onDelete={() => setShowChampionModal(false)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

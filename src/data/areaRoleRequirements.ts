@@ -62,11 +62,11 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   // ── Clan Boss ─────────────────────────────────────────────────────────────
   DEMON_LORD: [
     r("Decrease ATK",  "Reduces Clan Boss ATK — critical for survival",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Decrease DEF",  "Amplifies all damage dealt to the boss",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Weaken",        "Further damage amplification",
-      [ChampionRole.DEBUFFER], ["Weaken"]),
+      [ChampionRole.WEAKEN], ["Weaken"]),
     r("Poison / DoT",  "Core damage source for CB",
       [ChampionRole.POISONER], ["Poison", "HP Burn"]),
     r("HP Burn",       "Percentage-based damage every turn",
@@ -80,7 +80,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   CHIMERA: [
     r("Decrease ATK",  "Reduces Chimera's ATK",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Decrease SPD",  "Slows Chimera's cycle",
       [ChampionRole.TM_REDUCER], ["Decrease SPD", "TM Reduction"]),
     r("Poison / DoT",  "Sustained damage",
@@ -102,19 +102,19 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("HP Burn",       "Additional DoT layer",
       [ChampionRole.HP_BURNER], ["HP Burn"]),
     r("Decrease ATK",  "Reduces Dragon's ATK to survive hits",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Decrease DEF",  "Amplifies all damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Weaken",        "Further amplification",
-      [ChampionRole.DEBUFFER], ["Weaken"]),
+      [ChampionRole.WEAKEN], ["Weaken"]),
   ],
   DRAGON_HARD: [
     r("Poison",        "Primary damage source",
       [ChampionRole.POISONER], ["Poison"]),
     r("Decrease ATK",  "Reduces Dragon's massive ATK",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Decrease DEF",  "Amplifies damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Speed Booster", "Outpace Dragon's waves",
       [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
     r("Reviver",       "Hard mode requires sustain",
@@ -122,7 +122,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   ICE_GOLEM: [
     r("Decrease ATK",  "Reduces golem and adds' ATK",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Crowd Control", "Freeze / Stun adds",
       [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
     r("Reviver",       "Ice Golem AoE can wipe teams",
@@ -132,7 +132,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   ICE_GOLEM_HARD: [
     r("Decrease ATK",  "Critical — hard adds hit very hard",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Crowd Control", "Stun / Freeze adds immediately",
       [ChampionRole.CONTROL], ["Freeze", "Stun", "Sleep"]),
     r("Reviver",       "Mandatory at hard difficulty",
@@ -150,7 +150,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("HP Burn",       "Tick damage on boss and spiderlings",
       [ChampionRole.HP_BURNER], ["HP Burn"]),
     r("Decrease DEF",  "Required to burst the boss",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
   ],
   SPIDER_HARD: [
     r("AoE Nuker",     "Spiderlings hit harder — clear fast",
@@ -162,7 +162,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("HP Burn",       "Sustained boss damage",
       [ChampionRole.HP_BURNER], ["HP Burn"]),
     r("Decrease DEF",  "Amplifies burst",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
   ],
   FIRE_KNIGHT: [
     r("TM Reduction",      "Breaks the Fire Knight's shield faster",
@@ -170,7 +170,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Single Target DPS", "Must hit the boss between shields",
       [ChampionRole.NUKER], []),
     r("Decrease DEF",      "Amplifies damage between shields",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
   ],
   FIRE_KNIGHT_HARD: [
     r("TM Reduction",      "Essential — shield recharges fast",
@@ -178,7 +178,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Single Target DPS", "Burst between shield windows",
       [ChampionRole.NUKER], []),
     r("Decrease DEF",      "Amplifies damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Speed Booster",     "Outpace the boss",
       [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
   ],
@@ -186,7 +186,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("HP Burn",       "Percentage-based damage — core Sand Devil mechanic",
       [ChampionRole.HP_BURNER], ["HP Burn"]),
     r("Decrease DEF",  "Increases all damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Sleep",         "Sleep debuff to control Sand Devil's phase rotation",
       [ChampionRole.SLEEP_DEBUFFER], ["Sleep"]),
     r("Reviver",       "Sand Devil's AoE can wipe the team",
@@ -194,7 +194,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   SHOGUN: [
     r("Decrease ATK",  "Mitigate Shogun's massive ATK",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("TM Reduction",  "Critical — Shogun is very fast",
       [ChampionRole.TM_REDUCER], ["TM Reduction", "Decrease SPD"]),
     r("AoE DPS",       "Clear waves quickly",
@@ -204,7 +204,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   IRON_TWIN: [
     r("Decrease DEF",  "Required for damage phases",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Decrease SPD",  "Slow Iron Twin to control its deadly turn cycles",
       [ChampionRole.TM_REDUCER], ["Decrease SPD", "TM Reduction"]),
     r("Healer",        "Iron Twin reflects damage — need sustain",
@@ -222,7 +222,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Leech",            "Counters Hydra's healing mechanic",
       [ChampionRole.LEECH], ["Leech"]),
     r("Decrease DEF",     "Amplifies all head damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Poison / HP Burn", "Sustained damage across all heads",
       [ChampionRole.POISONER, ChampionRole.HP_BURNER], ["Poison", "HP Burn"]),
   ],
@@ -234,7 +234,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Leech",            "Counters Hydra healing",
       [ChampionRole.LEECH], ["Leech"]),
     r("Decrease ATK",     "Reduce incoming damage",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Poison / HP Burn", "Core Hydra damage",
       [ChampionRole.POISONER, ChampionRole.HP_BURNER], ["Poison", "HP Burn"]),
   ],
@@ -246,7 +246,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Leech",            "Counters Hydra healing",
       [ChampionRole.LEECH], ["Leech"]),
     r("Decrease DEF",     "Amplifies damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Reviver",          "Third head should sustain the team",
       [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
   ],
@@ -260,7 +260,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Crowd Control", "Stun / freeze / sleep the enemy team",
       [ChampionRole.CONTROL], ["Stun", "Freeze", "Sleep", "Provoke"]),
     r("Decrease DEF",  "Required to enable the nuker",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
   ],
   TAG_ARENA_A: [
     r("Nuker",         "Tag Arena rewards burst damage",
@@ -274,7 +274,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Nuker",          "Burst damage in Tag Arena waves",
       [ChampionRole.NUKER, ChampionRole.ARENA], []),
     r("Decrease DEF",   "Enable nuke damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Healer / Shield","Sustain through multiple waves",
       [ChampionRole.HEALER], ["Continuous Heal", "Shield"]),
   ],
@@ -284,7 +284,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Reviver",      "Third team needs longevity",
       [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
     r("Decrease DEF", "Enable burst",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
   ],
 
   // ── Doom Tower Normal ─────────────────────────────────────────────────────
@@ -302,7 +302,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("HP Burn",      "Stacks with Poison",
       [ChampionRole.HP_BURNER], ["HP Burn"]),
     r("Decrease DEF", "Amplifies damage in vulnerable phases",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Block Buffs",  "Stops self-buffing in later floors",
       [ChampionRole.BLOCK_BUFF], ["Block Buffs"]),
   ],
@@ -320,7 +320,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   ],
   GRYPHON: [
     r("Decrease ATK", "Gryphon ATK shreds without mitigation",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Decrease SPD", "Slow the Gryphon's cycle further",
       [ChampionRole.TM_REDUCER], ["Decrease SPD"]),
     r("TM Reduction", "Slow the Gryphon's turn meter",
@@ -334,7 +334,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Bomb Defuse",  "Block Debuffs / cleanse to survive bombs",
       [ChampionRole.CLEANSER, ChampionRole.DOOM_TOWER], ["Block Debuffs"]),
     r("Decrease ATK", "Reduce Bommal's strike damage",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
     r("Reviver",      "Bombs will kill without defuse",
       [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
     r("Unkillable",   "Unkillable comps ignore bombs entirely",
@@ -354,7 +354,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Poison",       "Main damage vector",
       [ChampionRole.POISONER], ["Poison"]),
     r("Decrease DEF", "Amplify all damage",
-      [ChampionRole.DEBUFFER], ["Decrease DEF"]),
+      [ChampionRole.DECREASE_DEF], ["Decrease DEF"]),
     r("Speed Booster","Outpace Dragon's damage waves",
       [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
   ],
@@ -366,7 +366,7 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
     r("Healer",       "Web effects drain constantly",
       [ChampionRole.HEALER], ["Continuous Heal"]),
     r("Decrease ATK", "Frost Spider hits hard",
-      [ChampionRole.DEBUFFER], ["Decrease ATK"]),
+      [ChampionRole.DECREASE_ATK], ["Decrease ATK"]),
   ],
 
   // ── Doom Tower Hard — same roles as normal ────────────────────────────────
@@ -401,6 +401,17 @@ Object.assign(AREA_ROLE_REQUIREMENTS, {
   UNDEAD_HORDES:    FACTION_WARS_REQS,
 });
 
+// ── Override-aware requirement lookup ────────────────────────────────────────
+
+import { getTeamOverride } from "../helpers/teamRoleOverrides";
+
+/** Returns requirements for a team, preferring user's localStorage override. */
+export function getTeamRequirements(teamKey: string): AreaRoleReq[] {
+  const override = getTeamOverride(teamKey);
+  if (override !== null) return override;
+  return AREA_ROLE_REQUIREMENTS[teamKey] ?? [];
+}
+
 // ── Coverage checker ──────────────────────────────────────────────────────────
 
 export interface CoverageResult {
@@ -408,23 +419,25 @@ export interface CoverageResult {
   coveredBy: string[];
 }
 
+/** A requirement is covered if any champion in the team has the required role tagged. */
 export function checkTeamCoverage(
   requirements: AreaRoleReq[],
   teamChampions: IChampion[],
 ): CoverageResult[] {
-  return requirements.map((req) => {
-    const coveredBy: string[] = [];
-    for (const champ of teamChampions) {
-      const roleMatch = req.matchRoles?.some((role) => champ.role?.includes(role));
-      if (roleMatch) { coveredBy.push(champ.name); continue; }
+  return requirements.map((req) => ({
+    req,
+    coveredBy: teamChampions
+      .filter((champ) => req.matchRoles?.some((role) => champ.role?.includes(role)))
+      .map((champ) => champ.name),
+  }));
+}
 
-      if (req.matchEffects?.length && champ.skills && champ.skills.length > 0) {
-        const effectMatch = champ.skills.some((s) =>
-          s.effects?.some((e) => req.matchEffects!.includes(e.name)),
-        );
-        if (effectMatch) coveredBy.push(champ.name);
-      }
-    }
-    return { req, coveredBy };
-  });
+/** Returns the labels of requirements this champion satisfies based solely on their tagged roles. */
+export function getChampionRoleMatches(
+  champion: IChampion,
+  requirements: AreaRoleReq[],
+): string[] {
+  return requirements
+    .filter((req) => req.matchRoles?.some((role) => champion.role?.includes(role)))
+    .map((req) => req.label);
 }
