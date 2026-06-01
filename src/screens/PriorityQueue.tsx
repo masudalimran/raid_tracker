@@ -110,9 +110,16 @@ interface QueueItemProps {
   onDone: (id: string) => void;
   doneLabel: string;
   isDoing: boolean;
+  mode: "books" | "masteries";
 }
 
-function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing }: QueueItemProps) {
+function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode }: QueueItemProps) {
+  // Only show completion badge for the "other" upgrade type
+  const crossBadge =
+    mode === "books"
+      ? champion.has_mastery ? "Mastered ✓" : null
+      : champion.is_booked   ? "Booked ✓"   : null;
+
   return (
     <div className="flex items-center gap-3 bg-white border rounded-xl px-4 py-3 shadow-sm">
       {/* rank badge */}
@@ -122,27 +129,18 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing }: Qu
 
       <ChampionPortrait champion={champion} />
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-sm truncate">{champion.name}</span>
-          <span className={`text-[10px] font-semibold ${RARITY_TEXT[champion.rarity]}`}>
-            {champion.rarity}
-          </span>
-          {teamCount > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">
-              {teamCount} team{teamCount !== 1 ? "s" : ""}
-            </span>
-          )}
-          {checkIfChampionIsBuilt(champion) && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600">
-              Built
-            </span>
-          )}
-        </div>
-        {(champion.role ?? []).length > 0 && (
-          <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-            {champion.role.join(" · ")}
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <p className="font-semibold text-sm truncate">{champion.name}</p>
+        <p className={`text-[10px] font-semibold ${RARITY_TEXT[champion.rarity]}`}>
+          {champion.rarity}
+        </p>
+        {teamCount > 0 && (
+          <p className="text-[10px] text-blue-600 font-medium">
+            {teamCount} team{teamCount !== 1 ? "s" : ""}
           </p>
+        )}
+        {crossBadge && (
+          <p className="text-[10px] text-green-600 font-semibold">{crossBadge}</p>
         )}
       </div>
 
@@ -167,10 +165,11 @@ interface QueuePanelProps {
   emptyMsg: string;
   onDone: (id: string) => void;
   processing: Set<string>;
+  mode: "books" | "masteries";
 }
 
 function QueuePanel({
-  title, icon, champions, doneLabel, emptyMsg, onDone, processing,
+  title, icon, champions, doneLabel, emptyMsg, onDone, processing, mode,
 }: QueuePanelProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -198,6 +197,7 @@ function QueuePanel({
               doneLabel={doneLabel}
               onDone={onDone}
               isDoing={processing.has(String(champion.id))}
+              mode={mode}
             />
           ))}
         </div>
@@ -263,6 +263,7 @@ function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPa
                   doneLabel="Mark Booked"
                   onDone={onDone}
                   isDoing={processing.has(String(champion.id))}
+                  mode="books"
                 />
               ))}
             </div>
@@ -404,6 +405,7 @@ export default function PriorityQueue() {
           emptyMsg="All priority champions have masteries!"
           onDone={markMasteryDone}
           processing={processingMasteries}
+          mode="masteries"
         />
       </div>
 

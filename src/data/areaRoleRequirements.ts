@@ -27,18 +27,22 @@ const r = (
   matchEffects: string[] = [],
 ): AreaRoleReq => ({ label, tip, matchRoles, matchEffects });
 
-// ── Faction Wars (same composition for all — Epyre Cob guide) ────────────────
+// ── Faction Wars ─────────────────────────────────────────────────────────────
 const FACTION_WARS_REQS: AreaRoleReq[] = [
-  r("Reviver",       "Most important role in FW — recovers from deaths",
-    [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
-  r("Speed Booster", "Go first and control tempo",
-    [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
-  r("Cleanser",      "Remove debuffs applied by the FW boss",
-    [ChampionRole.CLEANSER], ["Block Debuffs"]),
-  r("Nuker / DPS",   "Deal damage to clear the stage",
-    [ChampionRole.NUKER], []),
-  r("Healer",        "Sustain the team through multi-wave content",
-    [ChampionRole.HEALER], ["Continuous Heal"]),
+  r("Reviver",            "Most important role in FW — recovers fallen champions",
+    [ChampionRole.REVIVER]),
+  r("Speed Booster",      "Go first and control tempo",
+    [ChampionRole.SPEED_BOOSTER, ChampionRole.TM_BOOSTER]),
+  r("Cleanser",           "Remove debuffs applied by the FW boss",
+    [ChampionRole.CLEANSER]),
+  r("Healer",             "Sustain the team through multi-wave content",
+    [ChampionRole.HEALER]),
+  r("Crowd Control",      "Lock down enemies to control wave pace",
+    [ChampionRole.CONTROL, ChampionRole.FREEZE, ChampionRole.STUN]),
+  r("Heal on Enemy Death","Passive healing triggered when enemies die — excellent in FW waves",
+    [ChampionRole.HEAL_ON_DEATH]),
+  r("Multi Hitter",       "Multiple hits build ally turn meter through waves",
+    [ChampionRole.MULTI_HITTER]),
 ];
 
 // ── Potion Keep (same for all four) ──────────────────────────────────────────
