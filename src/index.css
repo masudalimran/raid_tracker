@@ -26,6 +26,16 @@
   }
 }
 
+@keyframes orbit-cw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.orbit-cw {
+  animation: orbit-cw 10s linear infinite;
+  transform-origin: center;
+}
+
 @layer utilities {
   .flex-center {
     @apply flex justify-center items-center gap-2;

@@ -76,29 +76,63 @@ const RARITY_TEXT: Record<string, string> = {
   [ChampionRarity.COMMON]:    "text-gray-500",
 };
 
-function ChampionPortrait({ champion }: { champion: IChampion }) {
+function ChampionPortrait({ champion, badge }: { champion: IChampion; badge?: string }) {
   const [failed, setFailed] = useState(false);
   const initial = champion.name.charAt(0).toUpperCase();
 
-  if (champion.imgUrl && !failed) {
-    return (
-      <div
-        className={`w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 ${colorByRarity(champion.rarity)}`}
-      >
-        <img
-          src={champion.imgUrl}
-          alt={champion.name}
-          onError={() => setFailed(true)}
-          className="w-full h-full object-cover object-top"
-        />
-      </div>
-    );
-  }
-  return (
-    <div
-      className={`w-12 h-12 rounded-full shrink-0 flex items-center justify-center font-bold text-lg border-2 ${colorByRarity(champion.rarity)}`}
-    >
+  // SVG constants — 64px container, 44px portrait, text arc just outside border
+  const S = 64;          // total SVG / container size
+  const IMG = 44;        // portrait circle diameter
+  const OFF = (S - IMG) / 2; // = 10, centers portrait inside SVG
+  const CX = S / 2;     // = 32
+  const CY = S / 2;     // = 32
+  const R  = 30;         // arc radius — sits just outside the portrait border
+  const arcId = `rq-arc-${champion.id}`;
+
+  const portraitContent = champion.imgUrl && !failed ? (
+    <img
+      src={champion.imgUrl}
+      alt={champion.name}
+      onError={() => setFailed(true)}
+      className="w-full h-full object-cover object-top rounded-full"
+    />
+  ) : (
+    <div className="w-full h-full rounded-full flex items-center justify-center font-bold text-base">
       {initial}
+    </div>
+  );
+
+  return (
+    <div className="relative shrink-0" style={{ width: S, height: S }}>
+      {/* Portrait image */}
+      <div
+        className={`absolute rounded-full overflow-hidden border-2 ${colorByRarity(champion.rarity)}`}
+        style={{ width: IMG, height: IMG, top: OFF, left: OFF }}
+      >
+        {portraitContent}
+      </div>
+
+      {/* Curved arc text — upper semicircle */}
+      {badge && (
+        <svg
+          className="absolute inset-0 pointer-events-none orbit-cw"
+          width={S}
+          height={S}
+          viewBox={`0 0 ${S} ${S}`}
+        >
+          <defs>
+            <path
+              id={arcId}
+              d={`M ${CX - R},${CY} A ${R},${R} 0 0,0 ${CX + R},${CY}`}
+            />
+          </defs>
+          <text fontSize="5.8" fill="#16a34a" fontWeight="bold" letterSpacing="1.2">
+            <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
+              {badge.toUpperCase()}
+            </textPath>
+          </text>
+        </svg>
+      )}
     </div>
   );
 }
@@ -127,7 +161,7 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
         {rank}
       </span>
 
-      <ChampionPortrait champion={champion} />
+      <ChampionPortrait champion={champion} badge={crossBadge ?? undefined} />
 
       <div className="flex-1 min-w-0 space-y-0.5">
         <p className="font-semibold text-sm truncate">{champion.name}</p>
@@ -138,9 +172,6 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
           <p className="text-[10px] text-blue-600 font-medium">
             {teamCount} team{teamCount !== 1 ? "s" : ""}
           </p>
-        )}
-        {crossBadge && (
-          <p className="text-[10px] text-green-600 font-semibold">{crossBadge}</p>
         )}
       </div>
 
