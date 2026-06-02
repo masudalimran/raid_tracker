@@ -197,10 +197,11 @@ interface QueuePanelProps {
   onDone: (id: string) => void;
   processing: Set<string>;
   mode: "books" | "masteries";
+  sectionLabel?: string;
 }
 
 function QueuePanel({
-  title, icon, champions, doneLabel, emptyMsg, onDone, processing, mode,
+  title, icon, champions, doneLabel, emptyMsg, onDone, processing, mode, sectionLabel,
 }: QueuePanelProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -219,6 +220,15 @@ function QueuePanel({
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Alignment spacer — matches the rarity section header height in the books panel */}
+          {sectionLabel && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                {sectionLabel}
+              </span>
+              <div className="flex-1 h-px bg-gray-100" />
+            </div>
+          )}
           {champions.map(({ champion, teamCount }, i) => (
             <QueueItem
               key={champion.id}
@@ -437,6 +447,7 @@ export default function PriorityQueue() {
           onDone={markMasteryDone}
           processing={processingMasteries}
           mode="masteries"
+          sectionLabel="All Champions"
         />
       </div>
 
