@@ -4,6 +4,8 @@ import Home from "./screens/Home";
 import MainLayout from "./layouts/MainLayout.tsx";
 import Champions from "./screens/Champions.tsx";
 import Login from "./screens/Login.tsx";
+import SignUp from "./screens/SignUp.tsx";
+import Onboarding from "./screens/Onboarding.tsx";
 import PageNotFound from "./screens/PageNotFound.tsx";
 import RtkSync from "./screens/RtkSync.tsx";
 import ShardLog from "./screens/ShardLog.tsx";
@@ -19,7 +21,10 @@ function App() {
 
   useEffect(() => {
     const supabase_auth = localStorage.getItem("supabase_auth");
-    if (!supabase_auth) {
+    const publicRoutes = ["/login", "/signup"];
+    const currentPath = window.location.pathname;
+
+    if (!supabase_auth && !publicRoutes.includes(currentPath) && currentPath !== "/onboarding") {
       navigate("/login");
     }
   }, [navigate]);
@@ -29,6 +34,8 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/champions" element={<Champions />} />
         <Route path="/import-json" element={<ImportJson />} />
         <Route path="/priority-queue" element={<PriorityQueue />} />
