@@ -101,10 +101,17 @@ export default function Champions() {
       localStorage.removeItem("supabase_rsl_account_list");
       clearRoleReqCache();
     }
-    await fetchChampions();
-    const generated = await generateChampions();
-    setChampionList(generated);
-    fetchTeams();
+
+    try {
+      await fetchChampions();
+      const generated = await generateChampions();
+      setChampionList(generated || []);
+      await fetchTeams();
+    } catch (error) {
+      console.error("Error loading champions:", error);
+      setChampionList([]);
+    }
+
     setTimeout(() => setLoading(false), 400);
   }, []);
 

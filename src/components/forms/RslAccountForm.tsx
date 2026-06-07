@@ -14,7 +14,6 @@ export default function RslAccountSelect() {
   const fetchAccounts = async () => {
     setAccounts([]);
 
-    // Always fetch fresh from Supabase when explicitly called
     const { data, error } = await supabase.from("rsl_accounts").select("*");
     if (error) {
       console.error("Error fetching RSL accounts:", error);
@@ -22,24 +21,27 @@ export default function RslAccountSelect() {
     }
 
     if (data && data.length > 0) {
-      // Check localStorage for which was active
+      // Get the currently active account from localStorage
       const storedAccounts = localStorage.getItem("supabase_rsl_account_list");
-      let activeId = selectedId;
+      let activeAccountId: string | null = null;
 
       if (storedAccounts) {
         const parsed: RSL_Account[] = JSON.parse(storedAccounts);
-        const active = parsed.find((acc) => acc.is_currently_active);
-        if (active) activeId = active.id;
+        const activeAccount = parsed.find((acc) => acc.is_currently_active);
+        if (activeAccount) {
+          activeAccountId = activeAccount.id;
+        }
       }
 
-      // Set is_currently_active based on what was previously active, or first if unknown
+      // Map fresh data with correct active status
       const updated: RSL_Account[] = data.map((acc) => ({
         ...acc,
-        is_currently_active: acc.id === activeId || (selectedId === "" && data[0].id === acc.id),
+        is_currently_active: activeAccountId ? acc.id === activeAccountId : data[0].id === acc.id,
       }));
 
+      const actualActive = updated.find((a) => a.is_currently_active) || updated[0];
       setAccounts(updated);
-      setSelectedId(updated.find((a) => a.is_currently_active)?.id || updated[0].id);
+      setSelectedId(actualActive.id);
       localStorage.setItem("supabase_rsl_account_list", JSON.stringify(updated));
     }
   };
