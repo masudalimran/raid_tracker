@@ -98,6 +98,7 @@ export default function Champions() {
     if (forceRefresh) {
       localStorage.removeItem("supabase_champion_list");
       localStorage.removeItem("supabase_team_list");
+      localStorage.removeItem("supabase_rsl_account_list");
       clearRoleReqCache();
     }
     await fetchChampions();

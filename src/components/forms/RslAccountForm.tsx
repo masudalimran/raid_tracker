@@ -14,16 +14,7 @@ export default function RslAccountSelect() {
   const fetchAccounts = async () => {
     setAccounts([]);
 
-    const storedAccounts = localStorage.getItem("supabase_rsl_account_list");
-    if (storedAccounts) {
-      const parsed: RSL_Account[] = JSON.parse(storedAccounts);
-      setAccounts(parsed);
-
-      const active = parsed.find((acc) => acc.is_currently_active);
-      if (active) setSelectedId(active.id);
-      return;
-    }
-
+    // Always fetch fresh from Supabase when explicitly called
     const { data, error } = await supabase.from("rsl_accounts").select("*");
     if (error) {
       console.error("Error fetching RSL accounts:", error);
@@ -31,17 +22,25 @@ export default function RslAccountSelect() {
     }
 
     if (data && data.length > 0) {
-      const updated: RSL_Account[] = data.map((acc, index) => ({
+      // Check localStorage for which was active
+      const storedAccounts = localStorage.getItem("supabase_rsl_account_list");
+      let activeId = selectedId;
+
+      if (storedAccounts) {
+        const parsed: RSL_Account[] = JSON.parse(storedAccounts);
+        const active = parsed.find((acc) => acc.is_currently_active);
+        if (active) activeId = active.id;
+      }
+
+      // Set is_currently_active based on what was previously active, or first if unknown
+      const updated: RSL_Account[] = data.map((acc) => ({
         ...acc,
-        is_currently_active: index === 0,
+        is_currently_active: acc.id === activeId || (selectedId === "" && data[0].id === acc.id),
       }));
 
       setAccounts(updated);
-      setSelectedId(updated[0].id);
-      localStorage.setItem(
-        "supabase_rsl_account_list",
-        JSON.stringify(updated)
-      );
+      setSelectedId(updated.find((a) => a.is_currently_active)?.id || updated[0].id);
+      localStorage.setItem("supabase_rsl_account_list", JSON.stringify(updated));
     }
   };
 
@@ -67,6 +66,7 @@ export default function RslAccountSelect() {
     setEditingAccount(undefined);
     setIsDropdownOpen(false);
     if (shouldReload) {
+      localStorage.removeItem("supabase_rsl_account_list");
       fetchAccounts();
     }
   };
