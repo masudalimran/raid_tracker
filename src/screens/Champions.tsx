@@ -31,6 +31,7 @@ import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { clearRoleReqCache } from "../helpers/teamRoleOverrides";
+import { fetchRslAccounts } from "../helpers/handleRslAccounts";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -98,8 +99,8 @@ export default function Champions() {
     if (forceRefresh) {
       localStorage.removeItem("supabase_champion_list");
       localStorage.removeItem("supabase_team_list");
-      localStorage.removeItem("supabase_rsl_account_list");
       clearRoleReqCache();
+      await fetchRslAccounts();
     }
 
     try {

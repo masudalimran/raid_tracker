@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
 import type RSL_Account from "../../models/RSL_Account";
 import { MdAdd, MdEdit, MdKeyboardArrowDown } from "react-icons/md";
 import RslAccountModal from "../modals/RslAccountModal";
+import { fetchRslAccounts } from "../../helpers/handleRslAccounts";
 
 export default function RslAccountSelect() {
   const [accounts, setAccounts] = useState<RSL_Account[]>([]);
@@ -14,35 +14,11 @@ export default function RslAccountSelect() {
   const fetchAccounts = async () => {
     setAccounts([]);
 
-    const { data, error } = await supabase.from("rsl_accounts").select("*");
-    if (error) {
-      console.error("Error fetching RSL accounts:", error);
-      return;
-    }
-
-    if (data && data.length > 0) {
-      // Get the currently active account from localStorage
-      const storedAccounts = localStorage.getItem("supabase_rsl_account_list");
-      let activeAccountId: string | null = null;
-
-      if (storedAccounts) {
-        const parsed: RSL_Account[] = JSON.parse(storedAccounts);
-        const activeAccount = parsed.find((acc) => acc.is_currently_active);
-        if (activeAccount) {
-          activeAccountId = activeAccount.id;
-        }
-      }
-
-      // Map fresh data with correct active status
-      const updated: RSL_Account[] = data.map((acc) => ({
-        ...acc,
-        is_currently_active: activeAccountId ? acc.id === activeAccountId : data[0].id === acc.id,
-      }));
-
+    const updated = await fetchRslAccounts();
+    if (updated.length > 0) {
       const actualActive = updated.find((a) => a.is_currently_active) || updated[0];
       setAccounts(updated);
       setSelectedId(actualActive.id);
-      localStorage.setItem("supabase_rsl_account_list", JSON.stringify(updated));
     }
   };
 

@@ -26,6 +26,19 @@ export function deleteShardPull(id: string): void {
   savePulls(loadShardPulls().filter((p) => p.id !== id));
 }
 
+export function updateShardPull(
+  id: string,
+  updates: Partial<Pick<IShardPull, "championName" | "rarity" | "notes" | "imgUrl">>,
+): IShardPull[] {
+  const pulls = loadShardPulls();
+  const index = pulls.findIndex((p) => p.id === id);
+  if (index !== -1) {
+    pulls[index] = { ...pulls[index], ...updates };
+    savePulls(pulls);
+  }
+  return pulls;
+}
+
 export function clearAllPulls(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
@@ -48,6 +61,8 @@ export interface ShardStats {
   rare: number;
   pityCount: number;
   legendaryRate: string;
+  epicRate: string;
+  rareRate: string;
 }
 
 export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardStats {
@@ -57,6 +72,15 @@ export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardS
   const epic      = filtered.filter((p) => p.rarity === "Epic").length;
   const rare      = filtered.filter((p) => p.rarity === "Rare").length;
   const pityCount = getPityCount(pulls, shardType);
-  const legendaryRate = total > 0 ? ((legendary / total) * 100).toFixed(2) : "0.00";
-  return { total, legendary, epic, rare, pityCount, legendaryRate };
+  const rate = (count: number) => (total > 0 ? ((count / total) * 100).toFixed(2) : "0.00");
+  return {
+    total,
+    legendary,
+    epic,
+    rare,
+    pityCount,
+    legendaryRate: rate(legendary),
+    epicRate: rate(epic),
+    rareRate: rate(rare),
+  };
 }

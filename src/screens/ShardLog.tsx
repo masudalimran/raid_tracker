@@ -1,14 +1,20 @@
 import { useState, useMemo, useRef } from "react";
-import { FaTrash, FaPlus } from "react-icons/fa";
+import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
 import { MdCasino } from "react-icons/md";
+import { CiSearch } from "react-icons/ci";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
 import type { IShardPull } from "../models/IShard";
 import {
   loadShardPulls,
   addShardPull,
   deleteShardPull,
+  updateShardPull,
   getShardStats,
 } from "../helpers/handleShardPulls";
+import { useChampion } from "../hooks/useChampion";
+import DefaultChampionObject from "../components/forms/defaultChampionObject";
+import type { ChampionFormData } from "../lib/zod/championSchema";
+import type { ChampionRarity } from "../models/ChampionRarity";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
 
@@ -41,6 +47,14 @@ const ALL_RARITIES = Object.values(PullRarity).filter(
   (r) => r !== "Common" && r !== "Uncommon",
 );
 
+// Ancient & Void shards can't pull Legendary+ in practice and skew toward
+// Rare; Sacred/Prism shards default to Epic since those are far more common.
+function getDefaultRarity(shardType: string): PullRarity {
+  return shardType === ShardType.ANCIENT || shardType === ShardType.VOID
+    ? PullRarity.RARE
+    : PullRarity.EPIC;
+}
+
 const SHARD_COLOR: Record<string, string> = {
   Ancient: "bg-amber-500",
   Void:    "bg-purple-600",
@@ -55,6 +69,13 @@ const RARITY_COLOR: Record<string, string> = {
   Epic:      "bg-purple-100 text-purple-700",
   Legendary: "bg-amber-100 text-amber-800 font-semibold",
   Mythical:  "bg-red-100 text-red-700 font-semibold",
+};
+
+// Extra accent applied to whole pull rows so rare drops stand out.
+const PULL_ROW_ACCENT: Record<string, string> = {
+  Legendary: "border-amber-300 bg-gradient-to-r from-amber-50 via-white to-white ring-1 ring-amber-200 shadow-amber-100",
+  Mythical:  "border-amber-300 bg-gradient-to-r from-amber-50 via-white to-white ring-1 ring-amber-200 shadow-amber-100",
+  Epic:      "border-purple-200 bg-purple-50/50",
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -120,11 +141,12 @@ function ChampionAvatar({
 export default function ShardLog() {
   const [pulls, setPulls] = useState<IShardPull[]>(() => loadShardPulls());
   const [activeTab, setActiveTab] = useState<string>(ShardType.ANCIENT);
-  const championLookup = useMemo(() => loadChampionLookup(), []);
+  const [championLookup, setChampionLookup] = useState<Map<string, ChampionInfo>>(() => loadChampionLookup());
+  const { addChampion } = useChampion();
 
   const [form, setForm] = useState({
     championName: "",
-    rarity: PullRarity.EPIC as PullRarity,
+    rarity: getDefaultRarity(ShardType.ANCIENT) as PullRarity,
     isFragment: false,
     notes: "",
   });
@@ -134,10 +156,34 @@ export default function ShardLog() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Log list search & filter
+  const [logSearch, setLogSearch] = useState("");
+  const [logRarityFilter, setLogRarityFilter] = useState<string>("rarity_all");
+
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    championName: "",
+    rarity: PullRarity.RARE as PullRarity,
+    notes: "",
+  });
+
   const tabPulls = useMemo(
     () => pulls.filter((p) => p.shardType === activeTab),
     [pulls, activeTab],
   );
+
+  const filteredTabPulls = useMemo(() => {
+    let list = tabPulls;
+    if (logSearch.trim()) {
+      const lower = logSearch.trim().toLowerCase();
+      list = list.filter((p) => p.championName.toLowerCase().includes(lower));
+    }
+    if (logRarityFilter !== "rarity_all") {
+      list = list.filter((p) => p.rarity === logRarityFilter);
+    }
+    return list;
+  }, [tabPulls, logSearch, logRarityFilter]);
 
   const stats = useMemo(
     () => getShardStats(pulls, activeTab as typeof ShardType[keyof typeof ShardType]),
@@ -176,13 +222,54 @@ export default function ShardLog() {
     inputRef.current?.focus();
   };
 
-  const handleAdd = () => {
-    if (!form.championName.trim()) return;
+  // Creates a new champion roster entry (same as adding via the Champions page)
+  // when a pulled champion doesn't yet exist for the current RSL account.
+  const createChampionFromPull = async (name: string, rarity: PullRarity): Promise<ChampionInfo | undefined> => {
+    const { id: userId } = JSON.parse(localStorage.getItem("supabase_auth") || "{}");
+    const current_rsl_account = JSON.parse(
+      localStorage.getItem("supabase_rsl_account_list") ?? "[]",
+    ).find((acc: { is_currently_active: boolean }) => acc.is_currently_active);
+
+    if (!current_rsl_account || !userId) return undefined;
+
+    const newChampionData = {
+      ...DefaultChampionObject,
+      name,
+      rarity: rarity as unknown as ChampionRarity,
+      user_id: userId,
+      rsl_account_id: current_rsl_account.id,
+    } as ChampionFormData;
+
+    try {
+      const inserted = await addChampion(newChampionData);
+      const supabase_champions = JSON.parse(
+        localStorage.getItem("supabase_champion_list") || "[]",
+      );
+      supabase_champions.push(inserted);
+      localStorage.setItem("supabase_champion_list", JSON.stringify(supabase_champions));
+
+      const newInfo: ChampionInfo = { rarity: inserted.rarity ?? rarity, imgUrl: inserted.imgUrl ?? "" };
+      setChampionLookup((prev) => new Map(prev).set(name.toLowerCase(), newInfo));
+      return newInfo;
+    } catch (error) {
+      console.error("Error adding champion from shard log:", error);
+      return undefined;
+    }
+  };
+
+  const handleAdd = async () => {
+    const trimmedName = form.championName.trim();
+    if (!trimmedName) return;
     setShowSuggestions(false);
-    const info = championLookup.get(form.championName.toLowerCase());
+
+    let info = championLookup.get(trimmedName.toLowerCase());
+    if (!info) {
+      info = await createChampionFromPull(trimmedName, form.rarity);
+    }
+
     const entry = addShardPull({
       shardType:    activeTab as IShardPull["shardType"],
-      championName: form.championName.trim(),
+      championName: trimmedName,
       rarity:       form.rarity,
       pulledAt:     new Date().toISOString(),
       isFragment:   form.isFragment,
@@ -190,7 +277,7 @@ export default function ShardLog() {
       imgUrl:       info?.imgUrl,
     });
     setPulls((prev) => [entry, ...prev]);
-    setForm({ championName: "", rarity: PullRarity.EPIC, isFragment: false, notes: "" });
+    setForm({ championName: "", rarity: getDefaultRarity(activeTab), isFragment: false, notes: "" });
     setPreviewUrl("");
     setShowForm(false);
   };
@@ -198,6 +285,31 @@ export default function ShardLog() {
   const handleDelete = (id: string) => {
     deleteShardPull(id);
     setPulls((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const startEdit = (pull: IShardPull) => {
+    setEditingId(pull.id);
+    setEditForm({
+      championName: pull.championName,
+      rarity: pull.rarity,
+      notes: pull.notes ?? "",
+    });
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = (id: string) => {
+    const trimmedName = editForm.championName.trim();
+    if (!trimmedName) return;
+    const info = championLookup.get(trimmedName.toLowerCase());
+    const updated = updateShardPull(id, {
+      championName: trimmedName,
+      rarity: editForm.rarity,
+      notes: editForm.notes.trim() || undefined,
+      imgUrl: info?.imgUrl,
+    });
+    setPulls(updated);
+    setEditingId(null);
   };
 
   return (
@@ -212,7 +324,12 @@ export default function ShardLog() {
         </div>
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            if (!showForm) {
+              setForm((f) => ({ ...f, rarity: getDefaultRarity(activeTab) }));
+            }
+            setShowForm((v) => !v);
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition cursor-pointer shrink-0"
         >
           <FaPlus size={11} /> Log Pull
@@ -226,7 +343,10 @@ export default function ShardLog() {
             <button
               key={type}
               type="button"
-              onClick={() => setActiveTab(type)}
+              onClick={() => {
+                setActiveTab(type);
+                setForm((f) => ({ ...f, rarity: getDefaultRarity(type) }));
+              }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer
                 ${activeTab === type
                   ? `${SHARD_COLOR[type]} text-white shadow`
@@ -238,12 +358,14 @@ export default function ShardLog() {
         </div>
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: "Total Pulls", value: stats.total,                    color: "text-gray-700" },
-            { label: "Legendary",   value: stats.legendary,                 color: "text-amber-600" },
-            { label: "Epic",        value: stats.epic,                      color: "text-purple-600" },
-            { label: "Leg. Rate",   value: `${stats.legendaryRate}%`,        color: "text-green-600" },
+            { label: "Total Pulls", value: stats.total,             color: "text-gray-700" },
+            { label: "Legendary",   value: stats.legendary,          color: "text-amber-600" },
+            { label: "Epic",        value: stats.epic,               color: "text-purple-600" },
+            { label: "Leg. Rate",   value: `${stats.legendaryRate}%`, color: "text-green-600" },
+            { label: "Epic Rate",   value: `${stats.epicRate}%`,      color: "text-purple-500" },
+            { label: "Rare Rate",   value: `${stats.rareRate}%`,      color: "text-blue-500" },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white border rounded-xl p-3 text-center shadow-sm">
               <p className={`text-xl font-bold ${color}`}>{value}</p>
@@ -282,6 +404,7 @@ export default function ShardLog() {
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   autoComplete="off"
+                  autoFocus
                 />
                 {showSuggestions && (
                   <ul className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
@@ -361,22 +484,109 @@ export default function ShardLog() {
           </div>
         )}
 
+        {/* ── Pull list search & filter ── */}
+        {tabPulls.length > 0 && (
+          <div className="flex gap-2 flex-wrap items-center">
+            <div className="relative flex-1 min-w-40">
+              <input
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                placeholder="Search pulled champions…"
+                className="basic-input w-full pr-8"
+              />
+              <CiSearch
+                size={18}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+            </div>
+            <select
+              value={logRarityFilter}
+              onChange={(e) => setLogRarityFilter(e.target.value)}
+              className="basic-input w-auto"
+            >
+              <option value="rarity_all">All Rarities</option>
+              {ALL_RARITIES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* ── Pull list ── */}
         {tabPulls.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
             <MdCasino size={40} className="opacity-30" />
             <p className="text-sm">No pulls logged for {activeTab} shards yet.</p>
           </div>
+        ) : filteredTabPulls.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+            <CiSearch size={40} className="opacity-30" />
+            <p className="text-sm">No pulls match your search/filter.</p>
+          </div>
         ) : (
           <div className="space-y-2">
-            {tabPulls.map((pull) => {
+            {filteredTabPulls.map((pull) => {
               const imgUrl = (pull as IShardPull & { imgUrl?: string }).imgUrl
                 ?? championLookup.get(pull.championName.toLowerCase())?.imgUrl
                 ?? "";
+              const isEditing = editingId === pull.id;
+              const accent = PULL_ROW_ACCENT[pull.rarity] ?? "border-gray-200";
+
+              if (isEditing) {
+                return (
+                  <div
+                    key={pull.id}
+                    className="flex flex-col gap-2 bg-white border-2 border-amber-300 rounded-xl px-3 py-2.5 shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ChampionAvatar name={editForm.championName || "?"} imgUrl={imgUrl} size={40} />
+                      <input
+                        value={editForm.championName}
+                        onChange={(e) => setEditForm((f) => ({ ...f, championName: e.target.value }))}
+                        className="basic-input flex-1 min-w-0"
+                        placeholder="Champion name"
+                        autoFocus
+                      />
+                      <select
+                        value={editForm.rarity}
+                        onChange={(e) => setEditForm((f) => ({ ...f, rarity: e.target.value as PullRarity }))}
+                        className="basic-input w-auto shrink-0"
+                      >
+                        {ALL_RARITIES.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <input
+                      value={editForm.notes}
+                      onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                      className="basic-input w-full"
+                      placeholder="Notes (optional)"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => saveEdit(pull.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition cursor-pointer"
+                      >
+                        <FaCheck size={11} /> Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold hover:bg-gray-100 transition cursor-pointer"
+                      >
+                        <FaTimes size={11} /> Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={pull.id}
-                  className="flex items-center gap-3 bg-white border rounded-xl px-3 py-2.5 shadow-sm"
+                  className={`flex items-center gap-3 border rounded-xl px-3 py-2.5 shadow-sm ${accent}`}
                 >
                   <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={40} />
 
@@ -400,6 +610,13 @@ export default function ShardLog() {
                   <span className="text-[10px] text-gray-400 shrink-0">
                     {new Date(pull.pulledAt).toLocaleDateString()}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => startEdit(pull)}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition cursor-pointer shrink-0"
+                  >
+                    <FaEdit size={12} />
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(pull.id)}
