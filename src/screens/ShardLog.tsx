@@ -1,15 +1,18 @@
-import { useState, useMemo, useRef } from "react";
-import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt } from "react-icons/fa";
 import { MdCasino } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
 import type { IShardPull } from "../models/IShard";
 import {
-  loadShardPulls,
+  loadShardPullsForActiveAccount,
   addShardPull,
   deleteShardPull,
   updateShardPull,
   getShardStats,
+  ensureShardPullsLoaded,
+  syncShardPullsToCloud,
+  fetchShardPulls,
 } from "../helpers/handleShardPulls";
 import { useChampion } from "../hooks/useChampion";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
@@ -139,7 +142,7 @@ function ChampionAvatar({
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function ShardLog() {
-  const [pulls, setPulls] = useState<IShardPull[]>(() => loadShardPulls());
+  const [pulls, setPulls] = useState<IShardPull[]>(() => loadShardPullsForActiveAccount());
   const [activeTab, setActiveTab] = useState<string>(ShardType.ANCIENT);
   const [championLookup, setChampionLookup] = useState<Map<string, ChampionInfo>>(() => loadChampionLookup());
   const { addChampion } = useChampion();
@@ -167,6 +170,34 @@ export default function ShardLog() {
     rarity: PullRarity.RARE as PullRarity,
     notes: "",
   });
+
+  // Cloud sync
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "saved" | "error">("idle");
+  const [fetchStatus, setFetchStatus] = useState<"idle" | "fetching" | "done" | "error">("idle");
+
+  // Lazy-load from Supabase on first visit (e.g. a new browser/device with no local cache).
+  useEffect(() => {
+    ensureShardPullsLoaded().then(setPulls);
+  }, []);
+
+  const handleSync = async () => {
+    setSyncStatus("syncing");
+    const result = await syncShardPullsToCloud(pulls);
+    setSyncStatus(result.success ? "saved" : "error");
+    setTimeout(() => setSyncStatus("idle"), 2000);
+  };
+
+  const handleFetch = async () => {
+    setFetchStatus("fetching");
+    try {
+      const fetched = await fetchShardPulls();
+      setPulls(fetched);
+      setFetchStatus("done");
+    } catch {
+      setFetchStatus("error");
+    }
+    setTimeout(() => setFetchStatus("idle"), 2000);
+  };
 
   const tabPulls = useMemo(
     () => pulls.filter((p) => p.shardType === activeTab),
@@ -322,18 +353,52 @@ export default function ShardLog() {
             Track every pull, monitor pity counters, and see your rates.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (!showForm) {
-              setForm((f) => ({ ...f, rarity: getDefaultRarity(activeTab) }));
-            }
-            setShowForm((v) => !v);
-          }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition cursor-pointer shrink-0"
-        >
-          <FaPlus size={11} /> Log Pull
-        </button>
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (!showForm) {
+                setForm((f) => ({ ...f, rarity: getDefaultRarity(activeTab) }));
+              }
+              setShowForm((v) => !v);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition cursor-pointer shrink-0"
+          >
+            <FaPlus size={11} /> Log Pull
+          </button>
+          <button
+            type="button"
+            onClick={handleSync}
+            disabled={syncStatus === "syncing"}
+            title="Save the shard log to the cloud so it's available on other devices"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 border
+              ${syncStatus === "error"
+                ? "border-red-300 text-red-600 hover:bg-red-50"
+                : syncStatus === "saved"
+                ? "border-green-300 text-green-600 bg-green-50"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+              disabled:opacity-60 disabled:cursor-not-allowed`}
+          >
+            <FaCloudUploadAlt size={13} />
+            {syncStatus === "syncing" ? "Saving…" : syncStatus === "saved" ? "Saved!" : syncStatus === "error" ? "Failed" : "Save to Cloud"}
+          </button>
+          <button
+            type="button"
+            onClick={handleFetch}
+            disabled={fetchStatus === "fetching"}
+            title="Fetch the shard log saved to the cloud for this account"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 border
+              ${fetchStatus === "error"
+                ? "border-red-300 text-red-600 hover:bg-red-50"
+                : fetchStatus === "done"
+                ? "border-green-300 text-green-600 bg-green-50"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+              disabled:opacity-60 disabled:cursor-not-allowed`}
+          >
+            <FaCloudDownloadAlt size={13} />
+            {fetchStatus === "fetching" ? "Fetching…" : fetchStatus === "done" ? "Fetched!" : fetchStatus === "error" ? "Failed" : "Fetch from Cloud"}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4 space-y-4">
@@ -607,8 +672,10 @@ export default function ShardLog() {
                     )}
                   </div>
 
-                  <span className="text-[10px] text-gray-400 shrink-0">
+                  <span className="text-[10px] text-gray-400 shrink-0 text-right">
                     {new Date(pull.pulledAt).toLocaleDateString()}
+                    <br />
+                    {new Date(pull.pulledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                   <button
                     type="button"

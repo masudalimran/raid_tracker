@@ -25,6 +25,7 @@ export interface IShardPull {
   isFragment?: boolean;
   notes?: string;
   imgUrl?: string;
+  rsl_account_id?: string;
 }
 
 // Pity thresholds (guaranteed legendary pull) by shard type

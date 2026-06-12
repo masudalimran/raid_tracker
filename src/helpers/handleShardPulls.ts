@@ -1,21 +1,168 @@
+import { supabase } from "../lib/supabaseClient";
 import type { IShardPull, ShardType } from "../models/IShard";
 
-const STORAGE_KEY = "shard_pull_log";
+export const SHARD_PULL_STORAGE_KEY = "shard_pull_log";
+const STORAGE_KEY = SHARD_PULL_STORAGE_KEY;
 
-export function loadShardPulls(): IShardPull[] {
+function getActiveAccount(): { id: string } | null {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as IShardPull[];
+    return (
+      JSON.parse(localStorage.getItem("supabase_rsl_account_list") ?? "[]")
+        .find((acc: { is_currently_active: boolean }) => acc.is_currently_active) ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function getActiveRslAccountId(): string | null {
+  return getActiveAccount()?.id ?? null;
+}
+
+function getUserId(): string | null {
+  try {
+    const auth = JSON.parse(localStorage.getItem("supabase_auth") || "{}");
+    return auth?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Loads every locally-cached pull (across all RSL accounts). Pulls logged
+// before account-scoping was introduced have no rsl_account_id — tag them
+// with the currently active account so they don't disappear.
+export function loadShardPulls(): IShardPull[] {
+  let pulls: IShardPull[];
+  try {
+    pulls = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as IShardPull[];
   } catch {
     return [];
   }
+
+  const activeId = getActiveRslAccountId();
+  if (activeId && pulls.some((p) => !p.rsl_account_id)) {
+    pulls = pulls.map((p) => (p.rsl_account_id ? p : { ...p, rsl_account_id: activeId }));
+    savePulls(pulls);
+  }
+
+  return pulls;
+}
+
+// Pulls belonging to the currently active RSL account only — this is what
+// the Shard Log screen should display.
+export function loadShardPullsForActiveAccount(): IShardPull[] {
+  const activeId = getActiveRslAccountId();
+  if (!activeId) return [];
+  return loadShardPulls().filter((p) => p.rsl_account_id === activeId);
 }
 
 function savePulls(pulls: IShardPull[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(pulls));
 }
 
-export function addShardPull(pull: Omit<IShardPull, "id">): IShardPull {
-  const entry: IShardPull = { ...pull, id: crypto.randomUUID() };
+// ── Cloud sync — same cache pattern used by champions/teams/role_req ──────────
+
+interface ShardPullRow {
+  id: string;
+  user_id: string;
+  rsl_account_id: string;
+  shardType: string;
+  championName: string;
+  rarity: string;
+  pulledAt: string;
+  isFragment: boolean;
+  notes: string | null;
+  imgUrl: string | null;
+}
+
+const rowToPull = (row: ShardPullRow): IShardPull => ({
+  id: row.id,
+  shardType: row.shardType as IShardPull["shardType"],
+  championName: row.championName,
+  rarity: row.rarity as IShardPull["rarity"],
+  pulledAt: row.pulledAt,
+  isFragment: row.isFragment ?? false,
+  notes: row.notes ?? undefined,
+  imgUrl: row.imgUrl ?? undefined,
+  rsl_account_id: row.rsl_account_id,
+});
+
+/**
+ * Fetch the shard pull log for the active RSL account from Supabase,
+ * merge it into the local cache (replacing only this account's entries),
+ * and return the pulls for the active account.
+ */
+export async function fetchShardPulls(): Promise<IShardPull[]> {
+  const account = getActiveAccount();
+  if (!account) return loadShardPullsForActiveAccount();
+
+  const { data, error } = await supabase
+    .from("shard_pulls")
+    .select("*")
+    .eq("rsl_account_id", account.id)
+    .order("pulledAt", { ascending: false });
+
+  if (error) {
+    console.error("[shard_pulls] fetch failed:", error.message);
+    return loadShardPullsForActiveAccount();
+  }
+
+  const fetched = (data as ShardPullRow[]).map(rowToPull);
+  const otherAccountsPulls = loadShardPulls().filter((p) => p.rsl_account_id !== account.id);
+  savePulls([...otherAccountsPulls, ...fetched]);
+  return fetched;
+}
+
+/**
+ * Lazy-load the shard pull log — only hits Supabase on a completely fresh
+ * browser/device that has never cached any pulls.
+ */
+export async function ensureShardPullsLoaded(): Promise<IShardPull[]> {
+  if (localStorage.getItem(STORAGE_KEY) !== null) return loadShardPullsForActiveAccount();
+  return fetchShardPulls();
+}
+
+/**
+ * Push the active RSL account's local shard pull log to Supabase so it's
+ * visible from other browsers/devices.
+ */
+export async function syncShardPullsToCloud(
+  pulls: IShardPull[],
+): Promise<{ success: boolean; error?: string }> {
+  const account = getActiveAccount();
+  const userId = getUserId();
+
+  if (!account || !userId) {
+    return { success: false, error: "No active RSL account or user found." };
+  }
+
+  const accountPulls = pulls.filter((p) => !p.rsl_account_id || p.rsl_account_id === account.id);
+  if (accountPulls.length === 0) return { success: true };
+
+  const rows: ShardPullRow[] = accountPulls.map((p) => ({
+    id: p.id,
+    user_id: userId,
+    rsl_account_id: account.id,
+    shardType: p.shardType,
+    championName: p.championName,
+    rarity: p.rarity,
+    pulledAt: p.pulledAt,
+    isFragment: p.isFragment ?? false,
+    notes: p.notes ?? null,
+    imgUrl: p.imgUrl ?? null,
+  }));
+
+  const { error } = await supabase.from("shard_pulls").upsert(rows, { onConflict: "id" });
+  if (error) {
+    console.error("[shard_pulls] sync failed:", error.message);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+export function addShardPull(pull: Omit<IShardPull, "id" | "rsl_account_id">): IShardPull {
+  const entry: IShardPull = { ...pull, id: crypto.randomUUID(), rsl_account_id: getActiveRslAccountId() ?? undefined };
   const pulls = loadShardPulls();
   pulls.unshift(entry); // newest first
   savePulls(pulls);
@@ -36,7 +183,7 @@ export function updateShardPull(
     pulls[index] = { ...pulls[index], ...updates };
     savePulls(pulls);
   }
-  return pulls;
+  return pulls.filter((p) => p.rsl_account_id === getActiveRslAccountId());
 }
 
 export function clearAllPulls(): void {
