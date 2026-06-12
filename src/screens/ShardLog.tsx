@@ -310,7 +310,7 @@ export default function ShardLog() {
     setPulls((prev) => [entry, ...prev]);
     setForm({ championName: "", rarity: getDefaultRarity(activeTab), isFragment: false, notes: "" });
     setPreviewUrl("");
-    setShowForm(false);
+    inputRef.current?.focus();
   };
 
   const handleDelete = (id: string) => {
@@ -543,7 +543,7 @@ export default function ShardLog() {
                 onClick={() => { setShowForm(false); setPreviewUrl(""); }}
                 className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
               >
-                Cancel
+                Close
               </button>
             </div>
           </div>
