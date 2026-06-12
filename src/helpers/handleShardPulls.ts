@@ -203,11 +203,9 @@ export function getPityCount(pulls: IShardPull[], shardType: ShardType): number 
 
 export interface ShardStats {
   total: number;
-  legendary: number;
   epic: number;
   rare: number;
   pityCount: number;
-  legendaryRate: string;
   epicRate: string;
   rareRate: string;
 }
@@ -215,19 +213,49 @@ export interface ShardStats {
 export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardStats {
   const filtered = pulls.filter((p) => p.shardType === shardType);
   const total     = filtered.length;
-  const legendary = filtered.filter((p) => p.rarity === "Legendary" || p.rarity === "Mythical").length;
   const epic      = filtered.filter((p) => p.rarity === "Epic").length;
   const rare      = filtered.filter((p) => p.rarity === "Rare").length;
   const pityCount = getPityCount(pulls, shardType);
   const rate = (count: number) => (total > 0 ? ((count / total) * 100).toFixed(2) : "0.00");
   return {
     total,
-    legendary,
     epic,
     rare,
     pityCount,
-    legendaryRate: rate(legendary),
     epicRate: rate(epic),
     rareRate: rate(rare),
   };
+}
+
+/**
+ * Reset the pity counter for a shard type by deleting all logged pulls of
+ * that type for the active RSL account — both from the local cache and the
+ * cloud. Returns the active account's remaining pulls (all shard types).
+ */
+export async function resetPityForShardType(
+  shardType: ShardType,
+): Promise<{ success: boolean; pulls: IShardPull[]; error?: string }> {
+  const account = getActiveAccount();
+  if (!account) {
+    return { success: false, pulls: loadShardPullsForActiveAccount(), error: "No active RSL account found." };
+  }
+
+  const remaining = loadShardPulls().filter(
+    (p) => !(p.rsl_account_id === account.id && p.shardType === shardType),
+  );
+  savePulls(remaining);
+  const accountPulls = remaining.filter((p) => p.rsl_account_id === account.id);
+
+  const { error } = await supabase
+    .from("shard_pulls")
+    .delete()
+    .eq("rsl_account_id", account.id)
+    .eq("shardType", shardType);
+
+  if (error) {
+    console.error("[shard_pulls] reset failed:", error.message);
+    return { success: false, pulls: accountPulls, error: error.message };
+  }
+
+  return { success: true, pulls: accountPulls };
 }

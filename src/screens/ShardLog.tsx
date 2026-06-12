@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt } from "react-icons/fa";
+import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo } from "react-icons/fa";
 import { MdCasino } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
@@ -13,11 +13,13 @@ import {
   ensureShardPullsLoaded,
   syncShardPullsToCloud,
   fetchShardPulls,
+  resetPityForShardType,
 } from "../helpers/handleShardPulls";
 import { useChampion } from "../hooks/useChampion";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import type { ChampionFormData } from "../lib/zod/championSchema";
 import type { ChampionRarity } from "../models/ChampionRarity";
+import Modal from "../components/modals/Modal";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
 
@@ -82,6 +84,44 @@ const PULL_ROW_ACCENT: Record<string, string> = {
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+// Donut chart showing the Epic / Rare / Other split of pulls for a shard type.
+function PullDonut({ total, epic, rare }: { total: number; epic: number; rare: number }) {
+  const other = Math.max(total - epic - rare, 0);
+  const r = 40;
+  const circumference = 2 * Math.PI * r;
+  const segments = [
+    { value: epic,  color: "#9333ea" }, // purple-600
+    { value: rare,  color: "#3b82f6" }, // blue-500
+    { value: other, color: "#d1d5db" }, // gray-300
+  ];
+
+  let offset = 0;
+  return (
+    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+      <circle cx="50" cy="50" r={r} fill="none" stroke="#f3f4f6" strokeWidth="12" />
+      {total > 0 && segments.map((seg, i) => {
+        if (seg.value === 0) return null;
+        const length = (seg.value / total) * circumference;
+        const dashoffset = -offset;
+        offset += length;
+        return (
+          <circle
+            key={i}
+            cx="50"
+            cy="50"
+            r={r}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth="12"
+            strokeDasharray={`${length} ${circumference - length}`}
+            strokeDashoffset={dashoffset}
+          />
+        );
+      })}
+    </svg>
+  );
+}
 
 function PityBar({ count, max }: { count: number; max: number }) {
   const pct = Math.min((count / max) * 100, 100);
@@ -162,6 +202,7 @@ export default function ShardLog() {
   // Log list search & filter
   const [logSearch, setLogSearch] = useState("");
   const [logRarityFilter, setLogRarityFilter] = useState<string>("rarity_all");
+  const [logSort, setLogSort] = useState<"newest" | "oldest">("newest");
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -174,6 +215,13 @@ export default function ShardLog() {
   // Cloud sync
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "saved" | "error">("idle");
   const [fetchStatus, setFetchStatus] = useState<"idle" | "fetching" | "done" | "error">("idle");
+  const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+
+  // Pity reset
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetReason, setResetReason] = useState<"manual" | "auto">("manual");
+  const [resetStatus, setResetStatus] = useState<"idle" | "resetting" | "error">("idle");
+  const [resetConfirmText, setResetConfirmText] = useState("");
 
   // Lazy-load from Supabase on first visit (e.g. a new browser/device with no local cache).
   useEffect(() => {
@@ -181,6 +229,7 @@ export default function ShardLog() {
   }, []);
 
   const handleSync = async () => {
+    setShowSyncConfirm(false);
     setSyncStatus("syncing");
     const result = await syncShardPullsToCloud(pulls);
     setSyncStatus(result.success ? "saved" : "error");
@@ -213,8 +262,19 @@ export default function ShardLog() {
     if (logRarityFilter !== "rarity_all") {
       list = list.filter((p) => p.rarity === logRarityFilter);
     }
+    if (logSort === "oldest") {
+      list = [...list].reverse();
+    }
     return list;
-  }, [tabPulls, logSearch, logRarityFilter]);
+  }, [tabPulls, logSearch, logRarityFilter, logSort]);
+
+  const filtersActive = logSearch.trim() !== "" || logRarityFilter !== "rarity_all" || logSort !== "newest";
+
+  const clearFilters = () => {
+    setLogSearch("");
+    setLogRarityFilter("rarity_all");
+    setLogSort("newest");
+  };
 
   const stats = useMemo(
     () => getShardStats(pulls, activeTab as typeof ShardType[keyof typeof ShardType]),
@@ -312,6 +372,30 @@ export default function ShardLog() {
     setForm({ championName: "", rarity: getDefaultRarity(activeTab), isFragment: false, notes: "" });
     setPreviewUrl("");
     inputRef.current?.focus();
+
+    if (entry.rarity === PullRarity.LEGENDARY || entry.rarity === PullRarity.MYTHICAL) {
+      setResetReason("auto");
+      setResetConfirmText("");
+      setShowResetConfirm(true);
+    }
+  };
+
+  const closeResetConfirm = () => {
+    setShowResetConfirm(false);
+    setResetStatus("idle");
+    setResetConfirmText("");
+  };
+
+  const handleResetPity = async () => {
+    if (resetConfirmText.trim().toUpperCase() !== activeTab.toUpperCase()) return;
+    setResetStatus("resetting");
+    const result = await resetPityForShardType(activeTab as typeof ShardType[keyof typeof ShardType]);
+    if (result.success) {
+      setPulls(result.pulls);
+      closeResetConfirm();
+    } else {
+      setResetStatus("error");
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -369,7 +453,19 @@ export default function ShardLog() {
           </button>
           <button
             type="button"
-            onClick={handleSync}
+            onClick={() => {
+              setResetReason("manual");
+              setResetConfirmText("");
+              setShowResetConfirm(true);
+            }}
+            title={`Clear the ${activeTab} pull log and reset its pity counter`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
+          >
+            <FaRedo size={11} /> Reset Pity
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSyncConfirm(true)}
             disabled={syncStatus === "syncing"}
             title="Save the shard log to the cloud so it's available on other devices"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 border
@@ -423,21 +519,35 @@ export default function ShardLog() {
           ))}
         </div>
 
-        {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { label: "Total Pulls", value: stats.total,             color: "text-gray-700" },
-            { label: "Legendary",   value: stats.legendary,          color: "text-amber-600" },
-            { label: "Epic",        value: stats.epic,               color: "text-purple-600" },
-            { label: "Leg. Rate",   value: `${stats.legendaryRate}%`, color: "text-green-600" },
-            { label: "Epic Rate",   value: `${stats.epicRate}%`,      color: "text-purple-500" },
-            { label: "Rare Rate",   value: `${stats.rareRate}%`,      color: "text-blue-500" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="bg-white border rounded-xl p-3 text-center shadow-sm">
-              <p className={`text-xl font-bold ${color}`}>{value}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+        {/* ── Stats ── */}
+        <div className="bg-white border rounded-xl shadow-sm p-4 flex items-center gap-5 flex-wrap">
+          <div className="relative w-24 h-24 shrink-0">
+            <PullDonut total={stats.total} epic={stats.epic} rare={stats.rare} />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-xl font-bold text-gray-700">{stats.total}</span>
+              <span className="text-[10px] text-gray-400">Total Pulls</span>
             </div>
-          ))}
+          </div>
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-48">
+            {[
+              { label: "Epic",  count: stats.epic, rate: stats.epicRate, dot: "bg-purple-600" },
+              { label: "Rare",  count: stats.rare, rate: stats.rareRate, dot: "bg-blue-500" },
+              {
+                label: "Other",
+                count: Math.max(stats.total - stats.epic - stats.rare, 0),
+                rate: stats.total > 0
+                  ? (100 - Number(stats.epicRate) - Number(stats.rareRate)).toFixed(2)
+                  : "0.00",
+                dot: "bg-gray-300",
+              },
+            ].map(({ label, count, rate, dot }) => (
+              <div key={label} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
+                <span className="text-sm font-semibold text-gray-700">{count}</span>
+                <span className="text-xs text-gray-400">{label} · {rate}%</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ── Pity bar ── */}
@@ -575,6 +685,26 @@ export default function ShardLog() {
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
+            <select
+              value={logSort}
+              onChange={(e) => setLogSort(e.target.value as "newest" | "oldest")}
+              className="basic-input w-auto"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+            {filtersActive && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:bg-gray-100 transition cursor-pointer shrink-0"
+              >
+                <FaTimes size={11} /> Clear Filters
+              </button>
+            )}
+            <span className="text-xs text-gray-400 ml-auto shrink-0">
+              Showing {filteredTabPulls.length} of {tabPulls.length} pulls
+            </span>
           </div>
         )}
 
@@ -698,6 +828,79 @@ export default function ShardLog() {
           </div>
         )}
       </div>
+
+      {/* ── Reset pity confirmation ── */}
+      <Modal
+        isOpen={showResetConfirm}
+        title={resetReason === "auto" ? "Legendary Pulled! Reset Pity?" : "Reset Pity Counter"}
+        onClose={closeResetConfirm}
+      >
+        <p className="text-sm text-gray-600 mb-3">
+          {resetReason === "auto"
+            ? `Nice pull! Resetting pity will permanently delete all logged ${activeTab} shard pulls for this account — locally and in the cloud — and bring the pity counter back to 0.`
+            : `This will permanently delete all logged ${activeTab} shard pulls for this account — locally and in the cloud — and reset the pity counter to 0.`}
+        </p>
+        <p className="text-sm text-red-600 font-semibold mb-3">This cannot be undone.</p>
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Type <span className="font-mono font-bold text-gray-800">{activeTab.toUpperCase()}</span> to confirm
+        </label>
+        <input
+          value={resetConfirmText}
+          onChange={(e) => setResetConfirmText(e.target.value)}
+          placeholder={activeTab.toUpperCase()}
+          className="basic-input w-full mb-3"
+          autoComplete="off"
+          autoFocus
+        />
+        {resetStatus === "error" && (
+          <p className="text-xs text-red-500 mb-3">Something went wrong while resetting. Please try again.</p>
+        )}
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={closeResetConfirm}
+            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            {resetReason === "auto" ? "Keep Log" : "Cancel"}
+          </button>
+          <button
+            type="button"
+            onClick={handleResetPity}
+            disabled={resetStatus === "resetting" || resetConfirmText.trim().toUpperCase() !== activeTab.toUpperCase()}
+            className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition cursor-pointer font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resetStatus === "resetting" ? "Resetting…" : "Reset Pity"}
+          </button>
+        </div>
+      </Modal>
+
+      {/* ── Save to cloud confirmation ── */}
+      <Modal
+        isOpen={showSyncConfirm}
+        title="Save to Cloud"
+        onClose={() => setShowSyncConfirm(false)}
+      >
+        <p className="text-sm text-gray-600 mb-4">
+          This will overwrite the cloud copy of this account&apos;s shard pull log with your current local data, making it available on other devices/browsers. Continue?
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={() => setShowSyncConfirm(false)}
+            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSync}
+            disabled={syncStatus === "syncing"}
+            className="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {syncStatus === "syncing" ? "Saving…" : "Save to Cloud"}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
