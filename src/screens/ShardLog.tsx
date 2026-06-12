@@ -229,10 +229,11 @@ export default function ShardLog() {
       const rawNames = JSON.parse(
         localStorage.getItem("supabase_champion_list") ?? "[]",
       ) as { name?: string }[];
-      const nameCased = rawNames
-        .filter((c) => c.name?.toLowerCase().includes(lower))
-        .map((c) => c.name!)
-        .slice(0, 6);
+      const nameCased = [...new Set(
+        rawNames
+          .filter((c) => c.name?.toLowerCase().includes(lower))
+          .map((c) => c.name!),
+      )].slice(0, 6);
       setSuggestions(nameCased);
       setShowSuggestions(nameCased.length > 0);
     } else {
