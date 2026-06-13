@@ -2,15 +2,16 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
-import { MdChecklist, MdClose } from "react-icons/md";
+import { MdChecklist, MdClose, MdDeleteSweep } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import Modal from "../components/modals/Modal";
 
 import type IChampion from "../models/IChampion";
-import { fetchChampions, generateChampions } from "../helpers/handleChampions";
+import { fetchChampions, generateChampions, findOtherChampionDuplicates, removeChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import SelectChampionFilter from "../components/forms/inputs/SelectChampionFilter";
@@ -62,6 +63,10 @@ export default function Champions() {
   const [bulkMode, setBulkMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  // Duplicate "Other" champion cleanup
+  const [showDedupeConfirm, setShowDedupeConfirm] = useState(false);
+  const [dedupeStatus, setDedupeStatus] = useState<"idle" | "removing" | "error">("idle");
 
   const toggleSelect = (id: string | number) => {
     const sid = String(id);
@@ -220,6 +225,23 @@ export default function Champions() {
     }
   };
 
+  const duplicateOtherChampions = useMemo(
+    () => findOtherChampionDuplicates(championList),
+    [championList],
+  );
+
+  const handleRemoveDuplicates = async () => {
+    setDedupeStatus("removing");
+    const result = await removeChampions(duplicateOtherChampions);
+    if (!result.success) {
+      setDedupeStatus("error");
+      return;
+    }
+    setDedupeStatus("idle");
+    setShowDedupeConfirm(false);
+    await loadChampions();
+  };
+
   if (loading) return <ChampionSkeletonLoader />;
 
   const total = filteredChampions?.length ?? 0;
@@ -343,6 +365,16 @@ export default function Champions() {
                 >
                   <MdChecklist size={22} />
                 </button>
+                {duplicateOtherChampions.length > 0 && (
+                  <button
+                    type="button"
+                    title="Remove duplicate Shard Log champions"
+                    onClick={() => setShowDedupeConfirm(true)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                  >
+                    <MdDeleteSweep size={22} />
+                  </button>
+                )}
               </>
             )}
             {bulkMode && (
@@ -427,6 +459,42 @@ export default function Champions() {
           onClose={handleCloseModal}
         />
       )}
+
+      {/* ── Remove duplicate "Other" champions ── */}
+      <Modal
+        isOpen={showDedupeConfirm}
+        title="Remove Duplicate Champions"
+        onClose={() => setShowDedupeConfirm(false)}
+      >
+        <p className="text-sm text-gray-600 mb-3">
+          Found <span className="font-semibold">{duplicateOtherChampions.length}</span> duplicate champion{duplicateOtherChampions.length === 1 ? "" : "s"} with an unset (&quot;Other&quot;) type or faction — one copy per name is kept. The rest will be permanently deleted from this device and the cloud.
+        </p>
+        <ul className="text-xs text-gray-500 mb-4 max-h-32 overflow-auto list-disc list-inside space-y-0.5">
+          {duplicateOtherChampions.map((c) => (
+            <li key={c.id}>{c.name}</li>
+          ))}
+        </ul>
+        {dedupeStatus === "error" && (
+          <p className="text-sm text-red-500 mb-3">Failed to remove duplicates. Please try again.</p>
+        )}
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={() => setShowDedupeConfirm(false)}
+            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleRemoveDuplicates}
+            disabled={dedupeStatus === "removing"}
+            className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {dedupeStatus === "removing" ? "Removing…" : "Remove Duplicates"}
+          </button>
+        </div>
+      </Modal>
 
       {/* ── Bulk edit action bar ── */}
       {bulkMode && (

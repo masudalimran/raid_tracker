@@ -154,3 +154,45 @@ export const generateChampions = async (): Promise<IChampion[]> => {
 
   return await sortChampionsByPowerDesc(sorted_champions);
 };
+
+// Champions auto-created from the Shard Log (type/faction "Other") that are
+// duplicates — i.e. share a name + RSL account with an earlier entry. Keeps
+// the first occurrence per (rsl_account_id, name) and flags the rest.
+export const findOtherChampionDuplicates = (championList: IChampion[]): IChampion[] => {
+  const seen = new Set<string>();
+  const duplicates: IChampion[] = [];
+
+  for (const champion of championList) {
+    if (champion.type !== ChampionType.OTHER && champion.faction !== ChampionFaction.OTHER) continue;
+
+    const key = `${champion.rsl_account_id ?? ""}::${champion.name.toLowerCase()}`;
+    if (seen.has(key)) {
+      duplicates.push(champion);
+    } else {
+      seen.add(key);
+    }
+  }
+
+  return duplicates;
+};
+
+// Deletes the given champions from Supabase and the local cache.
+export const removeChampions = async (
+  champions: IChampion[],
+): Promise<{ success: boolean; error?: string }> => {
+  const ids = champions.map((c) => c.id).filter((id): id is string | number => id != null);
+  if (ids.length === 0) return { success: true };
+
+  const { error } = await supabase.from("champions").delete().in("id", ids);
+  if (error) {
+    console.error("[champions] failed to remove duplicates:", error.message);
+    return { success: false, error: error.message };
+  }
+
+  const idSet = new Set(ids.map(String));
+  const stored = JSON.parse(localStorage.getItem("supabase_champion_list") ?? "[]") as IChampion[];
+  const filtered = stored.filter((c) => !idSet.has(String(c.id)));
+  localStorage.setItem("supabase_champion_list", JSON.stringify(filtered));
+
+  return { success: true };
+};
