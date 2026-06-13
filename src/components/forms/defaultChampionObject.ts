@@ -19,7 +19,7 @@ export const DefaultChampionObject: Partial<IChampion> = {
   res: 0,
   acc: 0,
 
-  level: 10,
+  level: 1,
   role: [],
   affinity: ChampionAffinity.MAGIC,
   type: ChampionType.ATTACK,

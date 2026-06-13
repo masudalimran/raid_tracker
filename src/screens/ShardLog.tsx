@@ -19,6 +19,7 @@ import { useChampion } from "../hooks/useChampion";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import type { ChampionFormData } from "../lib/zod/championSchema";
 import type { ChampionRarity } from "../models/ChampionRarity";
+import type { ChampionType } from "../models/ChampionType";
 import Modal from "../components/modals/Modal";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
@@ -359,7 +360,8 @@ export default function ShardLog() {
     const newChampionData = {
       ...DefaultChampionObject,
       name,
-      rarity: rarity as unknown as ChampionRarity,
+      rarity: "N/A" as unknown as ChampionRarity,
+      type: "N/A" as unknown as ChampionType,
       user_id: userId,
       rsl_account_id: current_rsl_account.id,
     } as ChampionFormData;
