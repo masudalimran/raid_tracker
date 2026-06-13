@@ -10,7 +10,7 @@ import { ChampionAffinity } from "../../models/ChampionAffinity";
 import { ChampionType } from "../../models/ChampionType";
 import { ChampionRarity } from "../../models/ChampionRarity";
 import { ChampionFaction } from "../../models/ChampionFaction";
-import { ChampionRoleImageMap } from "../../models/ChampionRole";
+import { ChampionRole, ChampionRoleImageMap } from "../../models/ChampionRole";
 import { ROLE_CATEGORIES } from "../../data/roleCategories";
 import RaidStarInput from "./inputs/RaidStarInput";
 import ToggleInput from "./inputs/ToggleInput";
@@ -67,6 +67,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
     reset,
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -185,6 +186,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     [ChampionType.DEFENSE]: "bg-blue-100 text-blue-700 border-blue-300",
     [ChampionType.HP]:      "bg-green-100 text-green-700 border-green-300",
     [ChampionType.SUPPORT]: "bg-amber-100 text-amber-700 border-amber-300",
+    [ChampionType.OTHER]:   "bg-gray-100 text-gray-600 border-gray-300",
   };
 
   const RARITY_COLORS_BTN: Record<string, string> = {
@@ -428,7 +430,26 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                                   : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
                                 }`}
                             >
-                              <input type="checkbox" value={role} {...register("role")} className="hidden" />
+                              <input
+                                type="checkbox"
+                                value={role}
+                                {...register("role")}
+                                onChange={(e) => {
+                                  register("role").onChange(e);
+                                  if (!e.target.checked) return;
+
+                                  const current = getValues("role") ?? [];
+                                  let next = current;
+                                  if (label === "Buff" && !next.includes(ChampionRole.BUFFER)) {
+                                    next = [...next, ChampionRole.BUFFER];
+                                  }
+                                  if (label === "Debuff" && !next.includes(ChampionRole.DEBUFFER)) {
+                                    next = [...next, ChampionRole.DEBUFFER];
+                                  }
+                                  if (next !== current) setValue("role", next, { shouldDirty: true });
+                                }}
+                                className="hidden"
+                              />
                               <img src={ChampionRoleImageMap[role]} alt={role} className="w-4 h-4 object-contain rounded-full shrink-0" />
                               <span className="truncate">{role}</span>
                             </label>

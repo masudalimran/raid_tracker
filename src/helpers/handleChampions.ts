@@ -1,5 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 import { ChampionRarity } from "../models/ChampionRarity";
+import { ChampionType } from "../models/ChampionType";
+import { ChampionFaction } from "../models/ChampionFaction";
 import type { Aura } from "../models/IChampion";
 import type IChampion from "../models/IChampion";
 import type { IGear } from "../models/IGear";
@@ -47,6 +49,15 @@ const parseChampionData = (champion: IChampion, gearStore: Record<string, IGear[
   // Attach gear from RTK localStorage store
   if (!champion.gear) {
     champion.gear = gearStore[champion.name?.toLowerCase() ?? ""] ?? [];
+  }
+
+  // Treat unset/legacy "N/A" type and faction as "Other" so champions remain
+  // searchable and filterable.
+  if (!champion.type || (champion.type as string) === "N/A") {
+    champion.type = ChampionType.OTHER;
+  }
+  if (!champion.faction || (champion.faction as string) === "N/A") {
+    champion.faction = ChampionFaction.OTHER;
   }
 
   return champion;
@@ -107,6 +118,12 @@ export const generateChampions = async (): Promise<IChampion[]> => {
   const common_champions = supabase_champion_list.filter(
     (champion) => champion.rarity === ChampionRarity.COMMON,
   );
+  // Champions with an unset/unrecognized rarity (e.g. "N/A" from Shard Log
+  // auto-creation) — keep them visible instead of dropping them.
+  const known_rarities: string[] = Object.values(ChampionRarity);
+  const other_champions = supabase_champion_list.filter(
+    (champion) => !known_rarities.includes(champion.rarity),
+  );
 
   const champions_sorted_by_rarity = [
     ...mythical_champions,
@@ -115,6 +132,7 @@ export const generateChampions = async (): Promise<IChampion[]> => {
     ...rare_champions,
     ...uncommon_champions,
     ...common_champions,
+    ...other_champions,
   ];
 
   const champions_that_are_built = sortByLevelDesc(

@@ -15,6 +15,7 @@ export const ChampionFaction = {
   SKIN_WALKERS: "Skin Walkers",
   SYLVAN_WATCHERS: "Sylvan Watchers",
   UNDEAD_HORDES: "Undead Hordes",
+  OTHER: "Other",
 } as const;
 
 export type ChampionFaction =

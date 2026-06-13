@@ -19,8 +19,12 @@ import { useChampion } from "../hooks/useChampion";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import type { ChampionFormData } from "../lib/zod/championSchema";
 import type { ChampionRarity } from "../models/ChampionRarity";
-import type { ChampionType } from "../models/ChampionType";
+import { ChampionType } from "../models/ChampionType";
+import { ChampionFaction } from "../models/ChampionFaction";
 import Modal from "../components/modals/Modal";
+import ChampionCard from "../components/card/ChampionCard";
+import ChampionModal from "../components/modals/ChampionModal";
+import type IChampion from "../models/IChampion";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
 
@@ -206,6 +210,10 @@ export default function ShardLog() {
   const [logSort, setLogSort] = useState<"newest" | "oldest">("newest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
+  // Roster champion view/edit (clicking a pull card)
+  const [viewingChampion, setViewingChampion] = useState<IChampion | null>(null);
+  const [editingRosterChampion, setEditingRosterChampion] = useState<IChampion | null>(null);
+
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
@@ -347,6 +355,28 @@ export default function ShardLog() {
     }
   };
 
+  // Opens the roster champion card for a pulled champion, if it exists in the roster.
+  const openChampionCard = (championName: string) => {
+    const roster = JSON.parse(
+      localStorage.getItem("supabase_champion_list") ?? "[]",
+    ) as IChampion[];
+    const match = roster.find(
+      (c) => c.name.toLowerCase() === championName.toLowerCase(),
+    );
+    if (match) setViewingChampion(match);
+  };
+
+  const handleChampionEdit = (champion: IChampion) => {
+    setViewingChampion(null);
+    setEditingRosterChampion(champion);
+  };
+
+  const handleChampionModalClose = (shouldReload: boolean) => {
+    setEditingRosterChampion(null);
+    setViewingChampion(null);
+    if (shouldReload) setChampionLookup(loadChampionLookup());
+  };
+
   // Creates a new champion roster entry (same as adding via the Champions page)
   // when a pulled champion doesn't yet exist for the current RSL account.
   const createChampionFromPull = async (name: string, rarity: PullRarity): Promise<ChampionInfo | undefined> => {
@@ -361,7 +391,8 @@ export default function ShardLog() {
       ...DefaultChampionObject,
       name,
       rarity: "N/A" as unknown as ChampionRarity,
-      type: "N/A" as unknown as ChampionType,
+      type: ChampionType.OTHER,
+      faction: ChampionFaction.OTHER,
       user_id: userId,
       rsl_account_id: current_rsl_account.id,
     } as ChampionFormData;
@@ -838,7 +869,14 @@ export default function ShardLog() {
                     key={pull.id}
                     className={`flex flex-col items-center text-center gap-1.5 border rounded-xl px-2 py-3 shadow-sm ${accent}`}
                   >
-                    <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={48} />
+                    <button
+                      type="button"
+                      onClick={() => openChampionCard(pull.championName)}
+                      className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
+                      title="View champion"
+                    >
+                      <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={48} />
+                    </button>
                     <span className="font-semibold text-sm truncate w-full">{pull.championName}</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
                       {pull.rarity}
@@ -875,7 +913,14 @@ export default function ShardLog() {
                   key={pull.id}
                   className={`flex items-center gap-3 border rounded-xl px-3 py-2.5 shadow-sm ${accent}`}
                 >
-                  <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={40} />
+                  <button
+                    type="button"
+                    onClick={() => openChampionCard(pull.championName)}
+                    className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition shrink-0"
+                    title="View champion"
+                  >
+                    <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={40} />
+                  </button>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -987,6 +1032,29 @@ export default function ShardLog() {
           </button>
         </div>
       </Modal>
+
+      {/* ── Roster champion view ── */}
+      <Modal
+        isOpen={!!viewingChampion}
+        title="Champion"
+        onClose={() => setViewingChampion(null)}
+      >
+        {viewingChampion && (
+          <ChampionCard
+            champion={viewingChampion}
+            onEdit={handleChampionEdit}
+            onDelete={() => handleChampionModalClose(true)}
+          />
+        )}
+      </Modal>
+
+      {/* ── Roster champion edit ── */}
+      {editingRosterChampion && (
+        <ChampionModal
+          champion={editingRosterChampion}
+          onClose={handleChampionModalClose}
+        />
+      )}
     </div>
   );
 }

@@ -83,7 +83,7 @@ const COMMON_DUNGEONS_HARD = [
   DUNGEON.SPIDER_HARD,
   DUNGEON.FIRE_KNIGHT_HARD,
 ];
-const FACTIONS = Object.values(ChampionFaction);
+const FACTIONS = Object.values(ChampionFaction).filter((f) => f !== ChampionFaction.OTHER);
 const HYDRA_HEADS = [HYDRA.HYDRA_A, HYDRA.HYDRA_B, HYDRA.HYDRA_C];
 const DOOM_TOWER_NORMAL = [
   DOOM_TOWER_BOSS.SCARAB_KING,
