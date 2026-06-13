@@ -32,6 +32,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const [isOnPreview, setIsOnPreview] = useState<boolean>(false);
   const [rosterMatches, setRosterMatches] = useState<IChampion[]>([]);
   const [showRosterDropdown, setShowRosterDropdown] = useState(false);
+  const [activeRosterIndex, setActiveRosterIndex] = useState(-1);
   const { addChampion, updateChampion, loading } = useChampion();
 
   const champion_list = JSON.parse(
@@ -96,8 +97,10 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
         .slice(0, 6);
       setRosterMatches(hits);
       setShowRosterDropdown(hits.length > 0);
+      setActiveRosterIndex(-1);
     } else {
       setShowRosterDropdown(false);
+      setActiveRosterIndex(-1);
     }
   };
 
@@ -110,6 +113,24 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
       rsl_account_id: rslAccountId,
     });
     setShowRosterDropdown(false);
+    setActiveRosterIndex(-1);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showRosterDropdown || rosterMatches.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveRosterIndex((i) => (i + 1) % rosterMatches.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveRosterIndex((i) => (i <= 0 ? rosterMatches.length - 1 : i - 1));
+    } else if (e.key === "Escape") {
+      setShowRosterDropdown(false);
+      setActiveRosterIndex(-1);
+    } else if (e.key === "Enter" && activeRosterIndex >= 0) {
+      e.preventDefault();
+      applyRosterChampion(rosterMatches[activeRosterIndex]);
+    }
   };
 
   const onSave = async (data: ChampionFormData) => {
@@ -191,6 +212,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</label>
             <input
               {...register("name", { onChange: (e) => handleNameInput(e.target.value) })}
+              onKeyDown={handleNameKeyDown}
               onBlur={() => setTimeout(() => setShowRosterDropdown(false), 150)}
               placeholder="Type champion name or search existing roster…"
               className="input w-full mt-0.5"
@@ -200,11 +222,14 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
             {showRosterDropdown && (
               <ul className="absolute z-40 left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
-                {rosterMatches.map((c) => (
+                {rosterMatches.map((c, i) => (
                   <li
                     key={c.id}
                     onMouseDown={() => applyRosterChampion(c)}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition"
+                    onMouseEnter={() => setActiveRosterIndex(i)}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
+                      i === activeRosterIndex ? "bg-amber-50 text-amber-700" : "hover:bg-amber-50 hover:text-amber-700"
+                    }`}
                   >
                     {c.imgUrl ? (
                       <img src={c.imgUrl} alt={c.name}

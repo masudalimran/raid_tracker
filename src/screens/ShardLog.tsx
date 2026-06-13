@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo } from "react-icons/fa";
+import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo, FaList, FaThLarge } from "react-icons/fa";
 import { MdCasino } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
@@ -190,19 +190,20 @@ export default function ShardLog() {
   const [form, setForm] = useState({
     championName: "",
     rarity: getDefaultRarity(ShardType.ANCIENT) as PullRarity,
-    isFragment: false,
     notes: "",
   });
   const [previewUrl, setPreviewUrl] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Log list search & filter
   const [logSearch, setLogSearch] = useState("");
   const [logRarityFilter, setLogRarityFilter] = useState<string>("rarity_all");
   const [logSort, setLogSort] = useState<"newest" | "oldest">("newest");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -296,8 +297,10 @@ export default function ShardLog() {
       )].slice(0, 6);
       setSuggestions(nameCased);
       setShowSuggestions(nameCased.length > 0);
+      setActiveSuggestion(-1);
     } else {
       setShowSuggestions(false);
+      setActiveSuggestion(-1);
     }
   };
 
@@ -311,7 +314,36 @@ export default function ShardLog() {
     }));
     setPreviewUrl(info?.imgUrl ?? "");
     setShowSuggestions(false);
+    setActiveSuggestion(-1);
     inputRef.current?.focus();
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveSuggestion((i) => (i + 1) % suggestions.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveSuggestion((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+        return;
+      }
+      if (e.key === "Escape") {
+        setShowSuggestions(false);
+        setActiveSuggestion(-1);
+        return;
+      }
+      if (e.key === "Enter" && activeSuggestion >= 0) {
+        e.preventDefault();
+        selectSuggestion(suggestions[activeSuggestion]);
+        return;
+      }
+    }
+    if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) {
+      handleAdd();
+    }
   };
 
   // Creates a new champion roster entry (same as adding via the Champions page)
@@ -364,12 +396,11 @@ export default function ShardLog() {
       championName: trimmedName,
       rarity:       form.rarity,
       pulledAt:     new Date().toISOString(),
-      isFragment:   form.isFragment,
       notes:        form.notes.trim() || undefined,
       imgUrl:       info?.imgUrl,
     });
     setPulls((prev) => [entry, ...prev]);
-    setForm({ championName: "", rarity: getDefaultRarity(activeTab), isFragment: false, notes: "" });
+    setForm({ championName: "", rarity: getDefaultRarity(activeTab), notes: "" });
     setPreviewUrl("");
     inputRef.current?.focus();
 
@@ -459,7 +490,7 @@ export default function ShardLog() {
               setShowResetConfirm(true);
             }}
             title={`Clear the ${activeTab} pull log and reset its pity counter`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
           >
             <FaRedo size={11} /> Reset Pity
           </button>
@@ -557,7 +588,15 @@ export default function ShardLog() {
 
         {/* ── Log pull form ── */}
         {showForm && (
-          <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
+          <div
+            className="border rounded-xl p-4 bg-gray-50 space-y-3"
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
+          >
             <div className="flex items-center gap-3">
               <ChampionAvatar name={form.championName || "?"} imgUrl={previewUrl} size={52} />
               <h3 className="text-sm font-semibold">
@@ -577,20 +616,23 @@ export default function ShardLog() {
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="e.g. Kael"
                   className="basic-input w-full"
-                  onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                  onKeyDown={handleNameKeyDown}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   autoComplete="off"
                   autoFocus
                 />
                 {showSuggestions && (
                   <ul className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                    {suggestions.map((name) => {
+                    {suggestions.map((name, i) => {
                       const info = championLookup.get(name.toLowerCase());
                       return (
                         <li
                           key={name}
                           onMouseDown={() => selectSuggestion(name)}
-                          className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-amber-50 hover:text-amber-700 transition"
+                          onMouseEnter={() => setActiveSuggestion(i)}
+                          className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
+                            i === activeSuggestion ? "bg-amber-50 text-amber-700" : "hover:bg-amber-50 hover:text-amber-700"
+                          }`}
                         >
                           <ChampionAvatar name={name} imgUrl={info?.imgUrl ?? ""} size={28} />
                           <div className="min-w-0">
@@ -631,15 +673,6 @@ export default function ShardLog() {
               />
             </div>
 
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.isFragment}
-                onChange={(e) => setForm((f) => ({ ...f, isFragment: e.target.checked }))}
-                className="rounded"
-              />
-              Fragment fusion
-            </label>
 
             <div className="flex gap-2">
               <button
@@ -705,6 +738,24 @@ export default function ShardLog() {
             <span className="text-xs text-gray-400 ml-auto shrink-0">
               Showing {filteredTabPulls.length} of {tabPulls.length} pulls
             </span>
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                title="List view"
+                className={`p-1.5 transition cursor-pointer ${viewMode === "list" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+              >
+                <FaList size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                title="Grid view"
+                className={`p-1.5 transition cursor-pointer ${viewMode === "grid" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+              >
+                <FaThLarge size={12} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -720,7 +771,7 @@ export default function ShardLog() {
             <p className="text-sm">No pulls match your search/filter.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2" : "space-y-2"}>
             {filteredTabPulls.map((pull) => {
               const imgUrl = (pull as IShardPull & { imgUrl?: string }).imgUrl
                 ?? championLookup.get(pull.championName.toLowerCase())?.imgUrl
@@ -732,7 +783,7 @@ export default function ShardLog() {
                 return (
                   <div
                     key={pull.id}
-                    className="flex flex-col gap-2 bg-white border-2 border-amber-300 rounded-xl px-3 py-2.5 shadow-sm"
+                    className={`flex flex-col gap-2 bg-white border-2 border-amber-300 rounded-xl px-3 py-2.5 shadow-sm ${viewMode === "grid" ? "col-span-full" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <ChampionAvatar name={editForm.championName || "?"} imgUrl={imgUrl} size={40} />
@@ -779,6 +830,44 @@ export default function ShardLog() {
                 );
               }
 
+              if (viewMode === "grid") {
+                return (
+                  <div
+                    key={pull.id}
+                    className={`flex flex-col items-center text-center gap-1.5 border rounded-xl px-2 py-3 shadow-sm ${accent}`}
+                  >
+                    <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={48} />
+                    <span className="font-semibold text-sm truncate w-full">{pull.championName}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
+                      {pull.rarity}
+                    </span>
+                    {pull.notes && (
+                      <p className="text-xs text-gray-400 truncate w-full">{pull.notes}</p>
+                    )}
+                    <span className="text-[10px] text-gray-400">
+                      {new Date(pull.pulledAt).toLocaleDateString()}{" "}
+                      {new Date(pull.pulledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(pull)}
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition cursor-pointer shrink-0"
+                      >
+                        <FaEdit size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(pull.id)}
+                        className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition cursor-pointer shrink-0"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={pull.id}
@@ -792,11 +881,6 @@ export default function ShardLog() {
                       <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
                         {pull.rarity}
                       </span>
-                      {pull.isFragment && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600">
-                          Fragment
-                        </span>
-                      )}
                     </div>
                     {pull.notes && (
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{pull.notes}</p>

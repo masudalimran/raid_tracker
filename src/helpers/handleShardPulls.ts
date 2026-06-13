@@ -70,7 +70,6 @@ interface ShardPullRow {
   championName: string;
   rarity: string;
   pulledAt: string;
-  isFragment: boolean;
   notes: string | null;
   imgUrl: string | null;
 }
@@ -81,7 +80,6 @@ const rowToPull = (row: ShardPullRow): IShardPull => ({
   championName: row.championName,
   rarity: row.rarity as IShardPull["rarity"],
   pulledAt: row.pulledAt,
-  isFragment: row.isFragment ?? false,
   notes: row.notes ?? undefined,
   imgUrl: row.imgUrl ?? undefined,
   rsl_account_id: row.rsl_account_id,
@@ -147,7 +145,6 @@ export async function syncShardPullsToCloud(
     championName: p.championName,
     rarity: p.rarity,
     pulledAt: p.pulledAt,
-    isFragment: p.isFragment ?? false,
     notes: p.notes ?? null,
     imgUrl: p.imgUrl ?? null,
   }));

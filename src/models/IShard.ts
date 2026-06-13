@@ -22,7 +22,6 @@ export interface IShardPull {
   championName: string;
   rarity: PullRarity;
   pulledAt: string; // ISO date string
-  isFragment?: boolean;
   notes?: string;
   imgUrl?: string;
   rsl_account_id?: string;
