@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
-import { MdChecklist, MdClose, MdDeleteSweep } from "react-icons/md";
+import { MdChecklist, MdClose, MdDeleteSweep, MdDownload } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
 
 import ChampionCard from "../components/card/ChampionCard";
@@ -204,6 +204,67 @@ export default function Champions() {
     teams,
   ]);
 
+  const handleDownloadJson = () => {
+    const slugToReadable = (slug: string) =>
+      slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const exportChampions = championList.map((c) => {
+      const usedIn = teams
+        .filter((t) => t.champion_ids.includes(String(c.id)))
+        .map((t) => slugToReadable(t.team_name));
+
+      return {
+        name: c.name,
+        rarity: c.rarity,
+        faction: c.faction,
+        type: c.type,
+        affinity: c.affinity,
+        role: c.role,
+        level: c.level,
+        stars: c.stars,
+        ascension_stars: c.ascension_stars,
+        awaken_stars: c.awaken_stars,
+        stats: {
+          hp: c.hp,
+          atk: c.atk,
+          def: c.def,
+          spd: c.spd,
+          c_rate: c.c_rate,
+          c_dmg: c.c_dmg,
+          res: c.res,
+          acc: c.acc,
+        },
+        development: {
+          is_booked: c.is_booked,
+          is_book_needed: c.is_book_needed,
+          has_mastery: c.has_mastery,
+          is_mastery_needed: c.is_mastery_needed,
+        },
+        aura: c.aura ?? null,
+        skills: c.skills ?? [],
+        used_in: usedIn,
+        priority: c.priority ?? null,
+        champion_impact: c.champion_impact ?? null,
+      };
+    });
+
+    const exportData = {
+      export_date: new Date().toISOString().split("T")[0],
+      total_champions: exportChampions.length,
+      champions: exportChampions,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `raid_champions_${exportData.export_date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleAdd = () => {
     setEditingChampion(null);
     setShowModal(true);
@@ -348,6 +409,14 @@ export default function Champions() {
                   className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
                 >
                   <TbRefreshDot size={22} />
+                </button>
+                <button
+                  type="button"
+                  title="Download champions as JSON"
+                  onClick={handleDownloadJson}
+                  className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition"
+                >
+                  <MdDownload size={22} />
                 </button>
                 <button
                   type="button"
