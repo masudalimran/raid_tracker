@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaEdit, FaPlusSquare, FaCheck, FaUndo, FaPlus, FaTimes } from "react-icons/fa";
+import { FaEdit, FaPlusSquare, FaCheck, FaUndo, FaTimes } from "react-icons/fa";
 import type IChampion from "../../models/IChampion";
 import type ITeam from "../../models/ITeam";
 import {
@@ -29,7 +29,7 @@ import {
   ensureRoleRequirementsLoaded,
 } from "../../helpers/teamRoleOverrides";
 import { ChampionRole } from "../../models/ChampionRole";
-import { ROLE_CATEGORIES } from "../../data/roleCategories";
+import RoleSearchSelect from "../forms/inputs/RoleSearchSelect";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -56,7 +56,6 @@ export default function BaseAreaTeam({
   // Role editor state
   const [editingRoles, setEditingRoles] = useState(false);
   const [draftReqs, setDraftReqs] = useState<AreaRoleReq[]>(() => getTeamRequirements(teamKey));
-  const [addingRole, setAddingRole] = useState<string>("");
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [teamChampionList, setTeamChampionList] = useState<IChampion[]>([]);
   const [champions, setChampions] = useState<IChampion[]>([]);
@@ -175,7 +174,7 @@ export default function BaseAreaTeam({
         {/* ── Role Coverage + Editor ── */}
         {(() => {
           const activeReqs = editingRoles ? draftReqs : getTeamRequirements(teamKey);
-          const showPanel  = activeReqs.length > 0 || editingRoles;
+          const showPanel  = activeReqs.length > 0 || editingRoles || hasOverride(teamKey);
           if (!showPanel) return null;
 
           const coverage = teamChampionList.length > 0
@@ -193,21 +192,17 @@ export default function BaseAreaTeam({
           };
           const removeReq = (label: string) =>
             setDraftReqs((prev) => prev.filter((r) => r.label !== label));
-          const addReq = () => {
-            if (!addingRole) return;
-            const exists = draftReqs.some((r) => r.label === addingRole);
-            if (!exists) {
-              setDraftReqs((prev) => [
-                ...prev,
-                {
-                  label: addingRole,
-                  tip: `${addingRole} required in this team`,
-                  matchRoles: [addingRole as ChampionRole],
-                  matchEffects: [],
-                },
-              ]);
-            }
-            setAddingRole("");
+          const addReq = (role: ChampionRole) => {
+            if (draftReqs.some((r) => r.label === role)) return;
+            setDraftReqs((prev) => [
+              ...prev,
+              {
+                label: role,
+                tip: `${role} required in this team`,
+                matchRoles: [role],
+                matchEffects: [],
+              },
+            ]);
           };
 
           return (
@@ -294,37 +289,10 @@ export default function BaseAreaTeam({
 
                 {/* Add role input */}
                 {editingRoles && (
-                  <div className="flex items-center gap-1">
-                    <select
-                      value={addingRole}
-                      onChange={(e) => setAddingRole(e.target.value)}
-                      className="text-xs border border-gray-200 rounded-full px-2 py-0.5 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                    >
-                      <option value="">+ Add role…</option>
-                      {ROLE_CATEGORIES.map(({ label, roles }) => {
-                        const available = roles.filter(
-                          (r) => !draftReqs.some((d) => d.label === r),
-                        );
-                        if (available.length === 0) return null;
-                        return (
-                          <optgroup key={label} label={`── ${label} ──`}>
-                            {available.map((r) => (
-                              <option key={r} value={r}>{r}</option>
-                            ))}
-                          </optgroup>
-                        );
-                      })}
-                    </select>
-                    {addingRole && (
-                      <button
-                        type="button"
-                        onClick={addReq}
-                        className="flex items-center gap-0.5 text-[10px] text-amber-600 font-semibold cursor-pointer"
-                      >
-                        <FaPlus size={9} /> Add
-                      </button>
-                    )}
-                  </div>
+                  <RoleSearchSelect
+                    excludeRoles={draftReqs.map((r) => r.label)}
+                    onSelect={addReq}
+                  />
                 )}
               </div>
             </div>

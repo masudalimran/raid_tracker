@@ -41,7 +41,13 @@ export default function ChampionCard({
   matchedRoles,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [rolesExpanded, setRolesExpanded] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
+
+  const ROLE_PREVIEW_COUNT = 3;
+  const visibleRoles = champion.role.filter((r) => ChampionRoleImageMap[r]);
+  const hiddenRoleCount = visibleRoles.length - ROLE_PREVIEW_COUNT;
+  const previewRoles = visibleRoles.slice(0, ROLE_PREVIEW_COUNT);
 
   const supabase_team_list: ITeam[] = JSON.parse(
     localStorage.getItem("supabase_team_list") || "[]",
@@ -218,27 +224,10 @@ export default function ChampionCard({
         </div>
 
         {/* ── IDENTITY STRIP: Faction · Rarity dot · Type · Roles ── */}
-        <div
-          className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border-b border-gray-100"
-                  >
-          <div className="flex items-center gap-1.5 min-w-0">
-            <img
-              src={getFactionLogo(champion.faction)}
-              className="w-5 h-5 object-cover rounded-full shrink-0"
-            />
-            <span className="text-xs text-gray-600 truncate">{champion.faction}</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <div
-              className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorByRarity(champion.rarity)}`}
-              title={champion.rarity}
-            />
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 capitalize font-medium">
-              {champion.type}
-            </span>
-            {champion.role
-              .filter((r) => ChampionRoleImageMap[r])
-              .map((role) => (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border-b border-gray-100">
+          {rolesExpanded ? (
+            <div className="flex items-center gap-1 flex-wrap justify-end ml-auto">
+              {visibleRoles.map((role) => (
                 <div key={role} className="w-5 h-5 shrink-0" title={role}>
                   <img
                     src={ChampionRoleImageMap[role]}
@@ -247,7 +236,53 @@ export default function ChampionCard({
                   />
                 </div>
               ))}
-          </div>
+              <button
+                type="button"
+                onClick={() => setRolesExpanded(false)}
+                className="text-[10px] font-semibold text-gray-400 hover:text-gray-700 transition cursor-pointer ml-1"
+              >
+                Show less
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <img
+                  src={getFactionLogo(champion.faction)}
+                  className="w-5 h-5 object-cover rounded-full shrink-0"
+                />
+                <span className="text-xs text-gray-600 truncate">{champion.faction}</span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <div
+                  className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorByRarity(champion.rarity)}`}
+                  title={champion.rarity}
+                />
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 capitalize font-medium">
+                  {champion.type}
+                </span>
+                {previewRoles.map((role) => (
+                  <div key={role} className="w-5 h-5 shrink-0" title={role}>
+                    <img
+                      src={ChampionRoleImageMap[role]}
+                      alt={role}
+                      className="w-full h-full object-contain rounded-full"
+                    />
+                  </div>
+                ))}
+                {hiddenRoleCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setRolesExpanded(true)}
+                    title={`+${hiddenRoleCount} more role${hiddenRoleCount !== 1 ? "s" : ""}`}
+                    className="w-5 h-5 shrink-0 rounded-full bg-gray-200 text-gray-600 text-[9px] font-bold flex items-center justify-center hover:bg-amber-200 hover:text-amber-700 transition cursor-pointer"
+                  >
+                    +{hiddenRoleCount}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── BODY ── */}
