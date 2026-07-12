@@ -9,7 +9,9 @@ import buildNavItems from "../../helpers/buildNavItems";
 import { SideNavSection } from "./SideNavSection";
 import { DOOM_TOWER_BOSS } from "../../models/game_areas/DoomTowerBoss";
 import type ITeam from "../../models/ITeam";
+import type IChampion from "../../models/IChampion";
 import toSlug from "../../helpers/toSlug";
+import { getAreaCoverageBadge } from "../../data/areaRoleRequirements";
 
 interface SideNavProps {
   isOpen: boolean;
@@ -24,13 +26,6 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Shard Log", path: "/shard-log", className: "" },
 ];
 
-const PotionKeepNavItems = buildNavItems(POTION_KEEP);
-const DungeonNavItems = buildNavItems(DUNGEON);
-const ClanBossNavItems = buildNavItems(CLAN_BOSS);
-const HydraNavItems = buildNavItems(HYDRA);
-const ArenaNavItems = buildNavItems(ARENA);
-const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS);
-
 function SideNav({ isOpen, onClose }: SideNavProps) {
   const allTeams: ITeam[] = JSON.parse(
     localStorage.getItem("supabase_team_list") || "[]",
@@ -41,6 +36,16 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
   const teams: ITeam[] = currentAccount
     ? allTeams.filter((t) => t.rsl_account_id === currentAccount.id)
     : allTeams;
+  const champions: IChampion[] = JSON.parse(
+    localStorage.getItem("supabase_champion_list") ?? "[]",
+  );
+
+  const PotionKeepNavItems = buildNavItems(POTION_KEEP, teams, champions);
+  const DungeonNavItems = buildNavItems(DUNGEON, teams, champions);
+  const ClanBossNavItems = buildNavItems(CLAN_BOSS, teams, champions);
+  const HydraNavItems = buildNavItems(HYDRA, teams, champions);
+  const ArenaNavItems = buildNavItems(ARENA, teams, champions);
+  const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS, teams, champions);
 
   const FactionNavItems: NavItem[] = Object.keys(ChampionFaction).map((key) => {
     const slug = toSlug(key);
@@ -51,9 +56,12 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
         t.clearing_stage?.toUpperCase().includes("MAX"),
     );
     return {
-      name: isMaxed ? `${factionName}  ✅` : factionName,
+      name: factionName,
       path: `/${slug}`,
       className: "",
+      badge: isMaxed
+        ? { label: "MAX", tone: "success" as const, title: "Clearing stage maxed" }
+        : getAreaCoverageBadge(key, teams, champions) ?? undefined,
     };
   });
 

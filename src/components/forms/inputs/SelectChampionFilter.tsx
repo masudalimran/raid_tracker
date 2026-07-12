@@ -123,6 +123,7 @@ export default function SelectChampionFilter({
                 onChange={(e) => handleChange("stat", e.target.value as FilterStat)}
               >
                 <option value="name">Name</option>
+                <option value="rarity">Rarity</option>
                 <option value="hp">HP</option>
                 <option value="atk">ATK</option>
                 <option value="def">DEF</option>

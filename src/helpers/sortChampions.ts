@@ -1,11 +1,34 @@
 // helpers/sort.ts
 
 import { TEAM_PRIORITY_WEIGHTS } from "../data/team_priority_weight";
-import type { ChampionRarity } from "../models/ChampionRarity";
+import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
 import { ChampionType } from "../models/ChampionType";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
+
+const RARITY_RANK: Record<string, number> = {
+  [ChampionRarity.MYTHICAL]: 6,
+  [ChampionRarity.LEGENDARY]: 5,
+  [ChampionRarity.EPIC]: 4,
+  [ChampionRarity.RARE]: 3,
+  [ChampionRarity.UNCOMMON]: 2,
+  [ChampionRarity.COMMON]: 1,
+};
+
+// Sorts by rarity tier (Mythical highest) rather than alphabetically, since
+// plain string comparison on the rarity field doesn't reflect tier order.
+export function sortByRarity(
+  champions: IChampion[],
+  order: "asc" | "desc",
+): IChampion[] {
+  return [...champions].sort((a, b) => {
+    const av = RARITY_RANK[a.rarity] ?? 0;
+    const bv = RARITY_RANK[b.rarity] ?? 0;
+    if (av !== bv) return order === "desc" ? bv - av : av - bv;
+    return a.name.localeCompare(b.name);
+  });
+}
 
 /* ---------------------------------------------
  * Simple sort helpers

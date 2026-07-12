@@ -221,6 +221,21 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
   const w = watchedFormData;
 
+  // Exact-name match within the current roster account — a nudge to use the
+  // autocomplete dropdown above instead of accidentally creating a duplicate.
+  const duplicateChampion = (() => {
+    const name = w.name?.trim().toLowerCase();
+    if (!name) return null;
+    return (
+      champion_list.find(
+        (c) =>
+          c.name.trim().toLowerCase() === name &&
+          c.rsl_account_id === rslAccountId &&
+          c.id !== champion?.id,
+      ) ?? null
+    );
+  })();
+
   return (
     <form onSubmit={handleSubmit(onSave)} className="bg-white">
       {isOnPreview ? (
@@ -242,6 +257,11 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
               autoComplete="off"
             />
             {errors.name && <p className="text-red-500 text-xs mt-0.5">{errors.name?.message}</p>}
+            {!errors.name && duplicateChampion && !showRosterDropdown && (
+              <p className="text-amber-600 text-xs mt-0.5 font-medium">
+                It is a duplicate champion.
+              </p>
+            )}
 
             {showRosterDropdown && (
               <ul className="absolute z-40 left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">

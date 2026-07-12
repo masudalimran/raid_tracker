@@ -58,11 +58,22 @@ const BOOK_RARITY_ORDER = [
   ChampionRarity.RARE,
 ];
 
+const MASTERY_RARITY_ORDER = [
+  ChampionRarity.MYTHICAL,
+  ChampionRarity.LEGENDARY,
+  ChampionRarity.EPIC,
+  ChampionRarity.RARE,
+  ChampionRarity.UNCOMMON,
+  ChampionRarity.COMMON,
+];
+
 const RARITY_BADGE: Record<string, string> = {
   [ChampionRarity.MYTHICAL]:  "bg-red-100 text-red-700 border border-red-200",
   [ChampionRarity.LEGENDARY]: "bg-orange-100 text-orange-700 border border-orange-200",
   [ChampionRarity.EPIC]:      "bg-purple-100 text-purple-700 border border-purple-200",
   [ChampionRarity.RARE]:      "bg-blue-100 text-blue-700 border border-blue-200",
+  [ChampionRarity.UNCOMMON]:  "bg-green-100 text-green-700 border border-green-200",
+  [ChampionRarity.COMMON]:    "bg-gray-100 text-gray-600 border border-gray-200",
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -188,75 +199,25 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
   );
 }
 
-interface QueuePanelProps {
+// ── Sectioned queue panel (grouped by rarity) ────────────────────────────────
+
+interface SectionedQueuePanelProps {
   title: string;
   icon: React.ReactNode;
   champions: Array<{ champion: IChampion; teamCount: number }>;
-  doneLabel: string;
-  emptyMsg: string;
   onDone: (id: string) => void;
   processing: Set<string>;
   mode: "books" | "masteries";
-  sectionLabel?: string;
+  doneLabel: string;
+  emptyMsg: string;
+  rarityOrder: ChampionRarity[];
+  rarityLabelSuffix: string;
 }
 
-function QueuePanel({
-  title, icon, champions, doneLabel, emptyMsg, onDone, processing, mode, sectionLabel,
-}: QueuePanelProps) {
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <span className="text-gray-600">{icon}</span>
-        <h2 className="font-bold text-base">{title}</h2>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-          {champions.length}
-        </span>
-      </div>
-
-      {champions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 text-gray-400 gap-2">
-          <FaCheckCircle size={24} className="text-green-300" />
-          <p className="text-sm">{emptyMsg}</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {/* Alignment spacer — matches the rarity section header height in the books panel */}
-          {sectionLabel && (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                {sectionLabel}
-              </span>
-              <div className="flex-1 h-px bg-gray-100" />
-            </div>
-          )}
-          {champions.map(({ champion, teamCount }, i) => (
-            <QueueItem
-              key={champion.id}
-              champion={champion}
-              rank={i + 1}
-              teamCount={teamCount}
-              doneLabel={doneLabel}
-              onDone={onDone}
-              isDoing={processing.has(String(champion.id))}
-              mode={mode}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Sectioned books panel (grouped by rarity) ────────────────────────────────
-
-interface SectionedBooksPanelProps {
-  champions: Array<{ champion: IChampion; teamCount: number }>;
-  onDone: (id: string) => void;
-  processing: Set<string>;
-}
-
-function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPanelProps) {
-  const groups = BOOK_RARITY_ORDER
+function SectionedQueuePanel({
+  title, icon, champions, onDone, processing, mode, doneLabel, emptyMsg, rarityOrder, rarityLabelSuffix,
+}: SectionedQueuePanelProps) {
+  const groups = rarityOrder
     .map((rarity) => ({
       rarity,
       items: champions.filter((item) => item.champion.rarity === rarity),
@@ -268,8 +229,8 @@ function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPa
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <span className="text-gray-600"><FaBook size={16} /></span>
-        <h2 className="font-bold text-base">Needs Books</h2>
+        <span className="text-gray-600">{icon}</span>
+        <h2 className="font-bold text-base">{title}</h2>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
           {total}
         </span>
@@ -278,7 +239,7 @@ function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPa
       {total === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 text-gray-400 gap-2">
           <FaCheckCircle size={24} className="text-green-300" />
-          <p className="text-sm">All priority champions are booked!</p>
+          <p className="text-sm">{emptyMsg}</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -287,7 +248,7 @@ function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPa
               {/* Rarity section header */}
               <div className="flex items-center gap-2">
                 <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${RARITY_BADGE[rarity] ?? ""}`}>
-                  {rarity} Tomes
+                  {rarity} {rarityLabelSuffix}
                 </span>
                 <span className="text-xs text-gray-400">
                   {items.length} champion{items.length !== 1 ? "s" : ""}
@@ -301,10 +262,10 @@ function SectionedBooksPanel({ champions, onDone, processing }: SectionedBooksPa
                   champion={champion}
                   rank={i + 1}
                   teamCount={teamCount}
-                  doneLabel="Mark Booked"
+                  doneLabel={doneLabel}
                   onDone={onDone}
                   isDoing={processing.has(String(champion.id))}
-                  mode="books"
+                  mode={mode}
                 />
               ))}
             </div>
@@ -433,21 +394,29 @@ export default function PriorityQueue() {
 
       {/* ── Two-column layout ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectionedBooksPanel
+        <SectionedQueuePanel
+          title="Needs Books"
+          icon={<FaBook size={16} />}
           champions={needsBooks}
           onDone={markBookDone}
           processing={processingBooks}
+          mode="books"
+          doneLabel="Mark Booked"
+          emptyMsg="All priority champions are booked!"
+          rarityOrder={BOOK_RARITY_ORDER}
+          rarityLabelSuffix="Tomes"
         />
-        <QueuePanel
+        <SectionedQueuePanel
           title="Needs Masteries"
           icon={<FaShieldAlt size={16} />}
           champions={needsMasteries}
-          doneLabel="Mark Mastered"
-          emptyMsg="All priority champions have masteries!"
           onDone={markMasteryDone}
           processing={processingMasteries}
           mode="masteries"
-          sectionLabel="All Champions"
+          doneLabel="Mark Mastered"
+          emptyMsg="All priority champions have masteries!"
+          rarityOrder={MASTERY_RARITY_ORDER}
+          rarityLabelSuffix="Masteries"
         />
       </div>
 

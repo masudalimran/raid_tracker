@@ -12,6 +12,9 @@
 import { ChampionRole } from "../models/ChampionRole";
 import type { TeamIdentifier } from "./team_priority_weight";
 import type IChampion from "../models/IChampion";
+import type ITeam from "../models/ITeam";
+import type { NavItemBadge } from "../components/modals/NavItem";
+import toSlug from "../helpers/toSlug";
 
 export interface AreaRoleReq {
   label: string;
@@ -440,4 +443,38 @@ export function getChampionRoleMatches(
   return requirements
     .filter((req) => req.matchRoles?.some((role) => champion.role?.includes(role)))
     .map((req) => req.label);
+}
+
+/**
+ * Nav-item badge describing a saved team's role coverage. Returns null when
+ * there's nothing to report — no requirements defined for the area, or no
+ * team saved for it yet.
+ */
+export function getAreaCoverageBadge(
+  teamKey: string,
+  teams: ITeam[],
+  champions: IChampion[],
+): NavItemBadge | null {
+  const reqs = getTeamRequirements(teamKey);
+  if (reqs.length === 0) return null;
+
+  const team = teams.find((t) => t.team_name === toSlug(teamKey));
+  if (!team) return null;
+
+  const teamChampions = team.champion_ids
+    .map((id) => champions.find((c) => c.id === id))
+    .filter(Boolean) as IChampion[];
+
+  const coverage = checkTeamCoverage(reqs, teamChampions);
+  const missing = coverage.filter((c) => c.coveredBy.length === 0);
+
+  if (missing.length === 0) {
+    return { label: "✓", tone: "success", title: "All required roles covered" };
+  }
+
+  return {
+    label: `${reqs.length - missing.length}/${reqs.length}`,
+    tone: "warning",
+    title: `Missing: ${missing.map((m) => m.req.label).join(", ")}`,
+  };
 }

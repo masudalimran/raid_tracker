@@ -19,6 +19,7 @@ import type { ChampionFilter } from "../models/ChampionFilter";
 import {
   sortByBookPriorityDesc,
   sortByMasteryPriorityDesc,
+  sortByRarity,
   sortChampions,
 } from "../helpers/sortChampions";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -184,6 +185,9 @@ export default function Champions() {
     if (filterInfo.stat === "mastery_priority") {
       list = sortByMasteryPriorityDesc([...list], teams);
       return filterInfo.sortOrder === "desc" ? list : [...list].reverse();
+    }
+    if (filterInfo.stat === "rarity") {
+      return sortByRarity([...list], filterInfo.sortOrder);
     }
     if (filterInfo.stat) {
       return sortChampions([...list], filterInfo.stat, filterInfo.sortOrder);

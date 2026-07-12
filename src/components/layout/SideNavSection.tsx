@@ -39,14 +39,28 @@ export function SideNavSection({
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `block text-sm py-1.5 px-2 rounded-md transition cursor-pointer text-nowrap
+                `block text-sm py-1.5 px-2 rounded-md transition cursor-pointer
                  ${isActive
                    ? "text-amber-400 font-semibold bg-white/10 border-l-2 border-amber-400"
                    : "text-gray-400 hover:text-amber-300 hover:bg-white/5 border-l-2 border-transparent"
                  }`
               }
             >
-              <li>{item.name}</li>
+              <li className="flex items-center justify-between gap-2 w-full">
+                <span className="truncate">{item.name}</span>
+                {item.badge && (
+                  <span
+                    title={item.badge.title}
+                    className={`shrink-0 text-[9px] font-bold leading-none px-1.5 py-1 rounded-full
+                      ${item.badge.tone === "success"
+                        ? "bg-emerald-500/15 text-emerald-400"
+                        : "bg-amber-500/15 text-amber-400"
+                      }`}
+                  >
+                    {item.badge.label}
+                  </span>
+                )}
+              </li>
             </NavLink>
           ))}
         </ul>
