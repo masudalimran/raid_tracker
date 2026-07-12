@@ -1,15 +1,16 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { FaPlusSquare } from "react-icons/fa";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { FaPlusSquare, FaFileImport } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
-import { MdChecklist, MdClose, MdDeleteSweep, MdDownload } from "react-icons/md";
+import { MdChecklist, MdClose, MdDeleteSweep, MdDownload, MdImportExport } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
 import Modal from "../components/modals/Modal";
+import Tooltip from "../components/utility/Tooltip";
 
 import type IChampion from "../models/IChampion";
 import { fetchChampions, generateChampions, findOtherChampionDuplicates, removeChampions } from "../helpers/handleChampions";
@@ -49,6 +50,7 @@ const initial_filter_info: ChampionFilter = {
 };
 
 export default function Champions() {
+  const navigate = useNavigate();
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState<string>("");
@@ -60,6 +62,20 @@ export default function Champions() {
   const [teams, setTeams] = useState<ITeam[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+
+  // Import/Export dropdown
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setShowExportMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Bulk edit
   const [bulkMode, setBulkMode] = useState(false);
@@ -362,12 +378,14 @@ export default function Champions() {
                 <div className="flex h-1.5 rounded-full overflow-hidden mt-2 gap-px">
                   {segments.map(({ pct, bg, label }) =>
                     pct > 0 ? (
-                      <div
+                      <Tooltip
                         key={label}
-                        title={label}
-                        className={`${bg} transition-all duration-500`}
+                        content={label}
+                        className="block! transition-all duration-500"
                         style={{ width: `${pct}%` }}
-                      />
+                      >
+                        <div className={`h-full w-full ${bg}`} />
+                      </Tooltip>
                     ) : null
                   )}
                 </div>
@@ -382,14 +400,15 @@ export default function Champions() {
                   filterInfo={filterInfo}
                   setFilterInfo={setFilterInfo}
                 />
-                <button
-                  type="button"
-                  title="Clear filters"
-                  onClick={() => handleFilterMode(false)}
-                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition"
-                >
-                  <MdFilterAltOff size={22} />
-                </button>
+                <Tooltip content="Clear filters">
+                  <button
+                    type="button"
+                    onClick={() => handleFilterMode(false)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition"
+                  >
+                    <MdFilterAltOff size={22} />
+                  </button>
+                </Tooltip>
               </>
             ) : (
               <>
@@ -398,62 +417,114 @@ export default function Champions() {
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Search…"
-                    className="basic-input w-36 sm:w-48"
+                    className="basic-input w-36 sm:w-48 pr-8"
                   />
-                  <CiSearch
-                    size={18}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
+                  {searchText ? (
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                      <Tooltip content="Clear search">
+                        <button
+                          type="button"
+                          onClick={() => setSearchText("")}
+                          className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+                        >
+                          <MdClose size={14} />
+                        </button>
+                      </Tooltip>
+                    </div>
+                  ) : (
+                    <CiSearch
+                      size={18}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    />
+                  )}
                 </div>
-                <button
-                  type="button"
-                  title="Add champion"
-                  onClick={handleAdd}
-                  className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
-                >
-                  <FaPlusSquare size={20} />
-                </button>
-                <button
-                  type="button"
-                  title="Refresh"
-                  onClick={() => loadChampions(true)}
-                  className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
-                >
-                  <TbRefreshDot size={22} />
-                </button>
-                <button
-                  type="button"
-                  title="Download champions as JSON"
-                  onClick={handleDownloadJson}
-                  className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition"
-                >
-                  <MdDownload size={22} />
-                </button>
-                <button
-                  type="button"
-                  title="Filter"
-                  onClick={() => handleFilterMode(true)}
-                  className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
-                >
-                  <MdFilterAlt size={22} />
-                </button>
-                <button
-                  type="button"
-                  title="Bulk edit"
-                  onClick={() => setBulkMode(true)}
-                  className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600 transition"
-                >
-                  <MdChecklist size={22} />
-                </button>
-                {duplicateOtherChampions.length > 0 && (
+                <Tooltip content="Add champion">
                   <button
                     type="button"
-                    title="Remove duplicate Shard Log champions"
-                    onClick={() => setShowDedupeConfirm(true)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                    onClick={handleAdd}
+                    className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
                   >
-                    <MdDeleteSweep size={22} />
+                    <FaPlusSquare size={20} />
                   </button>
+                </Tooltip>
+                <Tooltip content="Refresh">
+                  <button
+                    type="button"
+                    onClick={() => loadChampions(true)}
+                    className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+                  >
+                    <TbRefreshDot size={22} />
+                  </button>
+                </Tooltip>
+                <div
+                  ref={exportMenuRef}
+                  className="relative"
+                  onMouseEnter={() => setShowExportMenu(true)}
+                  onMouseLeave={() => setShowExportMenu(false)}
+                >
+                  <Tooltip content="Import or export champions">
+                    <button
+                      type="button"
+                      onClick={() => setShowExportMenu((prev) => !prev)}
+                      className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition"
+                    >
+                      <MdImportExport size={22} />
+                    </button>
+                  </Tooltip>
+
+                  {showExportMenu && (
+                    <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowExportMenu(false);
+                          navigate("/import-json");
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-amber-50 hover:text-amber-700 transition cursor-pointer"
+                      >
+                        <FaFileImport size={13} /> Import JSON
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowExportMenu(false);
+                          handleDownloadJson();
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition cursor-pointer border-t border-gray-100"
+                      >
+                        <MdDownload size={14} /> Export JSON
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <Tooltip content="Filter">
+                  <button
+                    type="button"
+                    onClick={() => handleFilterMode(true)}
+                    className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
+                  >
+                    <MdFilterAlt size={22} />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Bulk edit">
+                  <button
+                    type="button"
+                    onClick={() => setBulkMode(true)}
+                    className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600 transition"
+                  >
+                    <MdChecklist size={22} />
+                  </button>
+                </Tooltip>
+                {duplicateOtherChampions.length > 0 && (
+                  <Tooltip content="Remove duplicate Shard Log champions">
+                    <button
+                      type="button"
+                      onClick={() => setShowDedupeConfirm(true)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                    >
+                      <MdDeleteSweep size={22} />
+                    </button>
+                  </Tooltip>
                 )}
               </>
             )}
@@ -471,14 +542,15 @@ export default function Champions() {
                     ? "Deselect All"
                     : "Select All"}
                 </button>
-                <button
-                  type="button"
-                  onClick={exitBulkMode}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
-                  title="Exit bulk edit"
-                >
-                  <MdClose size={20} />
-                </button>
+                <Tooltip content="Exit bulk edit">
+                  <button
+                    type="button"
+                    onClick={exitBulkMode}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+                  >
+                    <MdClose size={20} />
+                  </button>
+                </Tooltip>
               </div>
             )}
           </div>

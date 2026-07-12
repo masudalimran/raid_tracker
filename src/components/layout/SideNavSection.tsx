@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import type { NavItem } from "../modals/NavItem";
+import Tooltip from "../utility/Tooltip";
 
 interface SideNavSectionProps {
   items: NavItem[];
@@ -49,16 +50,17 @@ export function SideNavSection({
               <li className="flex items-center justify-between gap-2 w-full">
                 <span className="truncate">{item.name}</span>
                 {item.badge && (
-                  <span
-                    title={item.badge.title}
-                    className={`shrink-0 text-[9px] font-bold leading-none px-1.5 py-1 rounded-full
-                      ${item.badge.tone === "success"
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-amber-500/15 text-amber-400"
-                      }`}
-                  >
-                    {item.badge.label}
-                  </span>
+                  <Tooltip content={item.badge.title} position="right">
+                    <span
+                      className={`shrink-0 text-[9px] font-bold leading-none px-1.5 py-1 rounded-full
+                        ${item.badge.tone === "success"
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : "bg-amber-500/15 text-amber-400"
+                        }`}
+                    >
+                      {item.badge.label}
+                    </span>
+                  </Tooltip>
                 )}
               </li>
             </NavLink>

@@ -3,6 +3,7 @@ import type RSL_Account from "../../models/RSL_Account";
 import { MdAdd, MdEdit, MdKeyboardArrowDown } from "react-icons/md";
 import RslAccountModal from "../modals/RslAccountModal";
 import { fetchRslAccounts } from "../../helpers/handleRslAccounts";
+import Tooltip from "../utility/Tooltip";
 
 export default function RslAccountSelect() {
   const [accounts, setAccounts] = useState<RSL_Account[]>([]);
@@ -62,15 +63,16 @@ export default function RslAccountSelect() {
   return (
     <>
       <div className="relative">
-        <button
-          type="button"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-amber-500/30 hover:border-amber-500/60 text-amber-400 hover:text-amber-300 transition text-sm font-medium whitespace-nowrap"
-          title="Switch or manage accounts"
-        >
-          <span className="truncate max-w-[12ch]">{currentAccount?.name || "Account"}</span>
-          <MdKeyboardArrowDown size={16} className={`transition ${isDropdownOpen ? "rotate-180" : ""}`} />
-        </button>
+        <Tooltip content="Switch or manage accounts" position="bottom">
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-amber-500/30 hover:border-amber-500/60 text-amber-400 hover:text-amber-300 transition text-sm font-medium whitespace-nowrap"
+          >
+            <span className="truncate max-w-[12ch]">{currentAccount?.name || "Account"}</span>
+            <MdKeyboardArrowDown size={16} className={`transition ${isDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+        </Tooltip>
 
         {isDropdownOpen && (
           <div className="absolute right-0 mt-1 w-48 bg-gray-800 border border-amber-500/30 rounded-lg shadow-lg z-50 overflow-hidden">
@@ -87,14 +89,15 @@ export default function RslAccountSelect() {
                       <span className="ml-2 inline-block w-2 h-2 bg-amber-400 rounded-full" />
                     )}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleEditAccount(acc)}
-                    className="p-1.5 opacity-0 group-hover:opacity-100 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded transition"
-                    title="Edit account"
-                  >
-                    <MdEdit size={14} />
-                  </button>
+                  <Tooltip content="Edit account" className="opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => handleEditAccount(acc)}
+                      className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded transition"
+                    >
+                      <MdEdit size={14} />
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
             ))}

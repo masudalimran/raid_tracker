@@ -12,6 +12,7 @@ import { ChampionRole } from "../../../models/ChampionRole";
 import { buffs } from "../../../data/buffs";
 import { debuffs } from "../../../data/debuffs";
 import { auras } from "../../../data/auras";
+import Tooltip from "../../utility/Tooltip";
 
 interface SelectChampionFilterProp {
   filterInfo: ChampionFilter;
@@ -236,21 +237,22 @@ export default function SelectChampionFilter({
       )}
 
       {/* ── Sort order toggle ── */}
-      <button
-        type="button"
-        title={isDesc ? "Descending — click for ascending" : "Ascending — click for descending"}
-        onClick={() => handleSortOrderChange(isDesc ? "asc" : "desc")}
-        className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg
-                   border border-gray-200 bg-white text-gray-600
-                   hover:border-amber-400 hover:text-amber-600
-                   transition cursor-pointer"
-      >
-        {isDesc ? (
-          <><FaArrowUpWideShort size={14} /><span className="hidden sm:inline">Desc</span></>
-        ) : (
-          <><FaArrowDownShortWide size={14} /><span className="hidden sm:inline">Asc</span></>
-        )}
-      </button>
+      <Tooltip content={isDesc ? "Descending — click for ascending" : "Ascending — click for descending"}>
+        <button
+          type="button"
+          onClick={() => handleSortOrderChange(isDesc ? "asc" : "desc")}
+          className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg
+                     border border-gray-200 bg-white text-gray-600
+                     hover:border-amber-400 hover:text-amber-600
+                     transition cursor-pointer"
+        >
+          {isDesc ? (
+            <><FaArrowUpWideShort size={14} /><span className="hidden sm:inline">Desc</span></>
+          ) : (
+            <><FaArrowDownShortWide size={14} /><span className="hidden sm:inline">Asc</span></>
+          )}
+        </button>
+      </Tooltip>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { AiFillCloseSquare } from "react-icons/ai";
+import Tooltip from "../utility/Tooltip";
 
 interface ModalProps {
   isOpen: boolean;
@@ -21,16 +22,17 @@ export default function Modal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-gray-900 border-b border-white/10">
           <h2 className="font-bold text-white text-base">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition cursor-pointer p-0.5 rounded"
-          >
-            <AiFillCloseSquare
-              size={26}
-              title="Close"
-              className="text-gray-400 hover:text-red-400 transition"
-            />
-          </button>
+          <Tooltip content="Close">
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition cursor-pointer p-0.5 rounded"
+            >
+              <AiFillCloseSquare
+                size={26}
+                className="text-gray-400 hover:text-red-400 transition"
+              />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Content */}

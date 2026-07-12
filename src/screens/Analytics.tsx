@@ -11,6 +11,7 @@ import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { getTeamRequirements, checkTeamCoverage } from "../data/areaRoleRequirements";
 import { ALL_AREAS } from "../data/allAreas";
 import toSlug from "../helpers/toSlug";
+import Tooltip from "../components/utility/Tooltip";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 
 const RARITY_ORDER = [
@@ -478,20 +479,22 @@ export default function Analytics() {
           </h2>
           <div className="bg-white border rounded-xl p-4 space-y-3">
             {roleGaps.map((gap) => (
-              <div key={gap.label} className="flex items-center gap-3" title={`Missing in: ${gap.areas.join(", ")}`}>
-                <span className="text-xs font-semibold w-28 shrink-0 text-amber-700 truncate">
-                  {gap.label}
-                </span>
-                <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-amber-400 transition-all duration-500"
-                    style={{ width: `${Math.round((gap.missing / gap.total) * 100)}%` }}
-                  />
+              <Tooltip key={gap.label} content={`Missing in: ${gap.areas.join(", ")}`} className="w-full">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold w-28 shrink-0 text-amber-700 truncate">
+                    {gap.label}
+                  </span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-amber-400 transition-all duration-500"
+                      style={{ width: `${Math.round((gap.missing / gap.total) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 w-16 text-right shrink-0 text-nowrap">
+                    {gap.missing}/{gap.total} areas
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500 w-16 text-right shrink-0 text-nowrap">
-                  {gap.missing}/{gap.total} areas
-                </span>
-              </div>
+              </Tooltip>
             ))}
           </div>
         </section>

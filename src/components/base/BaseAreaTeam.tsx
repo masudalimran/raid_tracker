@@ -30,6 +30,7 @@ import {
 } from "../../helpers/teamRoleOverrides";
 import { ChampionRole } from "../../models/ChampionRole";
 import RoleSearchSelect from "../forms/inputs/RoleSearchSelect";
+import Tooltip from "../utility/Tooltip";
 
 interface BaseAreaTeamProps {
   title: string;
@@ -266,34 +267,41 @@ export default function BaseAreaTeam({
                   const result = coverage.find((c) => c.req.label === req.label);
                   const covered = (result?.coveredBy.length ?? 0) > 0;
                   return (
-                    <div
+                    <Tooltip
                       key={req.label}
-                      title={editingRoles ? undefined : `${req.tip}${covered ? `\nCovered by: ${result?.coveredBy.join(", ")}` : "\nNot detected in this team"}`}
-                      className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition
-                        ${editingRoles
-                          ? "bg-white border-gray-300 text-gray-600"
-                          : covered
-                            ? "bg-green-50 border-green-300 text-green-700 cursor-default"
-                            : "bg-gray-50 border-gray-200 text-gray-400 cursor-default"
-                        }`}
+                      content={
+                        editingRoles ? undefined : (
+                          <>
+                            <div>{req.tip}</div>
+                            <div className={covered ? "text-green-300 mt-1" : "text-gray-400 mt-1"}>
+                              {covered ? `Covered by: ${result?.coveredBy.join(", ")}` : "Not detected in this team"}
+                            </div>
+                          </>
+                        )
+                      }
                     >
-                      {!editingRoles && <span>{covered ? "✓" : "✗"}</span>}
-                      <span>{req.label}</span>
-                      {editingRoles && (
-                        <button
-                          type="button"
-                          onClick={() => removeReq(req.label)}
-                          className="text-gray-400 hover:text-red-500 transition cursor-pointer"
-                        >
-                          <FaTimes size={9} />
-                        </button>
-                      )}
-                      {!editingRoles && covered && (
-                        <span className="hidden group-hover:block absolute bottom-full left-0 mb-2 bg-gray-800 text-white text-[10px] rounded-lg px-2.5 py-1.5 z-50 whitespace-nowrap shadow-xl">
-                          {result?.coveredBy.join(" · ")}
-                        </span>
-                      )}
-                    </div>
+                      <div
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition
+                          ${editingRoles
+                            ? "bg-white border-gray-300 text-gray-600"
+                            : covered
+                              ? "bg-green-50 border-green-300 text-green-700 cursor-default"
+                              : "bg-gray-50 border-gray-200 text-gray-400 cursor-default"
+                          }`}
+                      >
+                        {!editingRoles && <span>{covered ? "✓" : "✗"}</span>}
+                        <span>{req.label}</span>
+                        {editingRoles && (
+                          <button
+                            type="button"
+                            onClick={() => removeReq(req.label)}
+                            className="text-gray-400 hover:text-red-500 transition cursor-pointer"
+                          >
+                            <FaTimes size={9} />
+                          </button>
+                        )}
+                      </div>
+                    </Tooltip>
                   );
                 })}
 

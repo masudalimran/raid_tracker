@@ -25,6 +25,7 @@ import Modal from "../components/modals/Modal";
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import type IChampion from "../models/IChampion";
+import Tooltip from "../components/utility/Tooltip";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
 
@@ -192,20 +193,22 @@ function PullTrendChart({ pulls }: { pulls: IShardPull[] }) {
       </p>
       <div className="flex items-end gap-2 h-28">
         {buckets.map((w) => (
-          <div
+          <Tooltip
             key={w.start}
-            title={`${w.label}: ${w.count} pull${w.count !== 1 ? "s" : ""}`}
-            className="flex-1 flex flex-col items-center justify-end gap-1 h-full"
+            content={`${w.label}: ${w.count} pull${w.count !== 1 ? "s" : ""}`}
+            className="flex-1 h-full"
           >
-            {w.count > 0 && (
-              <span className="text-[10px] font-semibold text-gray-600">{w.count}</span>
-            )}
-            <div
-              className="w-full max-w-6 rounded-t-md bg-amber-600 transition-all"
-              style={{ height: `${w.count > 0 ? Math.max((w.count / maxCount) * 100, 8) : 2}%` }}
-            />
-            <span className="text-[9px] text-gray-400 mt-1 whitespace-nowrap">{w.label}</span>
-          </div>
+            <div className="flex flex-col items-center justify-end gap-1 h-full">
+              {w.count > 0 && (
+                <span className="text-[10px] font-semibold text-gray-600">{w.count}</span>
+              )}
+              <div
+                className="w-full max-w-6 rounded-t-md bg-amber-600 transition-all"
+                style={{ height: `${w.count > 0 ? Math.max((w.count / maxCount) * 100, 8) : 2}%` }}
+              />
+              <span className="text-[9px] text-gray-400 mt-1 whitespace-nowrap">{w.label}</span>
+            </div>
+          </Tooltip>
         ))}
       </div>
     </div>
@@ -599,59 +602,63 @@ export default function ShardLog() {
           >
             <FaPlus size={11} /> Log Pull
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setResetReason("manual");
-              setResetConfirmText("");
-              setShowResetConfirm(true);
-            }}
-            title={`Clear the ${activeTab} pull log and reset its pity counter`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition cursor-pointer shrink-0"
-          >
-            <FaRedo size={11} /> Reset Pity
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSyncConfirm(true)}
-            disabled={syncStatus === "syncing"}
-            title="Save the shard log to the cloud so it's available on other devices"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 border
-              ${syncStatus === "error"
-                ? "border-red-300 text-red-600 hover:bg-red-50"
-                : syncStatus === "saved"
-                ? "border-green-300 text-green-600 bg-green-50"
-                : "border-gray-300 text-gray-600 hover:bg-gray-100"}
-              disabled:opacity-60 disabled:cursor-not-allowed`}
-          >
-            <FaCloudUploadAlt size={13} />
-            {syncStatus === "syncing" ? "Saving…" : syncStatus === "saved" ? "Saved!" : syncStatus === "error" ? "Failed" : "Save to Cloud"}
-          </button>
-          <button
-            type="button"
-            onClick={handleFetch}
-            disabled={fetchStatus === "fetching"}
-            title="Fetch the shard log saved to the cloud for this account"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 border
-              ${fetchStatus === "error"
-                ? "border-red-300 text-red-600 hover:bg-red-50"
-                : fetchStatus === "done"
-                ? "border-green-300 text-green-600 bg-green-50"
-                : "border-gray-300 text-gray-600 hover:bg-gray-100"}
-              disabled:opacity-60 disabled:cursor-not-allowed`}
-          >
-            <FaCloudDownloadAlt size={13} />
-            {fetchStatus === "fetching" ? "Fetching…" : fetchStatus === "done" ? "Fetched!" : fetchStatus === "error" ? "Failed" : "Fetch from Cloud"}
-          </button>
-          <button
-            type="button"
-            onClick={handleExportCsv}
-            disabled={pulls.length === 0}
-            title="Export the full shard pull log (all shard types) as a CSV file"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <MdDownload size={14} /> Export CSV
-          </button>
+          <Tooltip content={`Clear the ${activeTab} pull log and reset its pity counter`} className="shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setResetReason("manual");
+                setResetConfirmText("");
+                setShowResetConfirm(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+            >
+              <FaRedo size={11} /> Reset Pity
+            </button>
+          </Tooltip>
+          <Tooltip content="Save the shard log to the cloud so it's available on other devices" className="shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowSyncConfirm(true)}
+              disabled={syncStatus === "syncing"}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer border
+                ${syncStatus === "error"
+                  ? "border-red-300 text-red-600 hover:bg-red-50"
+                  : syncStatus === "saved"
+                  ? "border-green-300 text-green-600 bg-green-50"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+                disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              <FaCloudUploadAlt size={13} />
+              {syncStatus === "syncing" ? "Saving…" : syncStatus === "saved" ? "Saved!" : syncStatus === "error" ? "Failed" : "Save to Cloud"}
+            </button>
+          </Tooltip>
+          <Tooltip content="Fetch the shard log saved to the cloud for this account" className="shrink-0">
+            <button
+              type="button"
+              onClick={handleFetch}
+              disabled={fetchStatus === "fetching"}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer border
+                ${fetchStatus === "error"
+                  ? "border-red-300 text-red-600 hover:bg-red-50"
+                  : fetchStatus === "done"
+                  ? "border-green-300 text-green-600 bg-green-50"
+                  : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+                disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              <FaCloudDownloadAlt size={13} />
+              {fetchStatus === "fetching" ? "Fetching…" : fetchStatus === "done" ? "Fetched!" : fetchStatus === "error" ? "Failed" : "Fetch from Cloud"}
+            </button>
+          </Tooltip>
+          <Tooltip content="Export the full shard pull log (all shard types) as a CSV file" className="shrink-0">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              disabled={pulls.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <MdDownload size={14} /> Export CSV
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -868,22 +875,24 @@ export default function ShardLog() {
               Showing {filteredTabPulls.length} of {tabPulls.length} pulls
             </span>
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                title="List view"
-                className={`p-1.5 transition cursor-pointer ${viewMode === "list" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
-              >
-                <FaList size={12} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                title="Grid view"
-                className={`p-1.5 transition cursor-pointer ${viewMode === "grid" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
-              >
-                <FaThLarge size={12} />
-              </button>
+              <Tooltip content="List view">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 transition cursor-pointer ${viewMode === "list" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+                >
+                  <FaList size={12} />
+                </button>
+              </Tooltip>
+              <Tooltip content="Grid view">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 transition cursor-pointer ${viewMode === "grid" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+                >
+                  <FaThLarge size={12} />
+                </button>
+              </Tooltip>
             </div>
           </div>
         )}
@@ -965,14 +974,15 @@ export default function ShardLog() {
                     key={pull.id}
                     className={`flex flex-col items-center text-center gap-1.5 border rounded-xl px-2 py-3 shadow-sm ${accent}`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => openChampionCard(pull.championName)}
-                      className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
-                      title="View champion"
-                    >
-                      <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={48} />
-                    </button>
+                    <Tooltip content="View champion">
+                      <button
+                        type="button"
+                        onClick={() => openChampionCard(pull.championName)}
+                        className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
+                      >
+                        <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={48} />
+                      </button>
+                    </Tooltip>
                     <span className="font-semibold text-sm truncate w-full">{pull.championName}</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full ${RARITY_COLOR[pull.rarity] ?? ""}`}>
                       {pull.rarity}
@@ -1009,14 +1019,15 @@ export default function ShardLog() {
                   key={pull.id}
                   className={`flex items-center gap-3 border rounded-xl px-3 py-2.5 shadow-sm ${accent}`}
                 >
+                  <Tooltip content="View champion" className="shrink-0">
                   <button
                     type="button"
                     onClick={() => openChampionCard(pull.championName)}
-                    className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition shrink-0"
-                    title="View champion"
+                    className="rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
                   >
                     <ChampionAvatar name={pull.championName} imgUrl={imgUrl} size={40} />
                   </button>
+                  </Tooltip>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

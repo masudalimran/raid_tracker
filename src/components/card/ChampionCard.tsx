@@ -23,6 +23,7 @@ import type ITeam from "../../models/ITeam.ts";
 import { fromSlug } from "../../helpers/fromSlug.ts";
 import colorByRarity from "../../helpers/colorByRarity.ts";
 import getFactionLogo from "../../helpers/getFactionLogo.ts";
+import Tooltip from "../utility/Tooltip.tsx";
 
 interface ChampionCardProps {
   champion: IChampion;
@@ -209,13 +210,19 @@ export default function ChampionCard({
 
           {/* Turn order – top-left */}
           {turnOrder && (
-            <div
-              title={turnOrder.tied ? "Tied speed — in-game turn order may vary" : undefined}
-              className={`absolute top-0 left-0 z-20 backdrop-blur-sm rounded-br-xl px-2 py-1 flex items-center gap-1
-                ${turnOrder.tied ? "bg-amber-500/70" : "bg-black/50"}`}
-            >
-              <span className="text-white text-xs font-bold">Turn {turnOrder.rank}</span>
-              {turnOrder.tied && <span className="text-white text-[9px] font-bold">≈</span>}
+            <div className="absolute top-0 left-0 z-20">
+              <Tooltip
+                content={turnOrder.tied ? "Tied speed — in-game turn order may vary" : undefined}
+                position="bottom"
+              >
+                <div
+                  className={`backdrop-blur-sm rounded-br-xl px-2 py-1 flex items-center gap-1
+                    ${turnOrder.tied ? "bg-amber-500/70" : "bg-black/50"}`}
+                >
+                  <span className="text-white text-xs font-bold">Turn {turnOrder.rank}</span>
+                  {turnOrder.tied && <span className="text-white text-[9px] font-bold">≈</span>}
+                </div>
+              </Tooltip>
             </div>
           )}
 
@@ -243,13 +250,15 @@ export default function ChampionCard({
           {rolesExpanded ? (
             <div className="flex items-center gap-1 flex-wrap justify-end ml-auto">
               {visibleRoles.map((role) => (
-                <div key={role} className="w-5 h-5 shrink-0" title={role}>
-                  <img
-                    src={ChampionRoleImageMap[role]}
-                    alt={role}
-                    className="w-full h-full object-contain rounded-full"
-                  />
-                </div>
+                <Tooltip key={role} content={role} className="w-5 h-5 shrink-0">
+                  <div className="w-5 h-5">
+                    <img
+                      src={ChampionRoleImageMap[role]}
+                      alt={role}
+                      className="w-full h-full object-contain rounded-full"
+                    />
+                  </div>
+                </Tooltip>
               ))}
               <button
                 type="button"
@@ -269,31 +278,36 @@ export default function ChampionCard({
                 <span className="text-xs text-gray-600 truncate">{champion.faction}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <div
-                  className={`h-2.5 w-2.5 rounded-full shrink-0 ${colorByRarity(champion.rarity)}`}
-                  title={champion.rarity}
-                />
+                <Tooltip content={champion.rarity} className="shrink-0">
+                  <div className={`h-2.5 w-2.5 rounded-full ${colorByRarity(champion.rarity)}`} />
+                </Tooltip>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 capitalize font-medium">
                   {champion.type}
                 </span>
                 {previewRoles.map((role) => (
-                  <div key={role} className="w-5 h-5 shrink-0" title={role}>
-                    <img
-                      src={ChampionRoleImageMap[role]}
-                      alt={role}
-                      className="w-full h-full object-contain rounded-full"
-                    />
-                  </div>
+                  <Tooltip key={role} content={role} className="w-5 h-5 shrink-0">
+                    <div className="w-5 h-5">
+                      <img
+                        src={ChampionRoleImageMap[role]}
+                        alt={role}
+                        className="w-full h-full object-contain rounded-full"
+                      />
+                    </div>
+                  </Tooltip>
                 ))}
                 {hiddenRoleCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setRolesExpanded(true)}
-                    title={`+${hiddenRoleCount} more role${hiddenRoleCount !== 1 ? "s" : ""}`}
-                    className="w-5 h-5 shrink-0 rounded-full bg-gray-200 text-gray-600 text-[9px] font-bold flex items-center justify-center hover:bg-amber-200 hover:text-amber-700 transition cursor-pointer"
+                  <Tooltip
+                    content={`+${hiddenRoleCount} more role${hiddenRoleCount !== 1 ? "s" : ""}`}
+                    className="shrink-0"
                   >
-                    +{hiddenRoleCount}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setRolesExpanded(true)}
+                      className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[9px] font-bold flex items-center justify-center hover:bg-amber-200 hover:text-amber-700 transition cursor-pointer"
+                    >
+                      +{hiddenRoleCount}
+                    </button>
+                  </Tooltip>
                 )}
               </div>
             </>
@@ -384,13 +398,13 @@ export default function ChampionCard({
             {champion.gear.map((g) => {
               const setInfo = getSetInfo(g.setKindId);
               return (
-                <span
-                  key={g.artifactId}
-                  title={`${g.slot} — ${setInfo.name} +${g.level}`}
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${setInfo.color} ${setInfo.textColor}`}
-                >
-                  {setInfo.name}
-                </span>
+                <Tooltip key={g.artifactId} content={`${g.slot} — ${setInfo.name} +${g.level}`}>
+                  <span
+                    className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${setInfo.color} ${setInfo.textColor}`}
+                  >
+                    {setInfo.name}
+                  </span>
+                </Tooltip>
               );
             })}
           </div>

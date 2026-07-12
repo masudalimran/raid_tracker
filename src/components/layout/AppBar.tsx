@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
-import { fetchTeams } from "../../helpers/handleTeams";
 // import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus"; // skills hidden
 // import { GiBroadsword, GiZeusSword } from "react-icons/gi"; // skills hidden
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaSearch } from "react-icons/fa";
+import Tooltip from "../utility/Tooltip";
 
 interface AppBarProps {
   onMenuToggle: () => void;
@@ -19,7 +19,6 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
-  const [teamCount, setTeamCount] = useState<number>(0);
   const supabase_auth = localStorage.getItem("supabase_auth");
 
   const logout = () => {
@@ -43,7 +42,6 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   useEffect(() => {
     setNsfw(getNsfwStatus());
     // setShowSkills(getShowSkillsStatus()); // skills hidden
-    fetchTeams().then((teams) => setTeamCount(teams.length));
   }, []);
 
   useEffect(() => {
@@ -73,72 +71,49 @@ function AppBar({ onMenuToggle }: AppBarProps) {
       </div>
 
       {/* Right: actions */}
-      <div className="flex items-center gap-1">
-        {/* Global search */}
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event("open-global-search"))}
-          className="hidden sm:flex items-center gap-1.5 text-xs text-gray-300 hover:text-white border border-white/10 hover:border-white/20 rounded-md px-2 py-1.5 transition cursor-pointer"
-          title="Search champions or teams"
-        >
-          <FaSearch size={11} />
-          <span>Search</span>
-          <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘K</kbd>
-        </button>
+      <div className="flex items-center gap-3">
+        {/* Utility cluster */}
+        <div className="flex items-center gap-0.5 bg-white/5 rounded-lg p-1">
+          <Tooltip content="Search champions or teams">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-global-search"))}
+              className="hidden sm:flex items-center gap-1.5 text-xs text-gray-300 hover:text-white hover:bg-white/10 rounded-md px-2 py-1 transition cursor-pointer"
+            >
+              <FaSearch size={12} />
+              <span>Search</span>
+              <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘K</kbd>
+            </button>
+          </Tooltip>
 
-        {/* Team count */}
-        <div
-          className="flex items-center overflow-hidden rounded-md text-xs border border-amber-500/40"
-          title="Number of area teams you have built"
-        >
-          <span className="hidden sm:block px-2 py-1 bg-amber-500 text-white font-semibold uppercase tracking-wide text-[10px]">
-            Teams
-          </span>
-          <span className="px-2 py-1 text-amber-400 font-bold">
-            {teamCount}
-          </span>
+          <Tooltip content={nsfw ? "Hide Images" : "Show Images"}>
+            <button
+              type="button"
+              onClick={() => handleNsfw(!nsfw)}
+              className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
+            >
+              {nsfw ? <CiImageOn size={20} /> : <CiImageOff size={20} />}
+            </button>
+          </Tooltip>
         </div>
-
-        {/* Image toggle */}
-        {nsfw ? (
-          <button
-            type="button"
-            onClick={() => handleNsfw(false)}
-            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
-            title="Hide Images"
-          >
-            <CiImageOn size={22} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => handleNsfw(true)}
-            className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white"
-            title="Show Images"
-          >
-            <CiImageOff size={22} />
-          </button>
-        )}
 
         {/* Skills toggle — hidden; skills tracking removed from UI */}
 
         {/* Account */}
-        <div className="pl-2 pr-1 text-right border-l border-white/10 ml-1">
-          {user ? (
-            <RslAccountForm />
-          ) : (
+        <div className="flex items-center gap-3 pl-3 border-l border-white/10">
+          {user ? <RslAccountForm /> : (
             <span className="text-sm font-bold uppercase tracking-widest text-amber-400">
               Raid Tracker
             </span>
           )}
           {user && (
-            <div className="flex items-center justify-end gap-1.5 text-[11px] text-gray-400">
-              <span className="hidden sm:block truncate max-w-[14ch]">{user}</span>
-              <span className="hidden sm:block text-gray-600">·</span>
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-gray-400">
+              <span className="truncate max-w-[14ch]">{user}</span>
+              <span className="text-gray-600">·</span>
               <button
                 type="button"
                 onClick={logout}
-                className="text-gray-400 hover:text-amber-400 transition cursor-pointer underline"
+                className="text-gray-400 hover:text-amber-400 transition cursor-pointer font-medium"
               >
                 Logout
               </button>

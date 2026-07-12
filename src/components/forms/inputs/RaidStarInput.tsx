@@ -8,6 +8,8 @@
  * are dimmed and unclickable. Clicking the active star deselects/decrements it.
  */
 
+import Tooltip from "../../utility/Tooltip";
+
 interface RaidStarInputProps {
   stars: number;
   ascension: number;
@@ -51,20 +53,23 @@ function StarRow({ label, value, max, activeColor, dimColor, minValue = 0, onCha
           const inRange  = n <= max;
           const disabled = !inRange;
           return (
-            <button
+            <Tooltip
               key={n}
-              type="button"
-              disabled={disabled}
-              onClick={() => handleClick(n)}
-              title={disabled ? `Unlock by raising ${label === "Ascension" ? "Stars" : "Ascension"} first` : `Set ${label} to ${n}`}
-              className={`text-2xl leading-none transition-transform
-                ${disabled
-                  ? `${dimColor} opacity-20 cursor-not-allowed`
-                  : `cursor-pointer hover:scale-110 ${filled ? activeColor : "text-gray-200"}`
-                }`}
+              content={disabled ? `Unlock by raising ${label === "Ascension" ? "Stars" : "Ascension"} first` : `Set ${label} to ${n}`}
             >
-              ★
-            </button>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => handleClick(n)}
+                className={`text-2xl leading-none transition-transform
+                  ${disabled
+                    ? `${dimColor} opacity-20 cursor-not-allowed`
+                    : `cursor-pointer hover:scale-110 ${filled ? activeColor : "text-gray-200"}`
+                  }`}
+              >
+                ★
+              </button>
+            </Tooltip>
           );
         })}
       </div>

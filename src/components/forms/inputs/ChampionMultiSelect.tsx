@@ -2,6 +2,8 @@ import { Fragment, useMemo, useState } from "react";
 import type IChampion from "../../../models/IChampion";
 import colorByRarity from "../../../helpers/colorByRarity";
 import { HiOutlineExternalLink } from "react-icons/hi";
+import { MdClose } from "react-icons/md";
+import Tooltip from "../../utility/Tooltip";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
 import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 import { ChampionRarity } from "../../../models/ChampionRarity";
@@ -128,17 +130,15 @@ export default function ChampionMultiSelect({
             {champ.role
               .filter((role) => ChampionRoleImageMap[role])
               .map((role) => (
-                <div
-                  key={role}
-                  className="w-5 h-5 flex-center text-xs rounded-full"
-                  title={role}
-                >
-                  <img
-                    src={ChampionRoleImageMap[role]}
-                    alt={role}
-                    className="w-full h-full object-contain rounded-full"
-                  />
-                </div>
+                <Tooltip key={role} content={role} className="w-5 h-5">
+                  <div className="w-5 h-5 flex-center text-xs rounded-full">
+                    <img
+                      src={ChampionRoleImageMap[role]}
+                      alt={role}
+                      className="w-full h-full object-contain rounded-full"
+                    />
+                  </div>
+                </Tooltip>
               ))}
           </div>
         </label>
@@ -281,13 +281,28 @@ export default function ChampionMultiSelect({
           )}
 
           {/* Search */}
-          <input
-            type="text"
-            placeholder="Search champions..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full border px-2 py-1 rounded mb-2"
-          />
+          <div className="relative mb-2">
+            <input
+              type="text"
+              placeholder="Search champions..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full border px-2 py-1 pr-7 rounded"
+            />
+            {query && (
+              <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                <Tooltip content="Clear search">
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <MdClose size={14} />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
 
           {/* Available Champions */}
           <div className="max-h-50 overflow-y-auto space-y-1">
