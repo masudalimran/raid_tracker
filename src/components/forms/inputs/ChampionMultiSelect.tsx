@@ -5,12 +5,18 @@ import { HiOutlineExternalLink } from "react-icons/hi";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
 import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 import { ChampionRarity } from "../../../models/ChampionRarity";
+import {
+  checkTeamCoverage,
+  type AreaRoleReq,
+} from "../../../data/areaRoleRequirements";
+import { suggestTeam } from "../../../helpers/suggestTeam";
 
 interface ChampionMultiSelectProps {
   value: string[];
   onChange: (value: string[]) => void;
   champions: IChampion[];
   max?: number;
+  requiredRoles?: AreaRoleReq[];
 }
 
 const RARITY_ORDER: Record<string, number> = {
@@ -35,8 +41,10 @@ export default function ChampionMultiSelect({
   onChange,
   champions,
   max = 6,
+  requiredRoles = [],
 }: ChampionMultiSelectProps) {
   const [query, setQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"all" | "suggested">("all");
 
   const toggleChampion = (id: string) => {
     if (value.includes(id)) {
@@ -66,6 +74,23 @@ export default function ChampionMultiSelect({
       .slice()
       .sort(byRarityThenName);
   }, [filtered, value]);
+
+  const suggestedTeam = useMemo(() => {
+    if (requiredRoles.length === 0) return [];
+    return suggestTeam(champions, requiredRoles, max);
+  }, [champions, requiredRoles, max]);
+
+  const suggestedCoverageCount = useMemo(() => {
+    if (requiredRoles.length === 0) return 0;
+    return checkTeamCoverage(
+      requiredRoles,
+      suggestedTeam.map((s) => s.champion),
+    ).filter((c) => c.coveredBy.length > 0).length;
+  }, [requiredRoles, suggestedTeam]);
+
+  const selectSuggestedTeam = () => {
+    onChange(suggestedTeam.map((s) => s.champion.id!.toString()));
+  };
 
   const ChampionRow = ({ champ }: { champ: IChampion }) => {
     if (!champ.id) return null;
@@ -132,45 +157,152 @@ export default function ChampionMultiSelect({
     );
   };
 
+  const SuggestedTeamRow = ({
+    champ,
+    matchedLabels,
+    alreadySelected,
+  }: {
+    champ: IChampion;
+    matchedLabels: string[];
+    alreadySelected: boolean;
+  }) => {
+    if (!champ.id) return null;
+
+    return (
+      <div
+        className={`flex items-center gap-2 w-full pr-2 rounded basic-padding-xs ${colorByRarity(
+          champ.rarity,
+        )} ${alreadySelected ? "ring-2 ring-emerald-400" : ""}`}
+      >
+        <img
+          src={champ.imgUrl}
+          className={`h-7 w-7 object-cover rounded-full border-2 shrink-0 ${
+            checkIfChampionIsBuilt(champ) ? "border-green-500" : "border-red-500"
+          }`}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{champ.name}</p>
+          {matchedLabels.length > 0 && (
+            <p className="text-[10px] text-gray-600 truncate">
+              Covers: {matchedLabels.join(", ")}
+            </p>
+          )}
+        </div>
+        {alreadySelected && (
+          <span className="text-[10px] font-semibold text-emerald-700 shrink-0">
+            Already in team
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="border rounded p-2">
-      {/* Selected Champions */}
-      {selectedChampions.length > 0 && (
-        <div className="mb-3 border-b pb-2">
-          <p className="text-xs font-semibold mb-1">
-            Selected Champions ({value.length}/{max})
+      {requiredRoles.length > 0 && (
+        <div className="flex gap-1 mb-2">
+          <button
+            type="button"
+            onClick={() => setViewMode("all")}
+            className={`flex-1 text-xs font-semibold py-1 rounded cursor-pointer transition ${
+              viewMode === "all"
+                ? "bg-amber-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            All Champions
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("suggested")}
+            className={`flex-1 text-xs font-semibold py-1 rounded cursor-pointer transition ${
+              viewMode === "suggested"
+                ? "bg-amber-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Suggested Team
+          </button>
+        </div>
+      )}
+
+      {viewMode === "suggested" && requiredRoles.length > 0 ? (
+        <div>
+          <p className="text-xs text-gray-500 mb-2">
+            Covers {suggestedCoverageCount}/{requiredRoles.length} required
+            roles
           </p>
-          <div className="space-y-1">
-            {selectedChampions.map((champ) => (
+
+          {suggestedTeam.length > 0 ? (
+            <div className="space-y-1 mb-2">
+              {suggestedTeam.map(({ champion, matchedLabels }) => (
+                <Fragment key={champion.id}>
+                  <SuggestedTeamRow
+                    champ={champion}
+                    matchedLabels={matchedLabels}
+                    alreadySelected={value.includes(
+                      champion.id?.toString() ?? "",
+                    )}
+                  />
+                </Fragment>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 mb-2">
+              Not enough champions available to suggest a team.
+            </p>
+          )}
+
+          <button
+            type="button"
+            disabled={suggestedTeam.length === 0}
+            onClick={selectSuggestedTeam}
+            className="btn-primary w-full text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Select Suggested Team
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Selected Champions */}
+          {selectedChampions.length > 0 && (
+            <div className="mb-3 border-b pb-2">
+              <p className="text-xs font-semibold mb-1">
+                Selected Champions ({value.length}/{max})
+              </p>
+              <div className="space-y-1">
+                {selectedChampions.map((champ) => (
+                  <Fragment key={champ.id}>
+                    <ChampionRow champ={champ} />
+                  </Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search champions..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full border px-2 py-1 rounded mb-2"
+          />
+
+          {/* Available Champions */}
+          <div className="max-h-50 overflow-y-auto space-y-1">
+            {unselectedChampions.map((champ) => (
               <Fragment key={champ.id}>
                 <ChampionRow champ={champ} />
               </Fragment>
             ))}
           </div>
-        </div>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Selected {value.length} / {max}
+          </p>
+        </>
       )}
-
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search champions..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="w-full border px-2 py-1 rounded mb-2"
-      />
-
-      {/* Available Champions */}
-      <div className="max-h-50 overflow-y-auto space-y-1">
-        {unselectedChampions.map((champ) => (
-          <Fragment key={champ.id}>
-            <ChampionRow champ={champ} />
-          </Fragment>
-        ))}
-      </div>
-
-      <p className="text-xs text-gray-500 mt-1">
-        Selected {value.length} / {max}
-      </p>
     </div>
   );
 }

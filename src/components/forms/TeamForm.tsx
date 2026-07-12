@@ -7,6 +7,7 @@ import type ITeam from "../../models/ITeam";
 import toSlug from "../../helpers/toSlug";
 import { useTeam } from "../../hooks/useTeam";
 import { type TeamIdentifier } from "../../data/team_priority_weight";
+import { getTeamRequirements } from "../../data/areaRoleRequirements";
 
 interface TeamFormProps {
   maxChampions?: number;
@@ -26,6 +27,8 @@ export default function TeamForm({
   onSave,
 }: TeamFormProps) {
   const { addTeam, updateTeam, loading } = useTeam();
+
+  const requiredRoles = getTeamRequirements(teamName);
 
   teamName = toSlug(teamName);
 
@@ -165,6 +168,7 @@ export default function TeamForm({
               onChange={field.onChange}
               champions={championList}
               max={maxChampions}
+              requiredRoles={requiredRoles}
             />
           )}
         />

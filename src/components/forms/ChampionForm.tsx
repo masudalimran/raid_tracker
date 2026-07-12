@@ -69,7 +69,6 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     setValue,
     getValues,
     formState: { errors },
-    reset,
     // eslint-disable-next-line react-hooks/rules-of-hooks
   } = useForm<ChampionFormData>({
     resolver: zodResolver(championSchema),
@@ -105,14 +104,18 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     }
   };
 
+  // Only identity fields carry over from the matched roster champion — stats,
+  // level, stars, and book/mastery progress stay whatever the user already
+  // has in the form, since a new/edited entry starts its own progress.
   const applyRosterChampion = (existing: IChampion) => {
-    const { id: _id, user_id: _uid, rsl_account_id: _rid, priority: _p, ...rest } = existing as IChampion & { priority?: unknown };
-    reset({
-      ...DefaultChampionObject,
-      ...rest,
-      user_id: userId,
-      rsl_account_id: rslAccountId,
-    });
+    setValue("name", existing.name, { shouldDirty: true });
+    setValue("imgUrl", existing.imgUrl ?? DefaultChampionObject.imgUrl ?? "", { shouldDirty: true });
+    setValue("championUrl", existing.championUrl ?? "", { shouldDirty: true });
+    setValue("faction", existing.faction, { shouldDirty: true });
+    setValue("affinity", existing.affinity, { shouldDirty: true });
+    setValue("type", existing.type, { shouldDirty: true });
+    setValue("rarity", existing.rarity, { shouldDirty: true });
+    setValue("role", existing.role ?? [], { shouldDirty: true });
     setShowRosterDropdown(false);
     setActiveRosterIndex(-1);
   };
