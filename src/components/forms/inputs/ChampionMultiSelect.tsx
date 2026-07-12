@@ -2,8 +2,10 @@ import { Fragment, useMemo, useState } from "react";
 import type IChampion from "../../../models/IChampion";
 import colorByRarity from "../../../helpers/colorByRarity";
 import { HiOutlineExternalLink } from "react-icons/hi";
+import { FaEdit } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import Tooltip from "../../utility/Tooltip";
+import ChampionModal from "../../modals/ChampionModal";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
 import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 import { ChampionRarity } from "../../../models/ChampionRarity";
@@ -47,6 +49,29 @@ export default function ChampionMultiSelect({
 }: ChampionMultiSelectProps) {
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "suggested">("all");
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+  // Live-edited champions, keyed by id — applied on top of the `champions`
+  // prop so an edit shows up immediately without needing the parent team
+  // form/modal to re-fetch and re-render with a fresh champions array.
+  const [overrides, setOverrides] = useState<Record<string, IChampion>>({});
+
+  const effectiveChampions = useMemo(
+    () => champions.map((c) => overrides[c.id?.toString() ?? ""] ?? c),
+    [champions, overrides],
+  );
+
+  const handleEditClose = (shouldReload: boolean) => {
+    if (shouldReload && editingChampion?.id) {
+      const stored = JSON.parse(
+        localStorage.getItem("supabase_champion_list") ?? "[]",
+      ) as IChampion[];
+      const updated = stored.find((c) => String(c.id) === String(editingChampion.id));
+      if (updated) {
+        setOverrides((prev) => ({ ...prev, [String(editingChampion.id)]: updated }));
+      }
+    }
+    setEditingChampion(null);
+  };
 
   const toggleChampion = (id: string) => {
     if (value.includes(id)) {
@@ -58,17 +83,17 @@ export default function ChampionMultiSelect({
   };
 
   const filtered = useMemo(() => {
-    return champions.filter((c) =>
+    return effectiveChampions.filter((c) =>
       c.name.toLowerCase().includes(query.toLowerCase()),
     );
-  }, [champions, query]);
+  }, [effectiveChampions, query]);
 
   const selectedChampions = useMemo(() => {
-    return champions
+    return effectiveChampions
       .filter((c) => value.includes(c.id?.toString() ?? ""))
       .slice()
       .sort(byRarityThenName);
-  }, [champions, value]);
+  }, [effectiveChampions, value]);
 
   const unselectedChampions = useMemo(() => {
     return filtered
@@ -79,8 +104,8 @@ export default function ChampionMultiSelect({
 
   const suggestedTeam = useMemo(() => {
     if (requiredRoles.length === 0) return [];
-    return suggestTeam(champions, requiredRoles, max);
-  }, [champions, requiredRoles, max]);
+    return suggestTeam(effectiveChampions, requiredRoles, max);
+  }, [effectiveChampions, requiredRoles, max]);
 
   const suggestedCoverageCount = useMemo(() => {
     if (requiredRoles.length === 0) return 0;
@@ -143,6 +168,18 @@ export default function ChampionMultiSelect({
           </div>
         </label>
 
+        <Tooltip content="Edit champion">
+          <button
+            type="button"
+            onClick={() => setEditingChampion(champ)}
+            className={`${colorByRarity(
+              champ.rarity,
+            )} h-9 w-9 flex-center hover:opacity-75 transition cursor-pointer`}
+          >
+            <FaEdit />
+          </button>
+        </Tooltip>
+
         <a
           href={champ.championUrl}
           target="_blank"
@@ -193,6 +230,15 @@ export default function ChampionMultiSelect({
             Already in team
           </span>
         )}
+        <Tooltip content="Edit champion">
+          <button
+            type="button"
+            onClick={() => setEditingChampion(champ)}
+            className="h-7 w-7 flex-center shrink-0 text-gray-500 hover:text-gray-800 hover:opacity-75 transition cursor-pointer"
+          >
+            <FaEdit size={14} />
+          </button>
+        </Tooltip>
       </div>
     );
   };
@@ -317,6 +363,10 @@ export default function ChampionMultiSelect({
             Selected {value.length} / {max}
           </p>
         </>
+      )}
+
+      {editingChampion && (
+        <ChampionModal champion={editingChampion} onClose={handleEditClose} />
       )}
     </div>
   );
