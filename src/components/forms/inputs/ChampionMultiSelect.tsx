@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import type IChampion from "../../../models/IChampion";
 import colorByRarity from "../../../helpers/colorByRarity";
 import { HiOutlineExternalLink } from "react-icons/hi";
@@ -6,11 +6,13 @@ import { FaEdit } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import Tooltip from "../../utility/Tooltip";
 import ChampionModal from "../../modals/ChampionModal";
+import Modal from "../../modals/Modal";
+import ChampionCard from "../../card/ChampionCard";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
-import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 import { ChampionRarity } from "../../../models/ChampionRarity";
 import {
   checkTeamCoverage,
+  getChampionRoleMatches,
   type AreaRoleReq,
 } from "../../../data/areaRoleRequirements";
 import { suggestTeam } from "../../../helpers/suggestTeam";
@@ -21,6 +23,45 @@ interface ChampionMultiSelectProps {
   champions: IChampion[];
   max?: number;
   requiredRoles?: AreaRoleReq[];
+}
+
+const LONG_PRESS_MS = 500;
+
+/** Distinguishes a quick tap (preview) from a held press (edit) on the same button. */
+function useLongPress(onLongPress: () => void, onClick: () => void) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggeredRef = useRef(false);
+
+  const clear = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const start = () => {
+    triggeredRef.current = false;
+    clear();
+    timerRef.current = setTimeout(() => {
+      triggeredRef.current = true;
+      onLongPress();
+    }, LONG_PRESS_MS);
+  };
+
+  const end = () => {
+    clear();
+    if (!triggeredRef.current) onClick();
+  };
+
+  return {
+    onMouseDown: start,
+    onMouseUp: end,
+    onMouseLeave: clear,
+    onTouchStart: start,
+    onTouchEnd: end,
+    onTouchCancel: clear,
+    onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+  };
 }
 
 const RARITY_ORDER: Record<string, number> = {
@@ -50,6 +91,7 @@ export default function ChampionMultiSelect({
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "suggested">("all");
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+  const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
   // Live-edited champions, keyed by id — applied on top of the `champions`
   // prop so an edit shows up immediately without needing the parent team
   // form/modal to re-fetch and re-render with a fresh champions array.
@@ -120,10 +162,16 @@ export default function ChampionMultiSelect({
   };
 
   const ChampionRow = ({ champ }: { champ: IChampion }) => {
+    const pressHandlers = useLongPress(
+      () => setEditingChampion(champ),
+      () => setPreviewChampion(champ),
+    );
+
     if (!champ.id) return null;
 
     const id = champ.id.toString();
     const checked = value.includes(id);
+    const matchedLabels = getChampionRoleMatches(champ, requiredRoles);
 
     return (
       <div className="flex items-center gap-1 w-full pr-4">
@@ -151,27 +199,21 @@ export default function ChampionMultiSelect({
             {champ.name}
           </div>
 
-          <div className="flex gap-1">
-            {champ.role
-              .filter((role) => ChampionRoleImageMap[role])
-              .map((role) => (
-                <Tooltip key={role} content={role} className="w-5 h-5">
-                  <div className="w-5 h-5 flex-center text-xs rounded-full">
-                    <img
-                      src={ChampionRoleImageMap[role]}
-                      alt={role}
-                      className="w-full h-full object-contain rounded-full"
-                    />
-                  </div>
-                </Tooltip>
-              ))}
-          </div>
+          {requiredRoles.length > 0 && (
+            <span
+              className={`text-[10px] truncate max-w-28 ${
+                matchedLabels.length > 0 ? "text-green-600 font-medium" : "text-gray-400"
+              }`}
+            >
+              {matchedLabels.length > 0 ? `Covers: ${matchedLabels.join(", ")}` : "No required role"}
+            </span>
+          )}
         </label>
 
-        <Tooltip content="Edit champion">
+        <Tooltip content="Tap to preview · Hold to edit">
           <button
             type="button"
-            onClick={() => setEditingChampion(champ)}
+            {...pressHandlers}
             className={`${colorByRarity(
               champ.rarity,
             )} h-9 w-9 flex-center hover:opacity-75 transition cursor-pointer`}
@@ -203,6 +245,11 @@ export default function ChampionMultiSelect({
     matchedLabels: string[];
     alreadySelected: boolean;
   }) => {
+    const pressHandlers = useLongPress(
+      () => setEditingChampion(champ),
+      () => setPreviewChampion(champ),
+    );
+
     if (!champ.id) return null;
 
     return (
@@ -230,10 +277,10 @@ export default function ChampionMultiSelect({
             Already in team
           </span>
         )}
-        <Tooltip content="Edit champion">
+        <Tooltip content="Tap to preview · Hold to edit">
           <button
             type="button"
-            onClick={() => setEditingChampion(champ)}
+            {...pressHandlers}
             className="h-7 w-7 flex-center shrink-0 text-gray-500 hover:text-gray-800 hover:opacity-75 transition cursor-pointer"
           >
             <FaEdit size={14} />
@@ -367,6 +414,12 @@ export default function ChampionMultiSelect({
 
       {editingChampion && (
         <ChampionModal champion={editingChampion} onClose={handleEditClose} />
+      )}
+
+      {previewChampion && (
+        <Modal isOpen title="Champion Preview" onClose={() => setPreviewChampion(null)}>
+          <ChampionCard champion={previewChampion} />
+        </Modal>
       )}
     </div>
   );

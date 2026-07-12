@@ -68,7 +68,8 @@ const CATEGORIES: GuideCategory[] = [
       { title: "Suggested Team", description: "One click auto-picks the strongest available team that covers the most required roles." },
       { title: "Turn Order", description: "See your team's speed-sorted turn order at a glance, with tied speeds flagged." },
       { title: "Sidebar Badges", description: "A ✓ or a fraction badge next to every area tells you its coverage status without opening it." },
-      { title: "Edit Right From the List", description: "The pencil icon on any champion in the team builder opens their edit form directly, no need to leave and go find them." },
+      { title: "Preview or Edit From the List", description: "Tap the pencil icon on any champion in the team builder for a quick card preview, or hold it to jump straight into editing." },
+      { title: "Role Match at a Glance", description: "Each champion row shows whether it covers one of the area's required roles, right next to its name." },
     ],
   },
   {
