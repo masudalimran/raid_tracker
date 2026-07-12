@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo, FaList, FaThLarge } from "react-icons/fa";
-import { MdCasino } from "react-icons/md";
+import { MdCasino, MdDownload } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
 import type { IShardPull } from "../models/IShard";
@@ -150,6 +150,68 @@ function PityBar({ count, max }: { count: number; max: number }) {
   );
 }
 
+// Weekly pull-count trend, Monday-start weeks, for the active shard tab.
+const TREND_WEEKS = 10;
+
+function startOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday
+  const diff = (day === 0 ? -6 : 1) - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function PullTrendChart({ pulls }: { pulls: IShardPull[] }) {
+  const buckets = useMemo(() => {
+    const now = new Date();
+    const weeks: { start: number; label: string; count: number }[] = [];
+    for (let i = TREND_WEEKS - 1; i >= 0; i--) {
+      const start = startOfWeek(now);
+      start.setDate(start.getDate() - i * 7);
+      weeks.push({
+        start: start.getTime(),
+        label: start.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        count: 0,
+      });
+    }
+    for (const pull of pulls) {
+      const weekStart = startOfWeek(new Date(pull.pulledAt)).getTime();
+      const bucket = weeks.find((w) => w.start === weekStart);
+      if (bucket) bucket.count += 1;
+    }
+    return weeks;
+  }, [pulls]);
+
+  const maxCount = Math.max(...buckets.map((w) => w.count), 1);
+
+  return (
+    <div className="bg-white border rounded-xl p-4">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        Pulls Per Week — last {TREND_WEEKS} weeks
+      </p>
+      <div className="flex items-end gap-2 h-28">
+        {buckets.map((w) => (
+          <div
+            key={w.start}
+            title={`${w.label}: ${w.count} pull${w.count !== 1 ? "s" : ""}`}
+            className="flex-1 flex flex-col items-center justify-end gap-1 h-full"
+          >
+            {w.count > 0 && (
+              <span className="text-[10px] font-semibold text-gray-600">{w.count}</span>
+            )}
+            <div
+              className="w-full max-w-6 rounded-t-md bg-amber-600 transition-all"
+              style={{ height: `${w.count > 0 ? Math.max((w.count / maxCount) * 100, 8) : 2}%` }}
+            />
+            <span className="text-[9px] text-gray-400 mt-1 whitespace-nowrap">{w.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ChampionAvatar({
   name,
   imgUrl,
@@ -237,6 +299,28 @@ export default function ShardLog() {
   useEffect(() => {
     ensureShardPullsLoaded().then(setPulls);
   }, []);
+
+  const handleExportCsv = () => {
+    const header = ["Shard Type", "Champion", "Rarity", "Pulled At", "Notes"];
+    const rows = pulls.map((p) => [
+      p.shardType,
+      p.championName,
+      p.rarity,
+      p.pulledAt,
+      p.notes ?? "",
+    ]);
+    const csv = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `shard_pull_log_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleSync = async () => {
     setShowSyncConfirm(false);
@@ -559,6 +643,15 @@ export default function ShardLog() {
             <FaCloudDownloadAlt size={13} />
             {fetchStatus === "fetching" ? "Fetching…" : fetchStatus === "done" ? "Fetched!" : fetchStatus === "error" ? "Failed" : "Fetch from Cloud"}
           </button>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={pulls.length === 0}
+            title="Export the full shard pull log (all shard types) as a CSV file"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <MdDownload size={14} /> Export CSV
+          </button>
         </div>
       </div>
 
@@ -618,6 +711,9 @@ export default function ShardLog() {
         <div className="bg-white border rounded-xl p-3">
           <PityBar count={stats.pityCount} max={PITY_THRESHOLD[activeTab as keyof typeof PITY_THRESHOLD]} />
         </div>
+
+        {/* ── Trend ── */}
+        {tabPulls.length > 0 && <PullTrendChart pulls={tabPulls} />}
 
         {/* ── Log pull form ── */}
         {showForm && (

@@ -31,6 +31,8 @@ interface ChampionCardProps {
   nsfw?: boolean;
   /** Role labels this champion satisfies for the current team. Undefined = no team context. */
   matchedRoles?: string[];
+  /** Position in the team's speed-sorted turn order, and whether it's tied with a neighbor. */
+  turnOrder?: { rank: number; tied: boolean };
 }
 
 export default function ChampionCard({
@@ -39,6 +41,7 @@ export default function ChampionCard({
   onDelete,
   nsfw = false,
   matchedRoles,
+  turnOrder,
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [rolesExpanded, setRolesExpanded] = useState<boolean>(false);
@@ -203,6 +206,18 @@ export default function ChampionCard({
               awaken_stars={champion.awaken_stars}
             />
           </div>
+
+          {/* Turn order – top-left */}
+          {turnOrder && (
+            <div
+              title={turnOrder.tied ? "Tied speed — in-game turn order may vary" : undefined}
+              className={`absolute top-0 left-0 z-20 backdrop-blur-sm rounded-br-xl px-2 py-1 flex items-center gap-1
+                ${turnOrder.tied ? "bg-amber-500/70" : "bg-black/50"}`}
+            >
+              <span className="text-white text-xs font-bold">Turn {turnOrder.rank}</span>
+              {turnOrder.tied && <span className="text-white text-[9px] font-bold">≈</span>}
+            </div>
+          )}
 
           {/* Blurred background */}
           <div

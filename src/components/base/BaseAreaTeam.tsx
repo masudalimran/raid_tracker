@@ -133,6 +133,16 @@ export default function BaseAreaTeam({
 
   if (loading) return <ChampionSkeletonLoader length={maxChampions} />;
 
+  // Speed-sorted turn order — teamChampionList is already sorted by SPD desc.
+  const turnOrder = teamChampionList.map((champion, i) => ({
+    champion,
+    rank: i + 1,
+    tied:
+      (i > 0 && teamChampionList[i - 1].spd === champion.spd) ||
+      (i < teamChampionList.length - 1 && teamChampionList[i + 1].spd === champion.spd),
+  }));
+  const hasTies = turnOrder.some((t) => t.tied);
+
   return (
     <>
       <div className="flex flex-col h-full">
@@ -299,6 +309,40 @@ export default function BaseAreaTeam({
           );
         })()}
 
+        {/* ── Turn Order ── */}
+        {turnOrder.length > 1 && (
+          <div className="mx-4 mt-3">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">
+              Turn Order
+              {hasTies && (
+                <span className="ml-2 text-amber-500 normal-case font-normal">
+                  · tied speeds may resolve differently in-game
+                </span>
+              )}
+            </p>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              {turnOrder.map(({ champion, rank, tied }, i) => (
+                <div key={String(champion.id)} className="flex items-center gap-1.5 shrink-0">
+                  <div
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border
+                      ${tied
+                        ? "bg-amber-50 border-amber-300 text-amber-700"
+                        : "bg-gray-50 border-gray-200 text-gray-600"
+                      }`}
+                  >
+                    <span className="font-bold">#{rank}</span>
+                    <span className="truncate max-w-28">{champion.name}</span>
+                    <span className="text-gray-400">({champion.spd})</span>
+                  </div>
+                  {i < turnOrder.length - 1 && (
+                    <span className="text-gray-300 text-xs shrink-0">→</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── Grid ── */}
         <div className="flex-1 overflow-auto p-4">
           {teamChampionList.length === 0 ? (
@@ -309,7 +353,7 @@ export default function BaseAreaTeam({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start">
-              {teamChampionList.map((champion) => {
+              {teamChampionList.map((champion, i) => {
                 const activeReqs = getTeamRequirements(teamKey);
                 const matched = activeReqs.length > 0
                   ? getChampionRoleMatches(champion, activeReqs)
@@ -320,6 +364,7 @@ export default function BaseAreaTeam({
                       champion={champion}
                       nsfw={nsfw}
                       matchedRoles={matched}
+                      turnOrder={turnOrder[i]}
                       onEdit={(c) => {
                         setEditingChampion(c);
                         setShowChampionModal(true);
