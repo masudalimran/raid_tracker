@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
@@ -7,26 +6,20 @@ import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 // import { GiBroadsword, GiZeusSword } from "react-icons/gi"; // skills hidden
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaSearch } from "react-icons/fa";
+import { FaQuestion } from "react-icons/fa6";
 import Tooltip from "../utility/Tooltip";
+import HelpGuideModal from "../modals/HelpGuideModal";
 
 interface AppBarProps {
   onMenuToggle: () => void;
 }
 
 function AppBar({ onMenuToggle }: AppBarProps) {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
+  const [showHelp, setShowHelp] = useState(false);
   const supabase_auth = localStorage.getItem("supabase_auth");
-
-  const logout = () => {
-    localStorage.removeItem("supabase_auth");
-    localStorage.removeItem("supabase_champion_list");
-    setUser("");
-    navigate("/login");
-  };
 
   const handleNsfw = (isNsfw: boolean) => {
     setNsfw(isNsfw);
@@ -95,32 +88,31 @@ function AppBar({ onMenuToggle }: AppBarProps) {
               {nsfw ? <CiImageOn size={20} /> : <CiImageOff size={20} />}
             </button>
           </Tooltip>
+
+          <Tooltip content="How to use this app">
+            <button
+              type="button"
+              onClick={() => setShowHelp(true)}
+              className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
+            >
+              <FaQuestion size={15} />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Skills toggle — hidden; skills tracking removed from UI */}
 
         {/* Account */}
-        <div className="flex items-center gap-3 pl-3 border-l border-white/10">
+        <div className="flex items-center pl-3 border-l border-white/10">
           {user ? <RslAccountForm /> : (
             <span className="text-sm font-bold uppercase tracking-widest text-amber-400">
               Raid Tracker
             </span>
           )}
-          {user && (
-            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-gray-400">
-              <span className="truncate max-w-[14ch]">{user}</span>
-              <span className="text-gray-600">·</span>
-              <button
-                type="button"
-                onClick={logout}
-                className="text-gray-400 hover:text-amber-400 transition cursor-pointer font-medium"
-              >
-                Logout
-              </button>
-            </div>
-          )}
         </div>
       </div>
+
+      {showHelp && <HelpGuideModal onClose={() => setShowHelp(false)} />}
     </header>
   );
 }

@@ -115,3 +115,72 @@
   animation: fire-spin 1.5s linear infinite;
   border-radius: 50%;
 }
+
+/* ── Celebration animations (confetti / legendary pull reveal) ── */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) translateX(var(--drift, 0px)) rotate(720deg); opacity: 0.9; }
+}
+
+.confetti-piece {
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.35, 0, 0.65, 1);
+  animation-fill-mode: forwards;
+}
+
+.orbit-cw-fast {
+  animation: orbit-cw 3s linear infinite;
+  transform-origin: center;
+}
+
+/* Rotating light ring hugging a reveal card's border */
+@keyframes legendary-ring-spin {
+  to { transform: rotate(1turn); }
+}
+
+.legendary-ring {
+  animation: legendary-ring-spin 2.2s linear infinite;
+  transform-origin: center;
+}
+
+.legendary-ring-reverse {
+  animation: legendary-ring-spin 3.2s linear infinite reverse;
+  transform-origin: center;
+}
+
+@keyframes card-tilt {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50%      { transform: rotate(3.5deg); }
+}
+
+@keyframes reveal-pop-in {
+  0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.reveal-pop-in {
+  animation: reveal-pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Pop in once, THEN wobble forever — combined into one `animation` shorthand
+   since two classes each setting `animation` on the same element would have
+   one silently override the other instead of layering. */
+.card-reveal-anim {
+  animation:
+    reveal-pop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    card-tilt 1.6s ease-in-out 0.55s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece,
+  .orbit-cw,
+  .orbit-cw-fast,
+  .legendary-ring,
+  .legendary-ring-reverse,
+  .reveal-pop-in,
+  .card-reveal-anim,
+  .fire-border {
+    animation: none !important;
+  }
+}

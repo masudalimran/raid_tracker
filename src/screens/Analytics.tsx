@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
-import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -311,7 +311,7 @@ export default function Analytics() {
       .slice(0, 8);
   }, [teams, champions]);
 
-  if (loading) return <ChampionSkeletonLoader length={6} />;
+  if (loading) return <ArcaneLoader label="Crunching the numbers" />;
   if (!stats) {
     return (
       <div className="flex items-center justify-center h-[92vh] text-gray-400 text-sm">

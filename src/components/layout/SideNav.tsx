@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { MdLogout } from "react-icons/md";
 import { ChampionFaction } from "../../models/ChampionFaction";
 import { POTION_KEEP } from "../../models/game_areas/PotionKeep";
 import { DUNGEON } from "../../models/game_areas/Dungeon";
@@ -12,6 +14,7 @@ import type ITeam from "../../models/ITeam";
 import type IChampion from "../../models/IChampion";
 import toSlug from "../../helpers/toSlug";
 import { getAreaCoverageBadge } from "../../data/areaRoleRequirements";
+import Tooltip from "../utility/Tooltip";
 
 interface SideNavProps {
   isOpen: boolean;
@@ -27,6 +30,16 @@ const CoreSideNavItems: NavItem[] = [
 ];
 
 function SideNav({ isOpen, onClose }: SideNavProps) {
+  const navigate = useNavigate();
+  const supabase_auth = localStorage.getItem("supabase_auth");
+  const userEmail: string = supabase_auth ? JSON.parse(supabase_auth).email ?? "" : "";
+
+  const logout = () => {
+    localStorage.removeItem("supabase_auth");
+    localStorage.removeItem("supabase_champion_list");
+    navigate("/login");
+  };
+
   const allTeams: ITeam[] = JSON.parse(
     localStorage.getItem("supabase_team_list") || "[]",
   );
@@ -79,19 +92,35 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
   );
 
   const asideClass =
-    "bg-gray-900 h-full overflow-y-auto shrink-0 border-r border-white/5";
+    "bg-gray-900 h-full shrink-0 border-r border-white/5 flex flex-col";
+
+  const sidebarFooter = userEmail && (
+    <div className="shrink-0 border-t border-white/10 px-3 py-2.5 flex items-center justify-between gap-2">
+      <span className="text-[11px] text-gray-400 truncate">{userEmail}</span>
+      <Tooltip content="Logout" position="right">
+        <button
+          type="button"
+          onClick={logout}
+          className="p-1.5 rounded-md text-gray-400 hover:text-red-400 hover:bg-white/10 transition cursor-pointer"
+        >
+          <MdLogout size={16} />
+        </button>
+      </Tooltip>
+    </div>
+  );
 
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className={`hidden md:block w-45 px-2 ${asideClass}`}>
-        {navContent}
+      <aside className={`hidden md:flex w-45 ${asideClass}`}>
+        <div className="flex-1 overflow-y-auto px-2">{navContent}</div>
+        {sidebarFooter}
       </aside>
 
       {/* Mobile drawer */}
       <aside
         className={`
-          fixed top-0 left-0 z-40 h-full w-64 px-2
+          fixed top-0 left-0 z-40 h-full w-64
           transform transition-transform duration-300 ease-in-out
           md:hidden
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -99,7 +128,8 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
         `}
         onClick={onClose}
       >
-        {navContent}
+        <div className="flex-1 overflow-y-auto px-2">{navContent}</div>
+        {sidebarFooter}
       </aside>
     </>
   );

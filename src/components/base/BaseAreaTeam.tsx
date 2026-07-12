@@ -7,7 +7,7 @@ import {
   generateChampions,
 } from "../../helpers/handleChampions";
 import { fetchSingleTeam, fetchTeams } from "../../helpers/handleTeams";
-import ChampionSkeletonLoader from "../loaders/ChampionSkeletonLoader";
+import ArcaneLoader from "../loaders/ArcaneLoader";
 import ChampionCard from "../card/ChampionCard";
 import TeamModal from "../modals/TeamModal";
 import ChampionModal from "../modals/ChampionModal";
@@ -132,7 +132,7 @@ export default function BaseAreaTeam({
     setNsfw(getNsfwStatus());
   }, []);
 
-  if (loading) return <ChampionSkeletonLoader length={maxChampions} />;
+  if (loading) return <ArcaneLoader label="Loading your team" />;
 
   // Speed-sorted turn order — teamChampionList is already sorted by SPD desc.
   const turnOrder = teamChampionList.map((champion, i) => ({

@@ -8,7 +8,7 @@ import { supabase } from "../lib/supabaseClient";
 
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
-import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import Modal from "../components/modals/Modal";
 import Tooltip from "../components/utility/Tooltip";
 
@@ -330,7 +330,7 @@ export default function Champions() {
     await loadChampions();
   };
 
-  if (loading) return <ChampionSkeletonLoader />;
+  if (loading) return <ArcaneLoader label="Loading your roster" />;
 
   const total = filteredChampions?.length ?? 0;
   const inUse = getCurrentlyInUseChampions(filteredChampions ?? []).length;

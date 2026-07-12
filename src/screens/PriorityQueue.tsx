@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
-import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -361,7 +361,7 @@ export default function PriorityQueue() {
     setProcessingMasteries((s) => { const n = new Set(s); n.delete(id); return n; });
   };
 
-  if (loading) return <ChampionSkeletonLoader length={6} />;
+  if (loading) return <ArcaneLoader label="Ranking your priorities" />;
 
   const totalPending = needsBooks.length + needsMasteries.length;
 

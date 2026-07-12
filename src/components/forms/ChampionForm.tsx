@@ -169,6 +169,16 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             "supabase_champion_list",
             JSON.stringify(updatedChampions),
           );
+          window.dispatchEvent(
+            new CustomEvent("celebrate-champion", {
+              detail: {
+                championName: res.name,
+                imgUrl: res.imgUrl,
+                rarity: res.rarity,
+                label: "Champion Updated!",
+              },
+            }),
+          );
         })
         .catch((error) => {
           console.error("Error updating champion:", error);
@@ -183,6 +193,16 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           localStorage.setItem(
             "supabase_champion_list",
             JSON.stringify(supabase_champions),
+          );
+          window.dispatchEvent(
+            new CustomEvent("celebrate-champion", {
+              detail: {
+                championName: res.name,
+                imgUrl: res.imgUrl,
+                rarity: res.rarity,
+                label: "New Champion!",
+              },
+            }),
           );
         })
         .catch((error) => {

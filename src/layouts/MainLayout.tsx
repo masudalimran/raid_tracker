@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import AppBar from "../components/layout/AppBar.tsx";
 import SideNav from "../components/layout/SideNav.tsx";
 import GlobalSearch from "../components/layout/GlobalSearch.tsx";
+import CelebrationOverlay from "../components/layout/CelebrationOverlay.tsx";
 
 export default function MainLayout() {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -10,6 +11,7 @@ export default function MainLayout() {
   return (
     <div className="bg-gray-50">
       <GlobalSearch />
+      <CelebrationOverlay />
       <AppBar onMenuToggle={() => setSideNavOpen((prev) => !prev)} />
 
       <div className="flex h-[95vh]">

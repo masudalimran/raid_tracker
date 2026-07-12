@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { fetchTeams } from "../helpers/handleTeams";
@@ -102,7 +102,7 @@ export default function Home() {
     return Array.from(map.entries()).map(([group, areas]) => ({ group, areas }));
   }, [attentionAreas]);
 
-  if (loading) return <ChampionSkeletonLoader length={1} />;
+  if (loading) return <ArcaneLoader label="Loading your progress" />;
 
   const { currentStage, completed, nextSteps } = progressData;
   const currentStageIndex = ALL_STAGES.indexOf(currentStage);

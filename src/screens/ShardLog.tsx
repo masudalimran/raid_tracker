@@ -26,6 +26,7 @@ import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import type IChampion from "../models/IChampion";
 import Tooltip from "../components/utility/Tooltip";
+import CardRevealCelebration from "../components/utility/CardRevealCelebration";
 
 // ── Champion lookup ───────────────────────────────────────────────────────────
 
@@ -292,6 +293,13 @@ export default function ShardLog() {
   const [fetchStatus, setFetchStatus] = useState<"idle" | "fetching" | "done" | "error">("idle");
   const [showSyncConfirm, setShowSyncConfirm] = useState(false);
 
+  // Legendary/Mythical pull celebration
+  const [legendaryReveal, setLegendaryReveal] = useState<{
+    championName: string;
+    imgUrl?: string;
+    rarity: PullRarity;
+  } | null>(null);
+
   // Pity reset
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetReason, setResetReason] = useState<"manual" | "auto">("manual");
@@ -525,10 +533,19 @@ export default function ShardLog() {
     inputRef.current?.focus();
 
     if (entry.rarity === PullRarity.LEGENDARY || entry.rarity === PullRarity.MYTHICAL) {
-      setResetReason("auto");
-      setResetConfirmText("");
-      setShowResetConfirm(true);
+      setLegendaryReveal({
+        championName: entry.championName,
+        imgUrl: info?.imgUrl,
+        rarity: entry.rarity,
+      });
     }
+  };
+
+  const handleRevealDone = () => {
+    setLegendaryReveal(null);
+    setResetReason("auto");
+    setResetConfirmText("");
+    setShowResetConfirm(true);
   };
 
   const closeResetConfirm = () => {
@@ -1160,6 +1177,17 @@ export default function ShardLog() {
         <ChampionModal
           champion={editingRosterChampion}
           onClose={handleChampionModalClose}
+        />
+      )}
+
+      {/* ── Legendary/Mythical pull celebration ── */}
+      {legendaryReveal && (
+        <CardRevealCelebration
+          championName={legendaryReveal.championName}
+          imgUrl={legendaryReveal.imgUrl}
+          rarity={legendaryReveal.rarity}
+          label={`${legendaryReveal.rarity} Pull!`}
+          onDone={handleRevealDone}
         />
       )}
     </div>
