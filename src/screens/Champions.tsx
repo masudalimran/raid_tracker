@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FaPlusSquare } from "react-icons/fa";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
@@ -125,6 +126,12 @@ export default function Champions() {
   useEffect(() => {
     loadChampions();
   }, [loadChampions]);
+
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setSearchText(q);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchTeams().then(setTeams);

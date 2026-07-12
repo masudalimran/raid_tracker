@@ -8,6 +8,9 @@ import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
+import { getTeamRequirements, checkTeamCoverage } from "../data/areaRoleRequirements";
+import { ALL_AREAS } from "../data/allAreas";
+import toSlug from "../helpers/toSlug";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 
 const RARITY_ORDER = [
@@ -273,6 +276,40 @@ export default function Analytics() {
     };
   }, [champions, teams]);
 
+  // How many saved-team areas are missing each required role, account-wide —
+  // e.g. "Cleanser missing in 3/5 areas that need it".
+  const roleGaps = useMemo(() => {
+    const gapMap = new Map<string, { missing: number; total: number; areas: string[] }>();
+
+    for (const area of ALL_AREAS) {
+      const reqs = getTeamRequirements(area.key);
+      if (reqs.length === 0) continue;
+
+      const team = teams.find((t) => t.team_name === toSlug(area.key));
+      if (!team) continue;
+
+      const teamChampions = team.champion_ids
+        .map((id) => champions.find((c) => c.id === id))
+        .filter(Boolean) as IChampion[];
+
+      for (const { req, coveredBy } of checkTeamCoverage(reqs, teamChampions)) {
+        const entry = gapMap.get(req.label) ?? { missing: 0, total: 0, areas: [] };
+        entry.total += 1;
+        if (coveredBy.length === 0) {
+          entry.missing += 1;
+          entry.areas.push(area.name);
+        }
+        gapMap.set(req.label, entry);
+      }
+    }
+
+    return Array.from(gapMap.entries())
+      .map(([label, { missing, total, areas }]) => ({ label, missing, total, areas }))
+      .filter((g) => g.missing > 0)
+      .sort((a, b) => b.missing - a.missing)
+      .slice(0, 8);
+  }, [teams, champions]);
+
   if (loading) return <ChampionSkeletonLoader length={6} />;
   if (!stats) {
     return (
@@ -432,6 +469,33 @@ export default function Analytics() {
           ))}
         </div>
       </section>
+
+      {/* ── Team Role Gaps ── */}
+      {roleGaps.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            Team Role Gaps
+          </h2>
+          <div className="bg-white border rounded-xl p-4 space-y-3">
+            {roleGaps.map((gap) => (
+              <div key={gap.label} className="flex items-center gap-3" title={`Missing in: ${gap.areas.join(", ")}`}>
+                <span className="text-xs font-semibold w-28 shrink-0 text-amber-700 truncate">
+                  {gap.label}
+                </span>
+                <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-amber-400 transition-all duration-500"
+                    style={{ width: `${Math.round((gap.missing / gap.total) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 w-16 text-right shrink-0 text-nowrap">
+                  {gap.missing}/{gap.total} areas
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Data Health section removed — skill tracking hidden */}
     </div>

@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import ChampionSkeletonLoader from "../components/loaders/ChampionSkeletonLoader";
+import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { fetchTeams } from "../helpers/handleTeams";
+import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { evaluateAccountProgressDetailed } from "../helpers/evaluateAccountProgress";
 import { ProgressStage } from "../models/ProgressStage";
+import { getAreaCoverageBadge } from "../data/areaRoleRequirements";
+import { ALL_AREAS } from "../data/allAreas";
 import {
   FaCheckCircle,
   FaTimesCircle,
   FaLock,
   FaChevronDown,
   FaChevronUp,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 
 const ALL_STAGES: ProgressStage[] = [
@@ -55,12 +61,18 @@ const STAGE_BAR: Record<string, string> = {
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState<ITeam[]>([]);
+  const [champions, setChampions] = useState<IChampion[]>([]);
   const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const load = async () => {
-      const data = await fetchTeams();
+      await fetchChampions();
+      const [data, champs] = await Promise.all([
+        fetchTeams(),
+        generateChampions(),
+      ]);
       setTeams(data);
+      setChampions(champs);
       setLoading(false);
     };
     load();
@@ -70,6 +82,25 @@ export default function Home() {
     () => evaluateAccountProgressDetailed(teams),
     [teams],
   );
+
+  const attentionAreas = useMemo(
+    () =>
+      ALL_AREAS.map((area) => ({
+        ...area,
+        badge: getAreaCoverageBadge(area.key, teams, champions),
+      })).filter((area) => area.badge?.tone === "warning"),
+    [teams, champions],
+  );
+
+  const attentionGroups = useMemo(() => {
+    const map = new Map<string, typeof attentionAreas>();
+    for (const area of attentionAreas) {
+      const group = map.get(area.group) ?? [];
+      group.push(area);
+      map.set(area.group, group);
+    }
+    return Array.from(map.entries()).map(([group, areas]) => ({ group, areas }));
+  }, [attentionAreas]);
 
   if (loading) return <ChampionSkeletonLoader length={1} />;
 
@@ -323,6 +354,48 @@ export default function Home() {
           </p>
         </div>
       )}
+
+      {/* ── Needs Attention ── */}
+      <div className="border-2 border-amber-300 rounded-xl p-4 bg-amber-50">
+        <div className="flex items-center gap-2 mb-3">
+          <FaExclamationTriangle className="text-amber-500 shrink-0" size={16} />
+          <h2 className="font-bold text-base text-amber-900">Needs Attention</h2>
+          {attentionAreas.length > 0 && (
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">
+              {attentionAreas.length}
+            </span>
+          )}
+        </div>
+
+        {attentionAreas.length === 0 ? (
+          <div className="flex items-center gap-2 text-sm text-green-700">
+            <FaCheckCircle className="text-green-500 shrink-0" size={14} />
+            Every team with saved roles covers all its required roles.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {attentionGroups.map(({ group, areas }) => (
+              <div key={group}>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 mb-1.5">
+                  {group}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {areas.map((area) => (
+                    <Link
+                      key={area.key}
+                      to={`/${area.path}`}
+                      className="flex flex-col gap-0.5 bg-white border border-amber-200 rounded-lg px-3 py-2 hover:border-amber-400 hover:shadow-sm transition"
+                    >
+                      <span className="text-sm font-medium text-gray-800 truncate">{area.name}</span>
+                      <span className="text-[11px] text-amber-700 truncate">{area.badge?.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

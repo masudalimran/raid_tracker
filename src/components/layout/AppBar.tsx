@@ -7,6 +7,7 @@ import { fetchTeams } from "../../helpers/handleTeams";
 // import { getShowSkillsStatus } from "../../helpers/getShowSkillsStatus"; // skills hidden
 // import { GiBroadsword, GiZeusSword } from "react-icons/gi"; // skills hidden
 import { RxHamburgerMenu } from "react-icons/rx";
+import { FaSearch } from "react-icons/fa";
 
 interface AppBarProps {
   onMenuToggle: () => void;
@@ -73,6 +74,18 @@ function AppBar({ onMenuToggle }: AppBarProps) {
 
       {/* Right: actions */}
       <div className="flex items-center gap-1">
+        {/* Global search */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("open-global-search"))}
+          className="hidden sm:flex items-center gap-1.5 text-xs text-gray-300 hover:text-white border border-white/10 hover:border-white/20 rounded-md px-2 py-1.5 transition cursor-pointer"
+          title="Search champions or teams"
+        >
+          <FaSearch size={11} />
+          <span>Search</span>
+          <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘K</kbd>
+        </button>
+
         {/* Team count */}
         <div
           className="flex items-center overflow-hidden rounded-md text-xs border border-amber-500/40"
