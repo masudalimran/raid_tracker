@@ -28,6 +28,24 @@ interface ChampionFormProps {
   onClose: (should_reload: boolean) => void;
 }
 
+// Roles that count as crowd control — checking any of these auto-selects the CC role.
+const CC_TRIGGER_ROLES: ChampionRole[] = [
+  ChampionRole.PROVOKER,
+  ChampionRole.STUN,
+  ChampionRole.FREEZE,
+  ChampionRole.SLEEP_DEBUFFER,
+  ChampionRole.FEAR,
+  ChampionRole.SHEEP,
+  ChampionRole.ENSNARE,
+  ChampionRole.ENTANGLE,
+  ChampionRole.PETRIFICATION,
+  ChampionRole.SEAL,
+  ChampionRole.DAZED,
+];
+
+// Roles that count as continuous healing — checking any of these auto-selects the Healer role.
+const HEALER_TRIGGER_ROLES: ChampionRole[] = [ChampionRole.CONTINUOUS_HEAL];
+
 export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const [isOnPreview, setIsOnPreview] = useState<boolean>(false);
   const [rosterMatches, setRosterMatches] = useState<IChampion[]>([]);
@@ -448,6 +466,18 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                                   }
                                   if (label === "Debuff" && !next.includes(ChampionRole.DEBUFFER)) {
                                     next = [...next, ChampionRole.DEBUFFER];
+                                  }
+                                  if (
+                                    CC_TRIGGER_ROLES.includes(role) &&
+                                    !next.includes(ChampionRole.CONTROL)
+                                  ) {
+                                    next = [...next, ChampionRole.CONTROL];
+                                  }
+                                  if (
+                                    HEALER_TRIGGER_ROLES.includes(role) &&
+                                    !next.includes(ChampionRole.HEALER)
+                                  ) {
+                                    next = [...next, ChampionRole.HEALER];
                                   }
                                   if (next !== current) setValue("role", next, { shouldDirty: true });
                                 }}
