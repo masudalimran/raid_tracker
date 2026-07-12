@@ -78,7 +78,7 @@ export default function BaseAreaTeam({
       if (isHydra) fetchTeams().then(setTeams);
     };
     load();
-  }, [isHydra, teamKey]);
+  }, [isHydra, teamKey, reloadDetector]);
 
   useEffect(() => {
     const load = async () => {

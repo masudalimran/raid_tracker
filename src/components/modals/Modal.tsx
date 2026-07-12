@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { AiFillCloseSquare } from "react-icons/ai";
 import Tooltip from "../utility/Tooltip";
 
@@ -16,7 +17,12 @@ export default function Modal({
 }: ModalProps) {
   if (!isOpen) return null;
 
-  return (
+  // Portaled to document.body — this modal (and anything it renders, like a
+  // ChampionForm's own <form>) can otherwise end up nested inside a caller's
+  // <form> element (e.g. the team builder's champion editor is invoked from
+  // inside TeamForm's <form>), which is invalid HTML and makes the inner
+  // form's submit button unreliable.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
         {/* Header */}
@@ -38,6 +44,7 @@ export default function Modal({
         {/* Content */}
         <div className="px-5 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

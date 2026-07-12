@@ -163,7 +163,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             localStorage.getItem("supabase_champion_list") || "[]",
           );
           const updatedChampions = supabase_champions.map((c: IChampion) =>
-            c.id === champion.id ? { ...c, ...res } : c,
+            String(c.id) === String(champion.id) ? { ...c, ...res } : c,
           );
           localStorage.setItem(
             "supabase_champion_list",
