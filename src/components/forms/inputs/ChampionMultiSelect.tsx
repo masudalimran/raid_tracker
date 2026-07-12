@@ -4,6 +4,7 @@ import colorByRarity from "../../../helpers/colorByRarity";
 import { HiOutlineExternalLink } from "react-icons/hi";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
 import { ChampionRoleImageMap } from "../../../models/ChampionRole";
+import { ChampionRarity } from "../../../models/ChampionRarity";
 
 interface ChampionMultiSelectProps {
   value: string[];
@@ -11,6 +12,23 @@ interface ChampionMultiSelectProps {
   champions: IChampion[];
   max?: number;
 }
+
+const RARITY_ORDER: Record<string, number> = {
+  [ChampionRarity.MYTHICAL]: 0,
+  [ChampionRarity.LEGENDARY]: 1,
+  [ChampionRarity.EPIC]: 2,
+  [ChampionRarity.RARE]: 3,
+  [ChampionRarity.UNCOMMON]: 4,
+  [ChampionRarity.COMMON]: 5,
+};
+
+const byRarityThenName = (a: IChampion, b: IChampion) => {
+  const rarityDiff =
+    (RARITY_ORDER[a.rarity] ?? Object.keys(RARITY_ORDER).length) -
+    (RARITY_ORDER[b.rarity] ?? Object.keys(RARITY_ORDER).length);
+  if (rarityDiff !== 0) return rarityDiff;
+  return a.name.localeCompare(b.name);
+};
 
 export default function ChampionMultiSelect({
   value,
@@ -39,14 +57,14 @@ export default function ChampionMultiSelect({
     return champions
       .filter((c) => value.includes(c.id?.toString() ?? ""))
       .slice()
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort(byRarityThenName);
   }, [champions, value]);
 
   const unselectedChampions = useMemo(() => {
     return filtered
       .filter((c) => !value.includes(c.id?.toString() ?? ""))
       .slice()
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort(byRarityThenName);
   }, [filtered, value]);
 
   const ChampionRow = ({ champ }: { champ: IChampion }) => {
