@@ -33,6 +33,7 @@ export default function TeamModal({
       isOpen={isOpen}
       title={`${team ? "Edit" : "Add"} ${fromSlug(teamName)} Team`}
       onClose={() => handleOnClose(false)}
+      maxWidthClass="max-w-4xl"
     >
       <TeamForm
         maxChampions={maxChampions}

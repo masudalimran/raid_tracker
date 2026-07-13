@@ -24,6 +24,7 @@ export default function ChampionModal({
       isOpen={isOpen}
       title={champion ? "Edit Champion" : "Add Champion"}
       onClose={() => handleOnClose(false)}
+      maxWidthClass="max-w-6xl"
     >
       <ChampionForm champion={champion} onClose={handleOnClose} />
     </Modal>

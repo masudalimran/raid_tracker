@@ -259,8 +259,10 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   return (
     <form onSubmit={handleSubmit(onSave)} className="bg-white">
       {isOnPreview ? (
-        <div className="px-4 pb-4">
-          <ChampionCard champion={previewChampion} />
+        <div className="px-4 pb-4 max-h-[76vh] overflow-y-auto">
+          <div className="max-w-xs mx-auto">
+            <ChampionCard champion={previewChampion} />
+          </div>
         </div>
       ) : (
         <div className="max-h-[76vh] overflow-y-auto">
@@ -312,278 +314,303 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             )}
           </div>
 
-          {/* ── Image preview + URL fields + Faction ── */}
-          <div className="flex gap-3 p-4 bg-gray-50 border-b border-gray-100">
-            {/* Image fills the height of the right column */}
-            <div className="w-28 self-stretch rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
-              <img
-                src={previewChampion.imgUrl || STOCK_EMPTY_IMAGE}
-                alt={previewChampion.name || "Champion"}
-                className="w-full h-full object-cover object-top"
-                onError={(e) => { e.currentTarget.src = STOCK_EMPTY_IMAGE; }}
-              />
+          <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
+
+            {/* ══ LEFT COLUMN: identity ══ */}
+            <div className="lg:col-span-5 lg:border-r lg:border-gray-100">
+
+              {/* ── Image preview + URL fields + Faction ── */}
+              <div className="flex gap-3 p-4 bg-gray-50 border-b border-gray-100 lg:border-b-0 lg:mx-4 lg:mt-4 lg:rounded-xl lg:border">
+                {/* Image fills the height of the right column */}
+                <div className="w-28 self-stretch rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                  <img
+                    src={previewChampion.imgUrl || STOCK_EMPTY_IMAGE}
+                    alt={previewChampion.name || "Champion"}
+                    className="w-full h-full object-cover object-top"
+                    onError={(e) => { e.currentTarget.src = STOCK_EMPTY_IMAGE; }}
+                  />
+                </div>
+
+                {/* Right column: Image URL, Champion URL, Faction */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Image URL</label>
+                    <input {...register("imgUrl")} className="input w-full" placeholder="https://…" />
+                    {errors.imgUrl && <p className="text-red-500 text-xs">{errors.imgUrl?.message}</p>}
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Champion URL</label>
+                    <input {...register("championUrl")} className="input w-full" placeholder="https://…" />
+                    {errors.championUrl && <p className="text-red-500 text-xs">{errors.championUrl?.message}</p>}
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Faction</label>
+                    <div className="flex items-center gap-2">
+                      <img src={getFactionLogo(previewChampion.faction)} className="w-5 h-5 rounded-full object-cover shrink-0" />
+                      <select {...register("faction")} className="basic-select flex-1">
+                        {Object.values(ChampionFaction).map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {errors.faction && <p className="text-red-500 text-xs">{errors.faction?.message}</p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 space-y-5">
+
+                {/* ── Affinity ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Affinity</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Object.values(ChampionAffinity).map((path) => {
+                      const selected = w.affinity === path;
+                      return (
+                        <button
+                          key={path}
+                          type="button"
+                          onClick={() => setValue("affinity", path, { shouldDirty: true })}
+                          className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border-2 text-[10px] font-semibold transition cursor-pointer
+                            ${selected ? "border-amber-500 bg-amber-50 text-amber-700" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"}`}
+                        >
+                          <img src={path} alt={AFFINITY_LABELS[path]} className="w-6 h-6 object-contain" />
+                          {AFFINITY_LABELS[path]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.affinity && <p className="text-red-500 text-xs">{errors.affinity?.message}</p>}
+                  <input type="hidden" {...register("affinity")} />
+                </div>
+
+                {/* ── Type ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Object.values(ChampionType).map((type) => {
+                      const selected = w.type === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setValue("type", type, { shouldDirty: true })}
+                          className={`py-2 rounded-xl border-2 text-xs font-semibold transition cursor-pointer
+                            ${selected ? `${TYPE_COLORS[type]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
+                        >
+                          {type}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.type && <p className="text-red-500 text-xs">{errors.type?.message}</p>}
+                  <input type="hidden" {...register("type")} />
+                </div>
+
+                {/* ── Rarity ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Rarity</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Object.values(ChampionRarity).map((rarity) => {
+                      const selected = w.rarity === rarity;
+                      return (
+                        <button
+                          key={rarity}
+                          type="button"
+                          onClick={() => setValue("rarity", rarity, { shouldDirty: true })}
+                          className={`py-1.5 rounded-lg border-2 text-xs font-semibold transition cursor-pointer
+                            ${selected ? `${RARITY_COLORS_BTN[rarity]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
+                        >
+                          {rarity}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.rarity && <p className="text-red-500 text-xs">{errors.rarity?.message}</p>}
+                  <input type="hidden" {...register("rarity")} />
+                </div>
+
+              </div>
             </div>
 
-            {/* Right column: Image URL, Champion URL, Faction */}
-            <div className="flex-1 min-w-0 space-y-2">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Image URL</label>
-                <input {...register("imgUrl")} className="input w-full" placeholder="https://…" />
-                {errors.imgUrl && <p className="text-red-500 text-xs">{errors.imgUrl?.message}</p>}
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Champion URL</label>
-                <input {...register("championUrl")} className="input w-full" placeholder="https://…" />
-                {errors.championUrl && <p className="text-red-500 text-xs">{errors.championUrl?.message}</p>}
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Faction</label>
-                <div className="flex items-center gap-2">
-                  <img src={getFactionLogo(previewChampion.faction)} className="w-5 h-5 rounded-full object-cover shrink-0" />
-                  <select {...register("faction")} className="basic-select flex-1">
-                    {Object.values(ChampionFaction).map((f) => (
-                      <option key={f} value={f}>{f}</option>
-                    ))}
-                  </select>
+            {/* ══ RIGHT COLUMN: progression, stats & status ══ */}
+            <div className="lg:col-span-7">
+              <div className="p-4 space-y-5">
+
+                {/* ── Progression ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Progression</label>
+                  <div className="flex gap-4 items-start">
+                    <div className="w-24">
+                      <label className="text-xs text-gray-500 mb-0.5 block">Level</label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        {...register("level", { valueAsNumber: true })}
+                        className="input w-full"
+                      />
+                      {errors.level && <p className="text-red-500 text-[10px]">{errors.level?.message}</p>}
+                    </div>
+                    <div className="flex-1">
+                      <RaidStarInput
+                        stars={w.stars ?? 1}
+                        ascension={w.ascension_stars ?? 0}
+                        awaken={w.awaken_stars ?? 0}
+                        onStarsChange={(v) => setValue("stars", v, { shouldDirty: true })}
+                        onAscensionChange={(v) => setValue("ascension_stars", v, { shouldDirty: true })}
+                        onAwakenChange={(v) => setValue("awaken_stars", v, { shouldDirty: true })}
+                      />
+                    </div>
+                  </div>
                 </div>
-                {errors.faction && <p className="text-red-500 text-xs">{errors.faction?.message}</p>}
+
+                {/* ── Stats ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stats</label>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+                    {numericStats.map((stat) => (
+                      <div key={stat.name}>
+                        <label className="text-xs text-gray-500 mb-0.5 block">{stat.label}</label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          {...register(stat.name, { valueAsNumber: true })}
+                          className="input w-full"
+                        />
+                        {errors[stat.name] && (
+                          <p className="text-red-500 text-[10px]">{errors[stat.name]?.message}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Upgrade flags ── */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</label>
+                  <div className="grid grid-cols-2 gap-3">
+
+                    {/* Books group */}
+                    <div className="border border-gray-200 rounded-xl p-3 space-y-3">
+                      <ToggleInput
+                        label="Needs Books"
+                        register={register("is_book_needed", {
+                          onChange: (e) => { if (!e.target.checked) setValue("is_booked", false); },
+                        })}
+                      />
+                      <div className="flex items-center gap-1.5 text-gray-300">
+                        <div className="flex-1 h-px bg-gray-100" />
+                        <FaArrowRight size={10} />
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
+                      <ToggleInput
+                        label="Is Booked"
+                        register={register("is_booked")}
+                        disabled={!w.is_book_needed}
+                      />
+                    </div>
+
+                    {/* Mastery group */}
+                    <div className="border border-gray-200 rounded-xl p-3 space-y-3">
+                      <ToggleInput
+                        label="Needs Mastery"
+                        register={register("is_mastery_needed", {
+                          onChange: (e) => { if (!e.target.checked) setValue("has_mastery", false); },
+                        })}
+                      />
+                      <div className="flex items-center gap-1.5 text-gray-300">
+                        <div className="flex-1 h-px bg-gray-100" />
+                        <FaArrowRight size={10} />
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
+                      <ToggleInput
+                        label="Has Mastery"
+                        register={register("has_mastery")}
+                        disabled={!w.is_mastery_needed}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+
               </div>
             </div>
+
           </div>
 
-          <div className="p-4 space-y-5">
-
-            {/* ── Affinity ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Affinity</label>
-              <div className="grid grid-cols-4 gap-2">
-                {Object.values(ChampionAffinity).map((path) => {
-                  const selected = w.affinity === path;
-                  return (
-                    <button
-                      key={path}
-                      type="button"
-                      onClick={() => setValue("affinity", path, { shouldDirty: true })}
-                      className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border-2 text-[10px] font-semibold transition cursor-pointer
-                        ${selected ? "border-amber-500 bg-amber-50 text-amber-700" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"}`}
-                    >
-                      <img src={path} alt={AFFINITY_LABELS[path]} className="w-6 h-6 object-contain" />
-                      {AFFINITY_LABELS[path]}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.affinity && <p className="text-red-500 text-xs">{errors.affinity?.message}</p>}
-              <input type="hidden" {...register("affinity")} />
-            </div>
-
-            {/* ── Type ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</label>
-              <div className="grid grid-cols-4 gap-2">
-                {Object.values(ChampionType).map((type) => {
-                  const selected = w.type === type;
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setValue("type", type, { shouldDirty: true })}
-                      className={`py-2 rounded-xl border-2 text-xs font-semibold transition cursor-pointer
-                        ${selected ? `${TYPE_COLORS[type]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
-                    >
-                      {type}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.type && <p className="text-red-500 text-xs">{errors.type?.message}</p>}
-              <input type="hidden" {...register("type")} />
-            </div>
-
-            {/* ── Rarity ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Rarity</label>
-              <div className="grid grid-cols-3 gap-2">
-                {Object.values(ChampionRarity).map((rarity) => {
-                  const selected = w.rarity === rarity;
-                  return (
-                    <button
-                      key={rarity}
-                      type="button"
-                      onClick={() => setValue("rarity", rarity, { shouldDirty: true })}
-                      className={`py-1.5 rounded-lg border-2 text-xs font-semibold transition cursor-pointer
-                        ${selected ? `${RARITY_COLORS_BTN[rarity]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
-                    >
-                      {rarity}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.rarity && <p className="text-red-500 text-xs">{errors.rarity?.message}</p>}
-              <input type="hidden" {...register("rarity")} />
-            </div>
-
-            {/* ── Stats (2-column) ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stats</label>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                {numericStats.map((stat) => (
-                  <div key={stat.name}>
-                    <label className="text-xs text-gray-500 mb-0.5 block">{stat.label}</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      {...register(stat.name, { valueAsNumber: true })}
-                      className="input w-full"
-                    />
-                    {errors[stat.name] && (
-                      <p className="text-red-500 text-[10px]">{errors[stat.name]?.message}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Progression ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Progression</label>
-              <div className="flex gap-4 items-start">
-                <div className="w-24">
-                  <label className="text-xs text-gray-500 mb-0.5 block">Level</label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    {...register("level", { valueAsNumber: true })}
-                    className="input w-full"
-                  />
-                  {errors.level && <p className="text-red-500 text-[10px]">{errors.level?.message}</p>}
-                </div>
-                <div className="flex-1">
-                  <RaidStarInput
-                    stars={w.stars ?? 1}
-                    ascension={w.ascension_stars ?? 0}
-                    awaken={w.awaken_stars ?? 0}
-                    onStarsChange={(v) => setValue("stars", v, { shouldDirty: true })}
-                    onAscensionChange={(v) => setValue("ascension_stars", v, { shouldDirty: true })}
-                    onAwakenChange={(v) => setValue("awaken_stars", v, { shouldDirty: true })}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ── Roles ── */}
+          {/* ── Roles — full width, since it has by far the most content ── */}
+          <div className="p-4 border-t border-gray-100">
             {(() => {
+              // Pair the two biggest categories together and the two
+              // smallest together, so neither row in the 2-column layout
+              // has one tall category next to a short one leaving a gap.
+              const sortedCategories = [...ROLE_CATEGORIES].sort(
+                (a, b) => b.roles.length - a.roles.length,
+              );
               return (
                 <div className="space-y-3">
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Roles</label>
-                  {ROLE_CATEGORIES.map(({ label, accent, roles }) => (
-                    <div key={label} className="space-y-1.5">
-                      <p className={`text-[10px] font-bold uppercase tracking-widest ${accent}`}>{label}</p>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {roles.map((role) => {
-                          const checked = (w.role ?? []).includes(role);
-                          return (
-                            <label
-                              key={role}
-                              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border cursor-pointer transition text-xs
-                                ${checked
-                                  ? "border-amber-400 bg-amber-50 text-amber-700 font-semibold"
-                                  : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
-                                }`}
-                            >
-                              <input
-                                type="checkbox"
-                                value={role}
-                                {...register("role")}
-                                onChange={(e) => {
-                                  register("role").onChange(e);
-                                  if (!e.target.checked) return;
+                  <div className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+                    {sortedCategories.map(({ label, accent, roles }) => (
+                      <div key={label} className="space-y-1.5 mb-4 lg:mb-5">
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${accent}`}>{label}</p>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                          {roles.map((role) => {
+                            const checked = (w.role ?? []).includes(role);
+                            return (
+                              <label
+                                key={role}
+                                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border cursor-pointer transition text-xs
+                                  ${checked
+                                    ? "border-amber-400 bg-amber-50 text-amber-700 font-semibold"
+                                    : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+                                  }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  value={role}
+                                  {...register("role")}
+                                  onChange={(e) => {
+                                    register("role").onChange(e);
+                                    if (!e.target.checked) return;
 
-                                  const current = getValues("role") ?? [];
-                                  let next = current;
-                                  if (label === "Buff" && !next.includes(ChampionRole.BUFFER)) {
-                                    next = [...next, ChampionRole.BUFFER];
-                                  }
-                                  if (label === "Debuff" && !next.includes(ChampionRole.DEBUFFER)) {
-                                    next = [...next, ChampionRole.DEBUFFER];
-                                  }
-                                  if (
-                                    CC_TRIGGER_ROLES.includes(role) &&
-                                    !next.includes(ChampionRole.CONTROL)
-                                  ) {
-                                    next = [...next, ChampionRole.CONTROL];
-                                  }
-                                  if (
-                                    HEALER_TRIGGER_ROLES.includes(role) &&
-                                    !next.includes(ChampionRole.HEALER)
-                                  ) {
-                                    next = [...next, ChampionRole.HEALER];
-                                  }
-                                  if (next !== current) setValue("role", next, { shouldDirty: true });
-                                }}
-                                className="hidden"
-                              />
-                              <img src={ChampionRoleImageMap[role]} alt={role} className="w-4 h-4 object-contain rounded-full shrink-0" />
-                              <span className="truncate">{role}</span>
-                            </label>
-                          );
-                        })}
+                                    const current = getValues("role") ?? [];
+                                    let next = current;
+                                    if (label === "Buff" && !next.includes(ChampionRole.BUFFER)) {
+                                      next = [...next, ChampionRole.BUFFER];
+                                    }
+                                    if (label === "Debuff" && !next.includes(ChampionRole.DEBUFFER)) {
+                                      next = [...next, ChampionRole.DEBUFFER];
+                                    }
+                                    if (
+                                      CC_TRIGGER_ROLES.includes(role) &&
+                                      !next.includes(ChampionRole.CONTROL)
+                                    ) {
+                                      next = [...next, ChampionRole.CONTROL];
+                                    }
+                                    if (
+                                      HEALER_TRIGGER_ROLES.includes(role) &&
+                                      !next.includes(ChampionRole.HEALER)
+                                    ) {
+                                      next = [...next, ChampionRole.HEALER];
+                                    }
+                                    if (next !== current) setValue("role", next, { shouldDirty: true });
+                                  }}
+                                  className="hidden"
+                                />
+                                <img src={ChampionRoleImageMap[role]} alt={role} className="w-4 h-4 object-contain rounded-full shrink-0" />
+                                <span className="truncate">{role}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                   {errors.role && <p className="text-red-500 text-xs">{errors.role.message}</p>}
                 </div>
               );
             })()}
-
-            {/* ── Upgrade flags ── */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</label>
-              <div className="grid grid-cols-2 gap-3">
-
-                {/* Books group */}
-                <div className="border border-gray-200 rounded-xl p-3 space-y-3">
-                  <ToggleInput
-                    label="Needs Books"
-                    register={register("is_book_needed", {
-                      onChange: (e) => { if (!e.target.checked) setValue("is_booked", false); },
-                    })}
-                  />
-                  <div className="flex items-center gap-1.5 text-gray-300">
-                    <div className="flex-1 h-px bg-gray-100" />
-                    <FaArrowRight size={10} />
-                    <div className="flex-1 h-px bg-gray-100" />
-                  </div>
-                  <ToggleInput
-                    label="Is Booked"
-                    register={register("is_booked")}
-                    disabled={!w.is_book_needed}
-                  />
-                </div>
-
-                {/* Mastery group */}
-                <div className="border border-gray-200 rounded-xl p-3 space-y-3">
-                  <ToggleInput
-                    label="Needs Mastery"
-                    register={register("is_mastery_needed", {
-                      onChange: (e) => { if (!e.target.checked) setValue("has_mastery", false); },
-                    })}
-                  />
-                  <div className="flex items-center gap-1.5 text-gray-300">
-                    <div className="flex-1 h-px bg-gray-100" />
-                    <FaArrowRight size={10} />
-                    <div className="flex-1 h-px bg-gray-100" />
-                  </div>
-                  <ToggleInput
-                    label="Has Mastery"
-                    register={register("has_mastery")}
-                    disabled={!w.is_mastery_needed}
-                  />
-                </div>
-
-              </div>
-            </div>
-
           </div>
 
           {/* Hidden fields */}

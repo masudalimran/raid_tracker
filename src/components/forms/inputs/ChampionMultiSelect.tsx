@@ -201,7 +201,7 @@ export default function ChampionMultiSelect({
 
           {requiredRoles.length > 0 && (
             <span
-              className={`text-[10px] truncate max-w-28 ${
+              className={`text-[10px] truncate max-w-28 sm:max-w-48 ${
                 matchedLabels.length > 0 ? "text-green-600 font-medium" : "text-gray-400"
               }`}
             >
@@ -398,7 +398,7 @@ export default function ChampionMultiSelect({
           </div>
 
           {/* Available Champions */}
-          <div className="max-h-50 overflow-y-auto space-y-1">
+          <div className="max-h-50 lg:max-h-80 overflow-y-auto space-y-1">
             {unselectedChampions.map((champ) => (
               <Fragment key={champ.id}>
                 <ChampionRow champ={champ} />
