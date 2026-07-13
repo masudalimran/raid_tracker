@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
 import { ChampionFaction } from "../../models/ChampionFaction";
 import { POTION_KEEP } from "../../models/game_areas/PotionKeep";
@@ -29,8 +30,11 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Shard Log", path: "/shard-log", className: "" },
 ];
 
+const OPEN_SECTION_STORAGE_KEY = "sidenav_open_section";
+
 function SideNav({ isOpen, onClose }: SideNavProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const supabase_auth = localStorage.getItem("supabase_auth");
   const userEmail: string = supabase_auth ? JSON.parse(supabase_auth).email ?? "" : "";
 
@@ -78,16 +82,54 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     };
   });
 
+  const sections: { name: string; items: NavItem[] }[] = [
+    { name: "Core", items: CoreSideNavItems },
+    { name: "Potion Keeps", items: PotionKeepNavItems },
+    { name: "Dungeons", items: DungeonNavItems },
+    { name: "Clan Boss", items: ClanBossNavItems },
+    { name: "Hydra", items: HydraNavItems },
+    { name: "Arena", items: ArenaNavItems },
+    { name: "Faction Wars", items: FactionNavItems },
+    { name: "Doom Tower", items: DoomTowerBossNavItems },
+  ];
+
+  const findSectionForPath = (pathname: string) =>
+    sections.find((s) => s.items.some((item) => item.path === pathname))?.name ?? null;
+
+  // Accordion: only one section open at a time, shared across the desktop
+  // sidebar and mobile drawer. Whichever section holds the active route
+  // takes priority; otherwise the last section you opened is remembered.
+  const [openSection, setOpenSection] = useState<string | null>(
+    () => findSectionForPath(location.pathname) ?? localStorage.getItem(OPEN_SECTION_STORAGE_KEY) ?? "Core",
+  );
+
+  useEffect(() => {
+    const active = findSectionForPath(location.pathname);
+    if (active) setOpenSection(active);
+    // Only re-run when the route changes — `sections` is rebuilt every
+    // render from local data that doesn't need to re-trigger this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const toggleSection = (name: string) => {
+    setOpenSection((prev) => {
+      const next = prev === name ? null : name;
+      localStorage.setItem(OPEN_SECTION_STORAGE_KEY, next ?? "");
+      return next;
+    });
+  };
+
   const navContent = (
     <ul className="text-sm py-2 space-y-0.5">
-      <SideNavSection items={CoreSideNavItems} sectionName="Core" defaultOpen />
-      <SideNavSection items={PotionKeepNavItems} sectionName="Potion Keeps" />
-      <SideNavSection items={DungeonNavItems} sectionName="Dungeons" />
-      <SideNavSection items={ClanBossNavItems} sectionName="Clan Boss" />
-      <SideNavSection items={HydraNavItems} sectionName="Hydra" />
-      <SideNavSection items={ArenaNavItems} sectionName="Arena" />
-      <SideNavSection items={FactionNavItems} sectionName="Faction Wars" />
-      <SideNavSection items={DoomTowerBossNavItems} sectionName="Doom Tower" />
+      {sections.map((section) => (
+        <SideNavSection
+          key={section.name}
+          items={section.items}
+          sectionName={section.name}
+          isOpen={openSection === section.name}
+          onToggle={() => toggleSection(section.name)}
+        />
+      ))}
     </ul>
   );
 

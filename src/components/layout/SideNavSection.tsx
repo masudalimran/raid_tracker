@@ -1,20 +1,20 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
 import type { NavItem } from "../modals/NavItem";
 import Tooltip from "../utility/Tooltip";
 
 interface SideNavSectionProps {
   items: NavItem[];
   sectionName?: string;
-  defaultOpen?: boolean;
+  isOpen: boolean;
+  onToggle?: () => void;
 }
 
 export function SideNavSection({
   items,
   sectionName,
-  defaultOpen = false,
+  isOpen,
+  onToggle,
 }: SideNavSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
   const isCollapsible = Boolean(sectionName);
 
   return (
@@ -22,7 +22,7 @@ export function SideNavSection({
       {sectionName && (
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={onToggle}
           className="w-full text-left flex justify-between items-center
                      px-2 py-2 rounded-md transition cursor-pointer
                      text-[10px] font-semibold uppercase tracking-wider

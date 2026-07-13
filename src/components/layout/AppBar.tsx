@@ -67,7 +67,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
       <div className="flex items-center gap-3">
         {/* Utility cluster */}
         <div className="flex items-center gap-0.5 bg-white/5 rounded-lg p-1">
-          <Tooltip content="Search champions or teams">
+          <Tooltip content="Search champions or teams" position="bottom">
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event("open-global-search"))}
@@ -79,7 +79,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
             </button>
           </Tooltip>
 
-          <Tooltip content={nsfw ? "Hide Images" : "Show Images"}>
+          <Tooltip content={nsfw ? "Hide Images" : "Show Images"} position="bottom">
             <button
               type="button"
               onClick={() => handleNsfw(!nsfw)}
@@ -89,7 +89,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
             </button>
           </Tooltip>
 
-          <Tooltip content="How to use this app">
+          <Tooltip content="How to use this app" position="bottom">
             <button
               type="button"
               onClick={() => setShowHelp(true)}
