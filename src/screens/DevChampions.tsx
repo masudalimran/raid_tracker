@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { MdArrowBack, MdAutoFixHigh, MdClose } from "react-icons/md";
@@ -22,6 +22,10 @@ import type IChampion from "../models/IChampion";
 const MIN_ROLES = 4;
 
 type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable";
+
+const DEV_FILTER_MODES: DevFilterMode[] = ["default_image", "no_image", "under_roled", "not_viable"];
+const isDevFilterMode = (value: string | null): value is DevFilterMode =>
+  !!value && (DEV_FILTER_MODES as string[]).includes(value);
 
 const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number) => string }> = {
   default_image: {
@@ -49,11 +53,21 @@ const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number
 // stripped of Filter, Bulk Edit, and Import/Export — none of that applies here.
 export default function DevChampions() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [allAccountsChampionList, setAllAccountsChampionList] = useState<IChampion[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [filterMode, setFilterMode] = useState<DevFilterMode>("default_image");
+  const filterMode: DevFilterMode = isDevFilterMode(searchParams.get("filter"))
+    ? (searchParams.get("filter") as DevFilterMode)
+    : "default_image";
+  const setFilterMode = (mode: DevFilterMode) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("filter", mode);
+      return next;
+    }, { replace: true });
+  };
   const [nsfw, setNsfw] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
