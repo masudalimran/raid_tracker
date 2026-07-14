@@ -37,6 +37,11 @@ const HIGH_VALUE_ROLES: ChampionRole[] = [
   ChampionRole.PROVOKER,
 ];
 
+function highValueRoleCount(champion: IChampion): number {
+  return (champion.role ?? []).filter((r) => HIGH_VALUE_ROLES.includes(r as ChampionRole)).length;
+}
+
+// Books: rarity matters (rarer tomes are scarcer, so prioritize using them well).
 function priorityScore(
   champion: IChampion,
   teamCount: number,
@@ -45,7 +50,20 @@ function priorityScore(
   score += teamCount * 100;                                       // teams carry the most weight
   score += RARITY_SCORE[champion.rarity] ?? 0;
   if (checkIfChampionIsBuilt(champion)) score += 30;             // built = higher urgency
-  score += (champion.role ?? []).filter((r) => HIGH_VALUE_ROLES.includes(r as ChampionRole)).length * 10;
+  score += highValueRoleCount(champion) * 10;
+  return score;
+}
+
+// Masteries: free to pick regardless of rarity, so rarity plays no part —
+// just how much the champion is actually used and how valuable its roles are.
+function masteryPriorityScore(
+  champion: IChampion,
+  teamCount: number,
+): number {
+  let score = 0;
+  score += teamCount * 100;
+  if (checkIfChampionIsBuilt(champion)) score += 30;
+  score += highValueRoleCount(champion) * 10;
   return score;
 }
 
@@ -276,6 +294,79 @@ function SectionedQueuePanel({
   );
 }
 
+// ── Flat queue panel (no rarity grouping — just an inline rarity breakdown) ──
+
+interface FlatQueuePanelProps {
+  title: string;
+  icon: React.ReactNode;
+  champions: Array<{ champion: IChampion; teamCount: number }>;
+  onDone: (id: string) => void;
+  processing: Set<string>;
+  doneLabel: string;
+  emptyMsg: string;
+}
+
+function FlatQueuePanel({
+  title, icon, champions, onDone, processing, doneLabel, emptyMsg,
+}: FlatQueuePanelProps) {
+  const total = champions.length;
+
+  const rarityCounts: Partial<Record<ChampionRarity, number>> = {};
+  for (const { champion } of champions) {
+    rarityCounts[champion.rarity as ChampionRarity] = (rarityCounts[champion.rarity as ChampionRarity] ?? 0) + 1;
+  }
+  const rarityBreakdown = MASTERY_RARITY_ORDER
+    .map((rarity) => ({ rarity, count: rarityCounts[rarity] ?? 0 }))
+    .filter((r) => r.count > 0);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-gray-600">{icon}</span>
+        <h2 className="font-bold text-base">{title}</h2>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+          {total}
+        </span>
+      </div>
+
+      {rarityBreakdown.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {rarityBreakdown.map(({ rarity, count }) => (
+            <span
+              key={rarity}
+              className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${RARITY_BADGE[rarity] ?? ""}`}
+            >
+              {rarity} · {count}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {total === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 text-gray-400 gap-2">
+          <FaCheckCircle size={24} className="text-green-300" />
+          <p className="text-sm">{emptyMsg}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {champions.map(({ champion, teamCount }, i) => (
+            <QueueItem
+              key={champion.id}
+              champion={champion}
+              rank={i + 1}
+              teamCount={teamCount}
+              doneLabel={doneLabel}
+              onDone={onDone}
+              isDoing={processing.has(String(champion.id))}
+              mode="masteries"
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function PriorityQueue() {
@@ -311,11 +402,11 @@ export default function PriorityQueue() {
   }, [teams]);
 
   const ranked = useCallback(
-    (list: IChampion[]) =>
+    (list: IChampion[], scoreFn: (c: IChampion, teamCount: number) => number) =>
       [...list]
         .map((c) => ({ champion: c, teamCount: teamCountMap.get(String(c.id)) ?? 0 }))
         .sort((a, b) =>
-          priorityScore(b.champion, b.teamCount) - priorityScore(a.champion, a.teamCount),
+          scoreFn(b.champion, b.teamCount) - scoreFn(a.champion, a.teamCount),
         ),
     [teamCountMap],
   );
@@ -325,6 +416,7 @@ export default function PriorityQueue() {
       champions.filter((c) =>
         c.is_book_needed && !c.is_booked && (teamCountMap.get(String(c.id)) ?? 0) > 0,
       ),
+      priorityScore,
     ),
     [champions, ranked, teamCountMap],
   );
@@ -333,6 +425,7 @@ export default function PriorityQueue() {
       champions.filter((c) =>
         c.is_mastery_needed && !c.has_mastery && (teamCountMap.get(String(c.id)) ?? 0) > 0,
       ),
+      masteryPriorityScore,
     ),
     [champions, ranked, teamCountMap],
   );
@@ -375,7 +468,7 @@ export default function PriorityQueue() {
             Priority Queue
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            Champions ranked by team presence and rarity — tick them off as you complete them.
+            Books are ranked by team presence and rarity; masteries just by team presence — tick them off as you complete them.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -393,31 +486,35 @@ export default function PriorityQueue() {
       </div>
 
       {/* ── Two-column layout ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectionedQueuePanel
-          title="Needs Books"
-          icon={<FaBook size={16} />}
-          champions={needsBooks}
-          onDone={markBookDone}
-          processing={processingBooks}
-          mode="books"
-          doneLabel="Mark Booked"
-          emptyMsg="All priority champions are booked!"
-          rarityOrder={BOOK_RARITY_ORDER}
-          rarityLabelSuffix="Tomes"
-        />
-        <SectionedQueuePanel
-          title="Needs Masteries"
-          icon={<FaShieldAlt size={16} />}
-          champions={needsMasteries}
-          onDone={markMasteryDone}
-          processing={processingMasteries}
-          mode="masteries"
-          doneLabel="Mark Mastered"
-          emptyMsg="All priority champions have masteries!"
-          rarityOrder={MASTERY_RARITY_ORDER}
-          rarityLabelSuffix="Masteries"
-        />
+      {/* Each column is sticky + self-start so whichever list is shorter simply
+          stays pinned in view once its content ends, instead of leaving a
+          blank gap while the taller column keeps scrolling past it. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="lg:sticky lg:top-0 lg:self-start">
+          <SectionedQueuePanel
+            title="Needs Books"
+            icon={<FaBook size={16} />}
+            champions={needsBooks}
+            onDone={markBookDone}
+            processing={processingBooks}
+            mode="books"
+            doneLabel="Mark Booked"
+            emptyMsg="All priority champions are booked!"
+            rarityOrder={BOOK_RARITY_ORDER}
+            rarityLabelSuffix="Tomes"
+          />
+        </div>
+        <div className="lg:sticky lg:top-0 lg:self-start">
+          <FlatQueuePanel
+            title="Needs Masteries"
+            icon={<FaShieldAlt size={16} />}
+            champions={needsMasteries}
+            onDone={markMasteryDone}
+            processing={processingMasteries}
+            doneLabel="Mark Mastered"
+            emptyMsg="All priority champions have masteries!"
+          />
+        </div>
       </div>
 
       {totalPending === 0 && (
