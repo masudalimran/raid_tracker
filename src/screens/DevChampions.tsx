@@ -243,7 +243,7 @@ export default function DevChampions() {
         onClose={() => setShowReconcileConfirm(false)}
       >
         <p className="text-sm text-gray-600 mb-3">
-          Across all your RSL accounts, <span className="font-semibold">{reconcileAffectedNames}</span> champion name{reconcileAffectedNames === 1 ? "" : "s"} {reconcileAffectedNames === 1 ? "has" : "have"} at least one copy with real data set (image, champion URL, faction, affinity, type, or role) while other copies are still on the default placeholder. This will copy that data onto the <span className="font-semibold">{reconcilePlan.length}</span> placeholder cop{reconcilePlan.length === 1 ? "y" : "ies"} — the source copies are never modified.
+          Across all your RSL accounts, <span className="font-semibold">{reconcileAffectedNames}</span> champion name{reconcileAffectedNames === 1 ? "" : "s"} {reconcileAffectedNames === 1 ? "has" : "have"} copies with mismatched data — one copy with a real image/champion URL/faction while others are still on the default, or one copy with more roles tagged than another. This will copy image, champion URL, faction, affinity, and type from whichever copy has the real image, and roles from whichever copy has the most roles tagged, onto the <span className="font-semibold">{reconcilePlan.length}</span> less-complete cop{reconcilePlan.length === 1 ? "y" : "ies"} — the source copies are never modified.
         </p>
         {reconcileStatus === "error" && (
           <p className="text-sm text-red-500 mb-3">Failed to sync champion data. Please try again.</p>

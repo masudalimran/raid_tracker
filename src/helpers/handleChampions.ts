@@ -212,7 +212,7 @@ export const computeChampionReconciliationPlan = (
     if (group.length < 2) continue;
 
     // Identity reference: the copy with a real (non-default) image is
-    // trusted to also have the correct affinity/type/role.
+    // trusted to also have the correct affinity/type.
     const imageReference = group.find((c) => !isDefaultImage(c.imgUrl));
     const urlReference = group.find(
       (c) => c.championUrl && c.championUrl.trim() !== "",
@@ -220,6 +220,15 @@ export const computeChampionReconciliationPlan = (
     const factionReference = group.find(
       (c) => c.faction && c.faction !== ChampionFaction.OTHER,
     );
+    // Role reference: whichever copy has the most roles tagged wins,
+    // independent of which copy has the real image — a duplicate created
+    // via Shard Log auto-add can end up more thoroughly role-tagged than
+    // the "canonical" copy with the real image.
+    const roleReference = group.reduce(
+      (best, c) => ((c.role?.length ?? 0) > (best.role?.length ?? 0) ? c : best),
+      group[0],
+    );
+    const maxRoleCount = roleReference.role?.length ?? 0;
 
     for (const champion of group) {
       const patch: Partial<IChampion> = {};
@@ -232,7 +241,14 @@ export const computeChampionReconciliationPlan = (
         patch.imgUrl = imageReference.imgUrl;
         patch.affinity = imageReference.affinity;
         patch.type = imageReference.type;
-        patch.role = imageReference.role;
+      }
+
+      if (
+        maxRoleCount > 0 &&
+        champion.id !== roleReference.id &&
+        (champion.role?.length ?? 0) < maxRoleCount
+      ) {
+        patch.role = roleReference.role;
       }
 
       if (
