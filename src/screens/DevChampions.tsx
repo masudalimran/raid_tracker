@@ -2,13 +2,19 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
-import { MdArrowBack, MdClose } from "react-icons/md";
+import { MdArrowBack, MdAutoFixHigh, MdClose } from "react-icons/md";
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import EmptyChampionList from "../components/empty/EmptyChampionList";
+import Modal from "../components/modals/Modal";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
-import { fetchChampions, generateChampions } from "../helpers/handleChampions";
+import {
+  fetchChampions,
+  generateChampions,
+  computeChampionReconciliationPlan,
+  applyChampionReconciliationPlan,
+} from "../helpers/handleChampions";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
@@ -44,6 +50,7 @@ const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number
 export default function DevChampions() {
   const navigate = useNavigate();
   const [championList, setChampionList] = useState<IChampion[]>([]);
+  const [allAccountsChampionList, setAllAccountsChampionList] = useState<IChampion[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [filterMode, setFilterMode] = useState<DevFilterMode>("default_image");
@@ -51,11 +58,15 @@ export default function DevChampions() {
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
 
+  const [showReconcileConfirm, setShowReconcileConfirm] = useState(false);
+  const [reconcileStatus, setReconcileStatus] = useState<"idle" | "applying" | "error">("idle");
+
   const loadChampions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     if (forceRefresh) localStorage.removeItem("supabase_champion_list");
     try {
-      await fetchChampions();
+      const all = await fetchChampions();
+      setAllAccountsChampionList(all);
       const generated = await generateChampions();
       setChampionList(generated || []);
     } catch (error) {
@@ -89,6 +100,30 @@ export default function DevChampions() {
     const lower = searchText.toLowerCase();
     return flaggedChampions.filter((c) => c.name.toLowerCase().includes(lower));
   }, [flaggedChampions, searchText]);
+
+  // Cross-account sync plan: fills in image/identity/URL/faction gaps on
+  // default-image duplicates using whichever same-named champion (in any RSL
+  // account) already has real data set.
+  const reconcilePlan = useMemo(
+    () => computeChampionReconciliationPlan(allAccountsChampionList),
+    [allAccountsChampionList],
+  );
+  const reconcileAffectedNames = useMemo(
+    () => new Set(reconcilePlan.map((entry) => entry.name)).size,
+    [reconcilePlan],
+  );
+
+  const handleReconcileConfirm = async () => {
+    setReconcileStatus("applying");
+    const result = await applyChampionReconciliationPlan(reconcilePlan);
+    if (!result.success) {
+      setReconcileStatus("error");
+      return;
+    }
+    setReconcileStatus("idle");
+    setShowReconcileConfirm(false);
+    await loadChampions();
+  };
 
   const handleEdit = (champion: IChampion) => {
     setEditingChampion(champion);
@@ -148,6 +183,16 @@ export default function DevChampions() {
               />
             )}
           </div>
+          {filterMode === "default_image" && reconcilePlan.length > 0 && (
+            <button
+              type="button"
+              title="Reduce Default — fill in image/identity data from other accounts"
+              onClick={() => setShowReconcileConfirm(true)}
+              className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
+            >
+              <MdAutoFixHigh size={20} />
+            </button>
+          )}
           <button
             type="button"
             title="Refresh"
@@ -191,6 +236,36 @@ export default function DevChampions() {
           onClose={handleCloseModal}
         />
       )}
+
+      <Modal
+        isOpen={showReconcileConfirm}
+        title="Reduce Default"
+        onClose={() => setShowReconcileConfirm(false)}
+      >
+        <p className="text-sm text-gray-600 mb-3">
+          Across all your RSL accounts, <span className="font-semibold">{reconcileAffectedNames}</span> champion name{reconcileAffectedNames === 1 ? "" : "s"} {reconcileAffectedNames === 1 ? "has" : "have"} at least one copy with real data set (image, champion URL, faction, affinity, type, or role) while other copies are still on the default placeholder. This will copy that data onto the <span className="font-semibold">{reconcilePlan.length}</span> placeholder cop{reconcilePlan.length === 1 ? "y" : "ies"} — the source copies are never modified.
+        </p>
+        {reconcileStatus === "error" && (
+          <p className="text-sm text-red-500 mb-3">Failed to sync champion data. Please try again.</p>
+        )}
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={() => setShowReconcileConfirm(false)}
+            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleReconcileConfirm}
+            disabled={reconcileStatus === "applying"}
+            className="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {reconcileStatus === "applying" ? "Syncing…" : "Sync Data"}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

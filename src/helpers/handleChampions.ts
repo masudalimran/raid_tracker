@@ -5,6 +5,7 @@ import { ChampionFaction } from "../models/ChampionFaction";
 import type { Aura } from "../models/IChampion";
 import type IChampion from "../models/IChampion";
 import type { IGear } from "../models/IGear";
+import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import { checkIfChampionIsBuilt } from "./checkIfChampionIsBuilt";
 import { sortChampionsByPowerDesc } from "./getChampionPowerScore";
 import { sortByLevelDesc } from "./sortChampions";
@@ -174,6 +175,117 @@ export const findOtherChampionDuplicates = (championList: IChampion[]): IChampio
   }
 
   return duplicates;
+};
+
+// ── Cross-account data reconciliation ──────────────────────────────────────
+// Champions with the same name can end up duplicated across RSL accounts (or,
+// via Shard Log auto-add, within one account) with inconsistent data — one
+// copy has a real image/identity set, the others are still on the default
+// placeholder. This fills in the gaps on those placeholder copies using
+// whichever same-named champion has the most complete data, without ever
+// touching the "reference" copy itself.
+
+export interface ChampionReconciliationPlanEntry {
+  id: string | number;
+  name: string;
+  patch: Partial<IChampion>;
+}
+
+const isDefaultImage = (imgUrl?: string) =>
+  !imgUrl || imgUrl === DefaultChampionObject.imgUrl;
+
+export const computeChampionReconciliationPlan = (
+  allChampions: IChampion[],
+): ChampionReconciliationPlanEntry[] => {
+  const groups = new Map<string, IChampion[]>();
+  for (const champion of allChampions) {
+    if (!champion.name || champion.id == null) continue;
+    const key = champion.name.trim().toLowerCase();
+    const group = groups.get(key) ?? [];
+    group.push(champion);
+    groups.set(key, group);
+  }
+
+  const plan: ChampionReconciliationPlanEntry[] = [];
+
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+
+    // Identity reference: the copy with a real (non-default) image is
+    // trusted to also have the correct affinity/type/role.
+    const imageReference = group.find((c) => !isDefaultImage(c.imgUrl));
+    const urlReference = group.find(
+      (c) => c.championUrl && c.championUrl.trim() !== "",
+    );
+    const factionReference = group.find(
+      (c) => c.faction && c.faction !== ChampionFaction.OTHER,
+    );
+
+    for (const champion of group) {
+      const patch: Partial<IChampion> = {};
+
+      if (
+        imageReference &&
+        champion.id !== imageReference.id &&
+        isDefaultImage(champion.imgUrl)
+      ) {
+        patch.imgUrl = imageReference.imgUrl;
+        patch.affinity = imageReference.affinity;
+        patch.type = imageReference.type;
+        patch.role = imageReference.role;
+      }
+
+      if (
+        urlReference &&
+        champion.id !== urlReference.id &&
+        (!champion.championUrl || champion.championUrl.trim() === "")
+      ) {
+        patch.championUrl = urlReference.championUrl;
+      }
+
+      if (
+        factionReference &&
+        champion.id !== factionReference.id &&
+        (!champion.faction || champion.faction === ChampionFaction.OTHER)
+      ) {
+        patch.faction = factionReference.faction;
+      }
+
+      if (Object.keys(patch).length > 0) {
+        plan.push({ id: champion.id!, name: champion.name, patch });
+      }
+    }
+  }
+
+  return plan;
+};
+
+// Writes a reconciliation plan to Supabase and mirrors the changes into the
+// local champion cache so the UI reflects them without a full refetch.
+export const applyChampionReconciliationPlan = async (
+  plan: ChampionReconciliationPlanEntry[],
+): Promise<{ success: boolean; error?: string }> => {
+  if (plan.length === 0) return { success: true };
+
+  const results = await Promise.all(
+    plan.map(({ id, patch }) => supabase.from("champions").update(patch).eq("id", id)),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) {
+    return { success: false, error: failed.error.message };
+  }
+
+  const patchById = new Map(plan.map((entry) => [String(entry.id), entry.patch]));
+  const stored = JSON.parse(
+    localStorage.getItem("supabase_champion_list") ?? "[]",
+  ) as IChampion[];
+  const updated = stored.map((c) => {
+    const patch = patchById.get(String(c.id));
+    return patch ? { ...c, ...patch } : c;
+  });
+  localStorage.setItem("supabase_champion_list", JSON.stringify(updated));
+
+  return { success: true };
 };
 
 // Deletes the given champions from Supabase and the local cache.
