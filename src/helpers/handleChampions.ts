@@ -304,6 +304,40 @@ export const applyChampionReconciliationPlan = async (
   return { success: true };
 };
 
+// Called right after a champion is saved (added or edited) to keep roles in
+// sync with any other copy of the same champion — same account or another
+// RSL account. Uses the same "most roles tagged wins" rule as the full
+// reconciliation plan, scoped to just this one champion name, so saving a
+// less-tagged copy never wipes out a more thoroughly tagged one.
+export const syncRolesForChampionName = async (
+  name: string,
+): Promise<{ success: boolean; error?: string }> => {
+  const stored = JSON.parse(
+    localStorage.getItem("supabase_champion_list") ?? "[]",
+  ) as IChampion[];
+
+  const key = name.trim().toLowerCase();
+  const group = stored.filter(
+    (c) => c.id != null && c.name?.trim().toLowerCase() === key,
+  );
+  if (group.length < 2) return { success: true };
+
+  const roleReference = group.reduce(
+    (best, c) => ((c.role?.length ?? 0) > (best.role?.length ?? 0) ? c : best),
+    group[0],
+  );
+  const maxRoleCount = roleReference.role?.length ?? 0;
+  if (maxRoleCount === 0) return { success: true };
+
+  const plan: ChampionReconciliationPlanEntry[] = group
+    .filter(
+      (c) => c.id !== roleReference.id && (c.role?.length ?? 0) < maxRoleCount,
+    )
+    .map((c) => ({ id: c.id!, name: c.name, patch: { role: roleReference.role } }));
+
+  return applyChampionReconciliationPlan(plan);
+};
+
 // Deletes the given champions from Supabase and the local cache.
 export const removeChampions = async (
   champions: IChampion[],

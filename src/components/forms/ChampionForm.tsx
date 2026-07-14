@@ -15,6 +15,7 @@ import { ROLE_CATEGORIES } from "../../data/roleCategories";
 import RaidStarInput from "./inputs/RaidStarInput";
 import ToggleInput from "./inputs/ToggleInput";
 import { useChampion } from "../../hooks/useChampion";
+import { syncRolesForChampionName } from "../../helpers/handleChampions";
 import { useState } from "react";
 import ChampionCard from "../card/ChampionCard";
 import getFactionLogo from "../../helpers/getFactionLogo";
@@ -169,6 +170,9 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             "supabase_champion_list",
             JSON.stringify(updatedChampions),
           );
+          syncRolesForChampionName(res.name).catch((error) => {
+            console.error("Error syncing roles across accounts:", error);
+          });
           window.dispatchEvent(
             new CustomEvent("celebrate-champion", {
               detail: {
