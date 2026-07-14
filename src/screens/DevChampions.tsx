@@ -110,9 +110,10 @@ export default function DevChampions() {
   }, [championList, filterMode]);
 
   const filteredChampions = useMemo(() => {
-    if (!searchText) return flaggedChampions;
-    const lower = searchText.toLowerCase();
-    return flaggedChampions.filter((c) => c.name.toLowerCase().includes(lower));
+    const list = searchText
+      ? flaggedChampions.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
+      : flaggedChampions;
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [flaggedChampions, searchText]);
 
   // Cross-account sync plan: fills in image/identity/URL/faction gaps on
