@@ -10,6 +10,7 @@ import Modal from "../../modals/Modal";
 import ChampionCard from "../../card/ChampionCard";
 import { checkIfChampionIsBuilt } from "../../../helpers/checkIfChampionIsBuilt";
 import { ChampionRarity } from "../../../models/ChampionRarity";
+import { ChampionRole } from "../../../models/ChampionRole";
 import {
   checkTeamCoverage,
   getChampionRoleMatches,
@@ -72,6 +73,14 @@ const RARITY_ORDER: Record<string, number> = {
   [ChampionRarity.UNCOMMON]: 4,
   [ChampionRarity.COMMON]: 5,
 };
+
+function NotViableBadge() {
+  return (
+    <span className="text-[9px] font-bold uppercase tracking-wide text-red-600 bg-red-50 border border-red-200 rounded-full px-1.5 py-0.5 shrink-0">
+      Not Viable
+    </span>
+  );
+}
 
 const byRarityThenName = (a: IChampion, b: IChampion) => {
   const rarityDiff =
@@ -196,7 +205,8 @@ export default function ChampionMultiSelect({
                 }`}
               />
             </div>
-            {champ.name}
+            <span className="truncate">{champ.name}</span>
+            {champ.role?.includes(ChampionRole.NOT_VIABLE) && <NotViableBadge />}
           </div>
 
           {requiredRoles.length > 0 && (
@@ -265,7 +275,10 @@ export default function ChampionMultiSelect({
           }`}
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{champ.name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium truncate">{champ.name}</p>
+            {champ.role?.includes(ChampionRole.NOT_VIABLE) && <NotViableBadge />}
+          </div>
           {matchedLabels.length > 0 && (
             <p className="text-[10px] text-gray-600 truncate">
               Covers: {matchedLabels.join(", ")}
