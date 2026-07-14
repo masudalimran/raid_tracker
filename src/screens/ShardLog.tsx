@@ -932,9 +932,13 @@ export default function ShardLog() {
         ) : (
           <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2" : "space-y-2"}>
             {filteredTabPulls.map((pull) => {
-              const imgUrl = (pull as IShardPull & { imgUrl?: string }).imgUrl
-                ?? championLookup.get(pull.championName.toLowerCase())?.imgUrl
-                ?? "";
+              // Prefer the roster champion's current image over the one
+              // snapshotted on the pull at log time, so editing a champion's
+              // image later (e.g. after logging it with no image) is
+              // reflected here instead of staying stuck on the stale value.
+              const imgUrl = championLookup.get(pull.championName.toLowerCase())?.imgUrl
+                || (pull as IShardPull & { imgUrl?: string }).imgUrl
+                || "";
               const isEditing = editingId === pull.id;
               const accent = PULL_ROW_ACCENT[pull.rarity] ?? "border-gray-200";
 
