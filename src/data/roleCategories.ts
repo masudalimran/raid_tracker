@@ -12,6 +12,7 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
     accent: "text-red-600",
     roles: [
       ChampionRole.NUKER,
+      ChampionRole.AOE_A1,
       ChampionRole.POISONER,
       ChampionRole.HP_BURNER,
       ChampionRole.MAX_HP_DPS,

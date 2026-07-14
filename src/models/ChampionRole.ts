@@ -1,5 +1,6 @@
 export const ChampionRole = {
   NUKER: "Nuker",
+  AOE_A1: "AOE A1",
   DEBUFFER: "Debuffer",
   BUFFER: "Buffer",
   SPEED_BOOSTER: "Speed Booster",
@@ -122,6 +123,7 @@ export const ChampionRole = {
 
 export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Nuker: "img/roles/nuker.png",
+  "AOE A1": "img/roles/aoe_a1.svg",
   Debuffer: "img/roles/debuffer.png",
   Buffer: "img/roles/buffer.png",
   "Speed Booster": "img/roles/speed_booster.png",
