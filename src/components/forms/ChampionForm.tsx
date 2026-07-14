@@ -547,9 +547,33 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
               const sortedCategories = [...ROLE_CATEGORIES].sort(
                 (a, b) => b.roles.length - a.roles.length,
               );
+              const notViableChecked = (w.role ?? []).includes(ChampionRole.NOT_VIABLE);
               return (
                 <div className="space-y-3">
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Roles</label>
+
+                  {/* Not Viable — standalone flag, shown first, not part of any category */}
+                  <label
+                    className={`flex items-center gap-1.5 w-fit px-2 py-1.5 rounded-lg border cursor-pointer transition text-xs
+                      ${notViableChecked
+                        ? "border-red-400 bg-red-50 text-red-700 font-semibold"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      value={ChampionRole.NOT_VIABLE}
+                      {...register("role")}
+                      className="hidden"
+                    />
+                    <img
+                      src={ChampionRoleImageMap[ChampionRole.NOT_VIABLE]}
+                      alt={ChampionRole.NOT_VIABLE}
+                      className="w-4 h-4 object-contain rounded-full shrink-0"
+                    />
+                    <span className="truncate">{ChampionRole.NOT_VIABLE}</span>
+                  </label>
+
                   <div className="lg:grid lg:grid-cols-2 lg:gap-x-8">
                     {sortedCategories.map(({ label, accent, roles }) => (
                       <div key={label} className="space-y-1.5 mb-4 lg:mb-5">

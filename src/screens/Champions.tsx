@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaPlusSquare, FaFileImport } from "react-icons/fa";
-import { TbRefreshDot } from "react-icons/tb";
+import { TbRefreshDot, TbTool } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { MdChecklist, MdClose, MdDeleteSweep, MdDownload, MdImportExport } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
@@ -528,6 +528,15 @@ export default function Champions() {
                 )}
               </>
             )}
+            <Tooltip content="Dev tools">
+              <button
+                type="button"
+                onClick={() => navigate("/dev-champions")}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+              >
+                <TbTool size={20} />
+              </button>
+            </Tooltip>
             {bulkMode && (
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-violet-600">

@@ -20,6 +20,18 @@ export const ChampionRole = {
   CLEANSER: "Cleanser",
   BLOCK_BUFF: "Block Buff",
   DOOM_TOWER: "Doom Tower",
+
+  // ── Dungeon specialists ──
+  SPIDER: "Spider",
+  DRAGON: "Dragon",
+  ICE_GOLEM: "Ice Golem",
+  FIRE_KNIGHT: "Fire Knight",
+  SAND_DEVIL: "Sand Devil",
+  SHOGUN: "Shogun",
+  IRON_TWIN: "Iron Twin",
+
+  NOT_VIABLE: "Not Viable",
+
   PROVOKER: "Provoker",
   LEECH: "Leech",
   SHIELDER: "Shielder",
@@ -130,6 +142,18 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Cleanser: "img/roles/cleanser.png",
   "Block Buff": "img/roles/Block-buffs.webp",
   "Doom Tower": "img/roles/doom_tower.png",
+
+  // ── Dungeon specialists ──
+  Spider: "img/roles/spider.svg",
+  Dragon: "img/roles/dragon.svg",
+  "Ice Golem": "img/roles/ice_golem.svg",
+  "Fire Knight": "img/roles/fire_knight.svg",
+  "Sand Devil": "img/roles/sand_devil.svg",
+  Shogun: "img/roles/shogun.svg",
+  "Iron Twin": "img/roles/iron_twin.svg",
+
+  "Not Viable": "img/roles/not_viable.svg",
+
   Provoker: "img/debuffs/Provoke.png",
   Leech: "img/debuffs/Leech.png",
   Shielder: "img/buffs/Shield.png",

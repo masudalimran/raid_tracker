@@ -200,25 +200,30 @@ export function getPityCount(pulls: IShardPull[], shardType: ShardType): number 
 
 export interface ShardStats {
   total: number;
+  legendary: number;
   epic: number;
   rare: number;
   pityCount: number;
+  legendaryRate: string;
   epicRate: string;
   rareRate: string;
 }
 
 export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardStats {
-  const filtered = pulls.filter((p) => p.shardType === shardType);
+  const filtered  = pulls.filter((p) => p.shardType === shardType);
   const total     = filtered.length;
+  const legendary = filtered.filter((p) => p.rarity === "Legendary" || p.rarity === "Mythical").length;
   const epic      = filtered.filter((p) => p.rarity === "Epic").length;
   const rare      = filtered.filter((p) => p.rarity === "Rare").length;
   const pityCount = getPityCount(pulls, shardType);
   const rate = (count: number) => (total > 0 ? ((count / total) * 100).toFixed(2) : "0.00");
   return {
     total,
+    legendary,
     epic,
     rare,
     pityCount,
+    legendaryRate: rate(legendary),
     epicRate: rate(epic),
     rareRate: rate(rare),
   };

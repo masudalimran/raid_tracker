@@ -92,15 +92,18 @@ const PULL_ROW_ACCENT: Record<string, string> = {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-// Donut chart showing the Epic / Rare / Other split of pulls for a shard type.
-function PullDonut({ total, epic, rare }: { total: number; epic: number; rare: number }) {
-  const other = Math.max(total - epic - rare, 0);
+// Donut chart showing the Legendary / Epic / Rare / Other split of pulls for a shard type.
+function PullDonut({
+  total, legendary, epic, rare,
+}: { total: number; legendary: number; epic: number; rare: number }) {
+  const other = Math.max(total - legendary - epic - rare, 0);
   const r = 40;
   const circumference = 2 * Math.PI * r;
   const segments = [
-    { value: epic,  color: "#9333ea" }, // purple-600
-    { value: rare,  color: "#3b82f6" }, // blue-500
-    { value: other, color: "#d1d5db" }, // gray-300
+    { value: legendary, color: "#f97316" }, // orange-500
+    { value: epic,      color: "#9333ea" }, // purple-600
+    { value: rare,      color: "#3b82f6" }, // blue-500
+    { value: other,     color: "#d1d5db" }, // gray-300
   ];
 
   let offset = 0;
@@ -703,7 +706,7 @@ export default function ShardLog() {
         {/* ── Stats ── */}
         <div className="bg-white border rounded-xl shadow-sm p-4 flex items-center gap-5 flex-wrap">
           <div className="relative w-24 h-24 shrink-0">
-            <PullDonut total={stats.total} epic={stats.epic} rare={stats.rare} />
+            <PullDonut total={stats.total} legendary={stats.legendary} epic={stats.epic} rare={stats.rare} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-xl font-bold text-gray-700">{stats.total}</span>
               <span className="text-[10px] text-gray-400">Total Pulls</span>
@@ -711,13 +714,14 @@ export default function ShardLog() {
           </div>
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-48">
             {[
+              { label: "Legendary", count: stats.legendary, rate: stats.legendaryRate, dot: "bg-orange-500" },
               { label: "Epic",  count: stats.epic, rate: stats.epicRate, dot: "bg-purple-600" },
               { label: "Rare",  count: stats.rare, rate: stats.rareRate, dot: "bg-blue-500" },
               {
                 label: "Other",
-                count: Math.max(stats.total - stats.epic - stats.rare, 0),
+                count: Math.max(stats.total - stats.legendary - stats.epic - stats.rare, 0),
                 rate: stats.total > 0
-                  ? (100 - Number(stats.epicRate) - Number(stats.rareRate)).toFixed(2)
+                  ? (100 - Number(stats.legendaryRate) - Number(stats.epicRate) - Number(stats.rareRate)).toFixed(2)
                   : "0.00",
                 dot: "bg-gray-300",
               },

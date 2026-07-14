@@ -132,6 +132,13 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
       ChampionRole.CHIMERA,
       ChampionRole.ARENA,
       ChampionRole.DOOM_TOWER,
+      ChampionRole.SPIDER,
+      ChampionRole.DRAGON,
+      ChampionRole.ICE_GOLEM,
+      ChampionRole.FIRE_KNIGHT,
+      ChampionRole.SAND_DEVIL,
+      ChampionRole.SHOGUN,
+      ChampionRole.IRON_TWIN,
     ],
   },
 ];

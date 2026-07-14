@@ -10,6 +10,7 @@ import PageNotFound from "./screens/PageNotFound.tsx";
 import RtkSync from "./screens/RtkSync.tsx";
 import ShardLog from "./screens/ShardLog.tsx";
 import ImportJson from "./screens/ImportJson.tsx";
+import DevChampions from "./screens/DevChampions.tsx";
 import Analytics from "./screens/Analytics.tsx";
 import PriorityQueue from "./screens/PriorityQueue.tsx";
 import { useEffect } from "react";
@@ -38,6 +39,7 @@ function App() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/champions" element={<Champions />} />
         <Route path="/import-json" element={<ImportJson />} />
+        <Route path="/dev-champions" element={<DevChampions />} />
         <Route path="/priority-queue" element={<PriorityQueue />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/rtk-sync" element={<RtkSync />} />

@@ -1,0 +1,196 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { TbRefreshDot } from "react-icons/tb";
+import { CiSearch } from "react-icons/ci";
+import { MdArrowBack, MdClose } from "react-icons/md";
+import ChampionCard from "../components/card/ChampionCard";
+import ChampionModal from "../components/modals/ChampionModal";
+import ArcaneLoader from "../components/loaders/ArcaneLoader";
+import EmptyChampionList from "../components/empty/EmptyChampionList";
+import DefaultChampionObject from "../components/forms/defaultChampionObject";
+import { fetchChampions, generateChampions } from "../helpers/handleChampions";
+import { getNsfwStatus } from "../helpers/getNsfwStatus";
+import { ChampionRole } from "../models/ChampionRole";
+import type IChampion from "../models/IChampion";
+
+const MIN_ROLES = 4;
+
+type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable";
+
+const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number) => string }> = {
+  default_image: {
+    title: "Champions With Default Image",
+    subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} still using the default placeholder image.`,
+  },
+  no_image: {
+    title: "Champions With No Image",
+    subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} with no image URL set at all.`,
+  },
+  under_roled: {
+    title: "Under-Roled Champions",
+    subtitle: (n) =>
+      `${n} champion${n !== 1 ? "s" : ""} tagged with fewer than ${MIN_ROLES} roles (Not Viable champions excluded).`,
+  },
+  not_viable: {
+    title: "Not Viable Champions",
+    subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} tagged as Not Viable.`,
+  },
+};
+
+// Dev-only, unlisted page (no sidebar link — reach it by typing /dev-champions
+// directly) for finding champions that need data cleanup: missing images,
+// still on the default placeholder image, or under-roled. Deliberately
+// stripped of Filter, Bulk Edit, and Import/Export — none of that applies here.
+export default function DevChampions() {
+  const navigate = useNavigate();
+  const [championList, setChampionList] = useState<IChampion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [filterMode, setFilterMode] = useState<DevFilterMode>("default_image");
+  const [nsfw, setNsfw] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+
+  const loadChampions = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    if (forceRefresh) localStorage.removeItem("supabase_champion_list");
+    try {
+      await fetchChampions();
+      const generated = await generateChampions();
+      setChampionList(generated || []);
+    } catch (error) {
+      console.error("Error loading champions:", error);
+      setChampionList([]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadChampions(); }, [loadChampions]);
+  useEffect(() => { setNsfw(getNsfwStatus()); }, []);
+
+  const flaggedChampions = useMemo(() => {
+    switch (filterMode) {
+      case "no_image":
+        return championList.filter((c) => !c.imgUrl);
+      case "under_roled":
+        return championList.filter(
+          (c) => (c.role?.length ?? 0) < MIN_ROLES && !c.role?.includes(ChampionRole.NOT_VIABLE),
+        );
+      case "not_viable":
+        return championList.filter((c) => c.role?.includes(ChampionRole.NOT_VIABLE));
+      case "default_image":
+      default:
+        return championList.filter((c) => c.imgUrl === DefaultChampionObject.imgUrl);
+    }
+  }, [championList, filterMode]);
+
+  const filteredChampions = useMemo(() => {
+    if (!searchText) return flaggedChampions;
+    const lower = searchText.toLowerCase();
+    return flaggedChampions.filter((c) => c.name.toLowerCase().includes(lower));
+  }, [flaggedChampions, searchText]);
+
+  const handleEdit = (champion: IChampion) => {
+    setEditingChampion(champion);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = async (shouldReload: boolean) => {
+    setShowModal(false);
+    setEditingChampion(null);
+    if (shouldReload) await loadChampions();
+  };
+
+  if (loading) return <ArcaneLoader label="Scanning your roster" />;
+
+  const { title, subtitle } = FILTER_LABELS[filterMode];
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="page-header flex-col md:flex-row">
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-gray-900">{title}</h1>
+          <p className="text-xs text-gray-400 mt-0.5">{subtitle(flaggedChampions.length)}</p>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <select
+            value={filterMode}
+            onChange={(e) => setFilterMode(e.target.value as DevFilterMode)}
+            className="basic-select w-auto"
+          >
+            <option value="default_image">Default image</option>
+            <option value="no_image">No image</option>
+            <option value="under_roled">Under-roled (&lt; {MIN_ROLES})</option>
+            <option value="not_viable">Not Viable</option>
+          </select>
+
+          <div className="relative">
+            <input
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search…"
+              className="basic-input w-36 sm:w-48 pr-8"
+            />
+            {searchText ? (
+              <button
+                type="button"
+                title="Clear search"
+                onClick={() => setSearchText("")}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+              >
+                <MdClose size={14} />
+              </button>
+            ) : (
+              <CiSearch
+                size={18}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              />
+            )}
+          </div>
+          <button
+            type="button"
+            title="Refresh"
+            onClick={() => loadChampions(true)}
+            className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+          >
+            <TbRefreshDot size={22} />
+          </button>
+          <button
+            type="button"
+            title="Back to Champions"
+            onClick={() => navigate("/champions")}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+          >
+            <MdArrowBack size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {filteredChampions.length === 0 ? (
+            <EmptyChampionList />
+          ) : (
+            filteredChampions.map((champion) => (
+              <ChampionCard
+                key={champion.id}
+                champion={champion}
+                nsfw={nsfw}
+                onEdit={handleEdit}
+                onDelete={() => handleCloseModal(true)}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {showModal && (
+        <ChampionModal
+          champion={editingChampion ?? undefined}
+          onClose={handleCloseModal}
+        />
+      )}
+    </div>
+  );
+}
