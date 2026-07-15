@@ -113,8 +113,9 @@ export default function DevChampions() {
     const list = searchText
       ? flaggedChampions.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
       : flaggedChampions;
+    if (filterMode === "under_roled") return list;
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
-  }, [flaggedChampions, searchText]);
+  }, [flaggedChampions, searchText, filterMode]);
 
   // Cross-account sync plan: fills in image/identity/URL/faction gaps on
   // default-image duplicates using whichever same-named champion (in any RSL
