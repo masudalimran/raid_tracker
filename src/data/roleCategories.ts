@@ -29,6 +29,7 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
     accent: "text-blue-600",
     roles: [
       ChampionRole.BUFFER,
+      ChampionRole.SKILL_RESET,
       ChampionRole.SPEED_BOOSTER,
       ChampionRole.TM_BOOSTER,
       ChampionRole.HEALER,
@@ -133,6 +134,7 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
       ChampionRole.CHIMERA,
       ChampionRole.ARENA,
       ChampionRole.DOOM_TOWER,
+      ChampionRole.FACTION_WARS,
       ChampionRole.SPIDER,
       ChampionRole.DRAGON,
       ChampionRole.ICE_GOLEM,

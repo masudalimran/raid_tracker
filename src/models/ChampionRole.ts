@@ -21,6 +21,8 @@ export const ChampionRole = {
   CLEANSER: "Cleanser",
   BLOCK_BUFF: "Block Buff",
   DOOM_TOWER: "Doom Tower",
+  FACTION_WARS: "Faction Wars",
+  SKILL_RESET: "Skill Reset",
 
   // ── Dungeon specialists ──
   SPIDER: "Spider",
@@ -144,6 +146,8 @@ export const ChampionRoleImageMap: Record<ChampionRole, string> = {
   Cleanser: "img/roles/cleanser.png",
   "Block Buff": "img/roles/Block-buffs.webp",
   "Doom Tower": "img/roles/doom_tower.png",
+  "Faction Wars": "img/roles/faction_wars.svg",
+  "Skill Reset": "img/roles/skill_reset.svg",
 
   // ── Dungeon specialists ──
   Spider: "img/roles/spider.svg",
