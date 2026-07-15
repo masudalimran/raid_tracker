@@ -82,8 +82,8 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     };
   });
 
-  const sections: { name: string; items: NavItem[] }[] = [
-    { name: "Core", items: CoreSideNavItems },
+  const sections: { name: string; items: NavItem[]; alwaysOpen?: boolean }[] = [
+    { name: "Core", items: CoreSideNavItems, alwaysOpen: true },
     { name: "Potion Keeps", items: PotionKeepNavItems },
     { name: "Dungeons", items: DungeonNavItems },
     { name: "Clan Boss", items: ClanBossNavItems },
@@ -126,8 +126,9 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
           key={section.name}
           items={section.items}
           sectionName={section.name}
-          isOpen={openSection === section.name}
-          onToggle={() => toggleSection(section.name)}
+          isOpen={section.alwaysOpen ? true : openSection === section.name}
+          onToggle={section.alwaysOpen ? undefined : () => toggleSection(section.name)}
+          alwaysOpen={section.alwaysOpen}
         />
       ))}
     </ul>

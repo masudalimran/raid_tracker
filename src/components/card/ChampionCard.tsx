@@ -175,7 +175,7 @@ export default function ChampionCard({
 
   return (
     <>
-      <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 flex flex-col bg-white">
+      <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
 
         {/* ── HEADER ── */}
         <div className={`flex items-center justify-between px-3 py-2 ${colorByRarity(champion.rarity)}`}>
@@ -246,7 +246,7 @@ export default function ChampionCard({
         </div>
 
         {/* ── IDENTITY STRIP: Faction · Rarity dot · Type · Roles ── */}
-        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border-b border-gray-100">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800">
           {rolesExpanded ? (
             <div className="flex items-center gap-1 flex-wrap justify-end ml-auto">
               {visibleRoles.map((role) => (
@@ -263,7 +263,7 @@ export default function ChampionCard({
               <button
                 type="button"
                 onClick={() => setRolesExpanded(false)}
-                className="text-[10px] font-semibold text-gray-400 hover:text-gray-700 transition cursor-pointer ml-1"
+                className="text-[10px] font-semibold text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer ml-1"
               >
                 Show less
               </button>
@@ -275,13 +275,13 @@ export default function ChampionCard({
                   src={getFactionLogo(champion.faction)}
                   className="w-5 h-5 object-cover rounded-full shrink-0"
                 />
-                <span className="text-xs text-gray-600 truncate">{champion.faction}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{champion.faction}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Tooltip content={champion.rarity} className="shrink-0">
                   <div className={`h-2.5 w-2.5 rounded-full ${colorByRarity(champion.rarity)}`} />
                 </Tooltip>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 capitalize font-medium">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 capitalize font-medium">
                   {champion.type}
                 </span>
                 {previewRoles.map((role) => (
@@ -303,7 +303,7 @@ export default function ChampionCard({
                     <button
                       type="button"
                       onClick={() => setRolesExpanded(true)}
-                      className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[9px] font-bold flex items-center justify-center hover:bg-amber-200 hover:text-amber-700 transition cursor-pointer"
+                      className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[9px] font-bold flex items-center justify-center hover:bg-amber-200 hover:text-amber-700 dark:hover:bg-amber-900 dark:hover:text-amber-400 transition cursor-pointer"
                     >
                       +{hiddenRoleCount}
                     </button>
@@ -329,7 +329,7 @@ export default function ChampionCard({
                 <div key={key} className="flex items-center gap-2">
                   <span className="text-xs text-gray-400 w-10 shrink-0">{label}</span>
                   {hasBar ? (
-                    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${met ? "bg-green-400" : "bg-amber-400"}`}
                         style={{ width: `${pct}%` }}
@@ -356,8 +356,8 @@ export default function ChampionCard({
             <span
               className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium
                 ${champion.is_booked
-                  ? "bg-green-50 border-green-300 text-green-600"
-                  : "bg-red-50 border-red-200 text-red-400"}`}
+                  ? "bg-green-50 border-green-300 text-green-600 dark:bg-green-950/40 dark:border-green-800 dark:text-green-400"
+                  : "bg-red-50 border-red-200 text-red-400 dark:bg-red-950/40 dark:border-red-900 dark:text-red-400"}`}
             >
               {champion.is_booked ? <FaCheckCircle size={10} /> : <MdCancel size={10} />}
               Book
@@ -365,8 +365,8 @@ export default function ChampionCard({
             <span
               className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium
                 ${champion.has_mastery
-                  ? "bg-green-50 border-green-300 text-green-600"
-                  : "bg-red-50 border-red-200 text-red-400"}`}
+                  ? "bg-green-50 border-green-300 text-green-600 dark:bg-green-950/40 dark:border-green-800 dark:text-green-400"
+                  : "bg-red-50 border-red-200 text-red-400 dark:bg-red-950/40 dark:border-red-900 dark:text-red-400"}`}
             >
               {champion.has_mastery ? <FaCheckCircle size={10} /> : <MdCancel size={10} />}
               Mastery
@@ -443,14 +443,14 @@ export default function ChampionCard({
             matchedRoles.map((role) => (
               <div
                 key={role}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-green-50 border-green-300 text-green-700"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-green-50 border-green-300 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-400"
               >
                 <span>✓</span>
                 <span>{role}</span>
               </div>
             ))
           ) : (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-gray-50 border-gray-200 text-gray-400">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-gray-50 border-gray-200 text-gray-400 dark:bg-gray-800 dark:border-gray-700">
               <span>—</span>
               <span>no required role match</span>
             </div>

@@ -1,6 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&display=swap");
 @import "tailwindcss";
 
+/* Class-based dark mode (toggle-controlled) instead of the default
+   prefers-color-scheme-only variant, so the app can force light/dark
+   independent of the OS setting while still defaulting to it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
     font-family: "Geom", system-ui, sans-serif;
@@ -9,6 +14,10 @@
   * {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db #f9fafb;
+  }
+
+  .dark * {
+    scrollbar-color: #4b5563 #1f2937;
   }
 
   *::-webkit-scrollbar {
@@ -20,9 +29,17 @@
     background: #f9fafb;
   }
 
+  .dark *::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+
   *::-webkit-scrollbar-thumb {
     background-color: #d1d5db;
     border-radius: 999px;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
   }
 }
 
@@ -65,21 +82,24 @@
     @apply border border-gray-200 rounded-lg pl-3 py-2 pr-10 bg-white
            text-sm text-gray-900 placeholder:text-gray-400
            focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400
-           transition;
+           transition
+           dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500;
   }
 
   .input {
     @apply mb-2 w-full border border-gray-200 px-3 py-2 rounded-lg text-sm
            text-gray-900 bg-white
            focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400
-           transition;
+           transition
+           dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
   }
 
   .basic-select {
     @apply w-full border border-gray-200 px-3 py-2 rounded-lg cursor-pointer text-sm
            text-gray-900 bg-white
            focus:outline-none focus:ring-2 focus:ring-amber-400
-           transition;
+           transition
+           dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
   }
 
   .btn-primary {
@@ -90,13 +110,15 @@
   .btn-ghost {
     @apply border border-gray-200 hover:border-gray-300 bg-white
            text-gray-600 hover:text-gray-900
-           font-medium px-4 py-2 rounded-lg transition cursor-pointer text-sm;
+           font-medium px-4 py-2 rounded-lg transition cursor-pointer text-sm
+           dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white;
   }
 
   /* Page header bar used by BaseAreaTeam and Champions */
   .page-header {
     @apply sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm
-           flex items-center justify-between gap-3 px-4 py-3;
+           flex items-center justify-between gap-3 px-4 py-3
+           dark:bg-gray-900 dark:border-gray-800;
   }
 
   /* Section label */

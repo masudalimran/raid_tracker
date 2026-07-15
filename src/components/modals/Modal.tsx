@@ -27,7 +27,7 @@ export default function Modal({
   // form's submit button unreliable.
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className={`bg-white rounded-2xl shadow-2xl w-full ${maxWidthClass} overflow-hidden`}>
+      <div className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClass} overflow-hidden`}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-gray-900 border-b border-white/10">
           <h2 className="font-bold text-white text-base">{title}</h2>
@@ -45,7 +45,7 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="px-5 py-4">{children}</div>
+        <div className="px-5 py-4 text-gray-900 dark:text-gray-100">{children}</div>
       </div>
     </div>,
     document.body,

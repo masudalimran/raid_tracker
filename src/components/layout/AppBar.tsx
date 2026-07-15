@@ -7,8 +7,17 @@ import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaSearch } from "react-icons/fa";
 import { FaQuestion } from "react-icons/fa6";
+import { MdBrightnessAuto, MdDarkMode, MdLightMode } from "react-icons/md";
 import Tooltip from "../utility/Tooltip";
 import HelpGuideModal from "../modals/HelpGuideModal";
+import { useTheme, type ThemePreference } from "../../hooks/useTheme";
+
+const THEME_CYCLE: ThemePreference[] = ["light", "dark", "system"];
+const THEME_META: Record<ThemePreference, { icon: typeof MdLightMode; label: string }> = {
+  light: { icon: MdLightMode, label: "Light" },
+  dark: { icon: MdDarkMode, label: "Dark" },
+  system: { icon: MdBrightnessAuto, label: "System" },
+};
 
 interface AppBarProps {
   onMenuToggle: () => void;
@@ -20,6 +29,12 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
   const [showHelp, setShowHelp] = useState(false);
   const supabase_auth = localStorage.getItem("supabase_auth");
+  const { preference, setPreference } = useTheme();
+
+  const cycleTheme = () => {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(preference) + 1) % THEME_CYCLE.length];
+    setPreference(next);
+  };
 
   const handleNsfw = (isNsfw: boolean) => {
     setNsfw(isNsfw);
@@ -96,6 +111,19 @@ function AppBar({ onMenuToggle }: AppBarProps) {
               className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
             >
               <FaQuestion size={15} />
+            </button>
+          </Tooltip>
+
+          <Tooltip content={`Theme: ${THEME_META[preference].label} (click to change)`} position="bottom">
+            <button
+              type="button"
+              onClick={cycleTheme}
+              className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
+            >
+              {(() => {
+                const ThemeIcon = THEME_META[preference].icon;
+                return <ThemeIcon size={17} />;
+              })()}
             </button>
           </Tooltip>
         </div>

@@ -163,7 +163,7 @@ export default function HelpGuideModal({ onClose }: HelpGuideModalProps) {
       onClick={onClose}
     >
       <div
-        className="reveal-pop-in bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden"
+        className="reveal-pop-in bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -209,21 +209,21 @@ export default function HelpGuideModal({ onClose }: HelpGuideModalProps) {
           </div>
 
           {/* Content pane */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-5 bg-gray-50">
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 bg-gray-50 dark:bg-gray-950">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl">{active.emoji}</span>
               <h3 className={`text-lg font-bold ${active.accent}`}>{active.label}</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-4">{active.tagline}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{active.tagline}</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {active.features.map((f) => (
                 <div
                   key={f.title}
-                  className="bg-white border border-gray-200 rounded-xl p-3.5 hover:shadow-md hover:-translate-y-0.5 transition"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3.5 hover:shadow-md hover:-translate-y-0.5 transition"
                 >
                   <p className={`text-xs font-bold uppercase tracking-wide mb-1 ${active.accent}`}>{f.title}</p>
-                  <p className="text-sm text-gray-600 leading-snug">{f.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">{f.description}</p>
                 </div>
               ))}
             </div>

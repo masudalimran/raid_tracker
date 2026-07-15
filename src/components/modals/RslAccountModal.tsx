@@ -38,11 +38,11 @@ export default function RslAccountModal({ isOpen, account, onClose }: RslAccount
         <RslAccountForm account={account} onClose={onClose} />
 
         {account && (
-          <div className="border-t border-gray-200 px-6 py-3">
+          <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-3">
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+              className="w-full px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition"
             >
               Delete Account
             </button>

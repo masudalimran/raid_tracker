@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TbRefreshDot } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
-import { MdArrowBack, MdAutoFixHigh, MdClose } from "react-icons/md";
+import { FaFileExport, FaFileImport, FaMagic } from "react-icons/fa";
+import { MdArrowBack, MdAutoFixHigh, MdClose, MdImportExport } from "react-icons/md";
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
@@ -15,11 +16,15 @@ import {
   computeChampionReconciliationPlan,
   applyChampionReconciliationPlan,
 } from "../helpers/handleChampions";
+import {
+  buildChampionImportPlan,
+  buildChampionResearchPrompt,
+  parseChampionImportPayload,
+} from "../helpers/championImportExport";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
+import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
-
-const MIN_ROLES = 4;
 
 type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable";
 
@@ -74,6 +79,27 @@ export default function DevChampions() {
 
   const [showReconcileConfirm, setShowReconcileConfirm] = useState(false);
   const [reconcileStatus, setReconcileStatus] = useState<"idle" | "applying" | "error">("idle");
+
+  // Research import/export — export the names needing data, hand them to an
+  // AI to research, then paste the structured response back in.
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importStatus, setImportStatus] = useState<"idle" | "applying" | "error">("idle");
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<{ updated: number; skipped: string[] } | null>(null);
+  const [promptCopied, setPromptCopied] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target as Node)) {
+        setShowToolsMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const loadChampions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -139,6 +165,63 @@ export default function DevChampions() {
     setReconcileStatus("idle");
     setShowReconcileConfirm(false);
     await loadChampions();
+  };
+
+  const handleExportNames = () => {
+    setShowToolsMenu(false);
+    const blob = new Blob([filteredChampions.map((c) => c.name).join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filterMode}_champions_${new Date().toISOString().split("T")[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyPrompt = async () => {
+    const prompt = buildChampionResearchPrompt(filteredChampions.map((c) => c.name));
+    await navigator.clipboard.writeText(prompt);
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 2000);
+  };
+
+  const openImportModal = () => {
+    setShowToolsMenu(false);
+    setImportText("");
+    setImportError(null);
+    setImportResult(null);
+    setShowImportModal(true);
+  };
+
+  const handleApplyImport = async () => {
+    setImportStatus("applying");
+    setImportError(null);
+    try {
+      const rows = parseChampionImportPayload(importText);
+      const { plan, matchedNames, unmatchedNames } = buildChampionImportPlan(rows, championList);
+
+      if (plan.length === 0) {
+        setImportError("No matching champions with usable data found in the pasted JSON.");
+        setImportStatus("idle");
+        return;
+      }
+
+      const result = await applyChampionReconciliationPlan(plan);
+      if (!result.success) {
+        setImportError(result.error ?? "Failed to save imported data.");
+        setImportStatus("idle");
+        return;
+      }
+
+      setImportResult({ updated: matchedNames.length, skipped: unmatchedNames });
+      setImportStatus("idle");
+      await loadChampions();
+    } catch (error) {
+      setImportError(
+        error instanceof Error ? error.message : "Could not parse the pasted data as JSON.",
+      );
+      setImportStatus("idle");
+    }
   };
 
   const handleEdit = (champion: IChampion) => {
@@ -208,6 +291,44 @@ export default function DevChampions() {
             >
               <MdAutoFixHigh size={20} />
             </button>
+          )}
+          {(filterMode === "default_image" || filterMode === "no_image") && (
+            <div ref={toolsMenuRef} className="relative">
+              <button
+                type="button"
+                title="Research names, export, or import champion data"
+                onClick={() => setShowToolsMenu((prev) => !prev)}
+                className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition"
+              >
+                <MdImportExport size={22} />
+              </button>
+
+              {showToolsMenu && (
+                <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={handleExportNames}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition cursor-pointer"
+                  >
+                    <FaFileExport size={12} /> Export Names ({filteredChampions.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyPrompt}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition cursor-pointer border-t border-gray-100"
+                  >
+                    <FaMagic size={12} /> {promptCopied ? "Copied!" : "Copy AI Research Prompt"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openImportModal}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-amber-50 hover:text-amber-700 transition cursor-pointer border-t border-gray-100"
+                  >
+                    <FaFileImport size={12} /> Import Data
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           <button
             type="button"
@@ -279,6 +400,68 @@ export default function DevChampions() {
             className="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {reconcileStatus === "applying" ? "Syncing…" : "Sync Data"}
+          </button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showImportModal}
+        title="Import Champion Data"
+        onClose={() => setShowImportModal(false)}
+        maxWidthClass="max-w-2xl"
+      >
+        <p className="text-sm text-gray-600 mb-3">
+          Paste the JSON array an AI (e.g. Gemini) returned after researching the exported champion names. Matching is by exact champion name — only recognized rarity/faction/affinity/type values and non-empty URLs are applied.
+        </p>
+
+        <button
+          type="button"
+          onClick={handleCopyPrompt}
+          className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 border border-purple-200 rounded-full px-3 py-1 bg-purple-50 hover:bg-purple-100 transition cursor-pointer mb-3"
+        >
+          <FaMagic size={11} /> {promptCopied ? "Copied!" : "Copy AI Research Prompt"}
+        </button>
+
+        <textarea
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+          placeholder='[{"name": "Kael", "rarity": "Legendary", "faction": "High Elves", "affinity": "Force", "type": "Attack", "imgUrl": "https://...", "championUrl": "https://hellhades.com/raid/champions/kael/"}]'
+          rows={10}
+          className="input font-mono text-xs"
+        />
+
+        {importError && (
+          <p className="text-sm text-red-500 mb-2">{importError}</p>
+        )}
+
+        {importResult && (
+          <div className="text-sm mb-2 space-y-1">
+            <p className="text-green-600 font-medium">
+              Updated {importResult.updated} champion{importResult.updated === 1 ? "" : "s"}.
+            </p>
+            {importResult.skipped.length > 0 && (
+              <p className="text-amber-600">
+                Skipped {importResult.skipped.length}: {importResult.skipped.join(", ")}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 justify-end mt-2">
+          <button
+            type="button"
+            onClick={() => setShowImportModal(false)}
+            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onClick={handleApplyImport}
+            disabled={importStatus === "applying" || !importText.trim()}
+            className="px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 transition cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {importStatus === "applying" ? "Importing…" : "Import"}
           </button>
         </div>
       </Modal>

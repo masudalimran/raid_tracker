@@ -9,7 +9,7 @@ export default function MainLayout() {
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 dark:bg-gray-950">
       <GlobalSearch />
       <CelebrationOverlay />
       <AppBar onMenuToggle={() => setSideNavOpen((prev) => !prev)} />
