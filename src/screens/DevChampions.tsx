@@ -19,7 +19,11 @@ import {
 import {
   buildChampionImportPlan,
   buildChampionResearchPrompt,
+  buildChampionRoleImportPlan,
+  buildChampionRoleResearchPrompt,
   parseChampionImportPayload,
+  type ChampionImportRow,
+  type ChampionRoleImportRow,
 } from "../helpers/championImportExport";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
@@ -178,8 +182,13 @@ export default function DevChampions() {
     URL.revokeObjectURL(url);
   };
 
+  const isRoleImportMode = filterMode === "under_roled";
+
   const handleCopyPrompt = async () => {
-    const prompt = buildChampionResearchPrompt(filteredChampions.map((c) => c.name));
+    const names = filteredChampions.map((c) => c.name);
+    const prompt = isRoleImportMode
+      ? buildChampionRoleResearchPrompt(names)
+      : buildChampionResearchPrompt(names);
     await navigator.clipboard.writeText(prompt);
     setPromptCopied(true);
     setTimeout(() => setPromptCopied(false), 2000);
@@ -197,8 +206,15 @@ export default function DevChampions() {
     setImportStatus("applying");
     setImportError(null);
     try {
-      const rows = parseChampionImportPayload(importText);
-      const { plan, matchedNames, unmatchedNames } = buildChampionImportPlan(rows, championList);
+      const { plan, matchedNames, unmatchedNames } = isRoleImportMode
+        ? buildChampionRoleImportPlan(
+            parseChampionImportPayload<ChampionRoleImportRow>(importText),
+            championList,
+          )
+        : buildChampionImportPlan(
+            parseChampionImportPayload<ChampionImportRow>(importText),
+            championList,
+          );
 
       if (plan.length === 0) {
         setImportError("No matching champions with usable data found in the pasted JSON.");
@@ -292,7 +308,7 @@ export default function DevChampions() {
               <MdAutoFixHigh size={20} />
             </button>
           )}
-          {(filterMode === "default_image" || filterMode === "no_image") && (
+          {(filterMode === "default_image" || filterMode === "no_image" || filterMode === "under_roled") && (
             <div ref={toolsMenuRef} className="relative">
               <button
                 type="button"
@@ -317,14 +333,14 @@ export default function DevChampions() {
                     onClick={handleCopyPrompt}
                     className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition cursor-pointer border-t border-gray-100"
                   >
-                    <FaMagic size={12} /> {promptCopied ? "Copied!" : "Copy AI Research Prompt"}
+                    <FaMagic size={12} /> {promptCopied ? "Copied!" : isRoleImportMode ? "Copy AI Role Prompt" : "Copy AI Research Prompt"}
                   </button>
                   <button
                     type="button"
                     onClick={openImportModal}
                     className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-amber-50 hover:text-amber-700 transition cursor-pointer border-t border-gray-100"
                   >
-                    <FaFileImport size={12} /> Import Data
+                    <FaFileImport size={12} /> {isRoleImportMode ? "Import Roles" : "Import Data"}
                   </button>
                 </div>
               )}
@@ -406,12 +422,14 @@ export default function DevChampions() {
 
       <Modal
         isOpen={showImportModal}
-        title="Import Champion Data"
+        title={isRoleImportMode ? "Import Champion Roles" : "Import Champion Data"}
         onClose={() => setShowImportModal(false)}
         maxWidthClass="max-w-2xl"
       >
         <p className="text-sm text-gray-600 mb-3">
-          Paste the JSON array an AI (e.g. Gemini) returned after researching the exported champion names. Matching is by exact champion name — only recognized rarity/faction/affinity/type values and non-empty URLs are applied.
+          {isRoleImportMode
+            ? "Paste the JSON array an AI (e.g. Gemini) returned after tagging roles for the exported champion names. Matching is by exact champion name — recognized roles are merged into whatever roles a champion already has (nothing is removed)."
+            : "Paste the JSON array an AI (e.g. Gemini) returned after researching the exported champion names. Matching is by exact champion name — only recognized rarity/faction/affinity/type values and non-empty URLs are applied."}
         </p>
 
         <button
@@ -419,13 +437,17 @@ export default function DevChampions() {
           onClick={handleCopyPrompt}
           className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 border border-purple-200 rounded-full px-3 py-1 bg-purple-50 hover:bg-purple-100 transition cursor-pointer mb-3"
         >
-          <FaMagic size={11} /> {promptCopied ? "Copied!" : "Copy AI Research Prompt"}
+          <FaMagic size={11} /> {promptCopied ? "Copied!" : isRoleImportMode ? "Copy AI Role Prompt" : "Copy AI Research Prompt"}
         </button>
 
         <textarea
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
-          placeholder='[{"name": "Kael", "rarity": "Legendary", "faction": "High Elves", "affinity": "Force", "type": "Attack", "imgUrl": "https://...", "championUrl": "https://hellhades.com/raid/champions/kael/"}]'
+          placeholder={
+            isRoleImportMode
+              ? '[{"name": "Kael", "roles": ["Nuker", "Boss Killer", "Arena"]}]'
+              : '[{"name": "Kael", "rarity": "Legendary", "faction": "High Elves", "affinity": "Force", "type": "Attack", "championUrl": "https://hellhades.com/raid/champions/kael/"}]'
+          }
           rows={10}
           className="input font-mono text-xs"
         />

@@ -8,7 +8,7 @@ import {
   FaInfoCircle,
   FaTrash,
 } from "react-icons/fa";
-import { MdCancel } from "react-icons/md";
+import { MdCancel, MdImageNotSupported } from "react-icons/md";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { needsImprovement } from "../../helpers/getChampionBuildQuality.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
@@ -46,6 +46,7 @@ export default function ChampionCard({
 }: ChampionCardProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [rolesExpanded, setRolesExpanded] = useState<boolean>(false);
+  const [imgFailed, setImgFailed] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
 
   const ROLE_PREVIEW_COUNT = 3;
@@ -226,23 +227,33 @@ export default function ChampionCard({
             </div>
           )}
 
-          {/* Blurred background */}
-          <div
-            className={`absolute inset-0 bg-center bg-cover blur-md scale-110 ${nsfw ? "invisible" : "visible"}`}
-            style={{ backgroundImage: `url(${champion.imgUrl})` }}
-          />
-          {/* Foreground image */}
-          <a
-            href={champion.championUrl}
-            target="_blank"
-            className="relative z-10 flex justify-center h-full"
-          >
-            <img
-              src={champion.imgUrl}
-              alt={champion.name}
-              className={`object-contain h-full hover:scale-105 transition duration-300 ${nsfw ? "invisible" : "visible"}`}
-            />
-          </a>
+          {champion.imgUrl && !imgFailed ? (
+            <>
+              {/* Blurred background */}
+              <div
+                className={`absolute inset-0 bg-center bg-cover blur-md scale-110 ${nsfw ? "invisible" : "visible"}`}
+                style={{ backgroundImage: `url(${champion.imgUrl})` }}
+              />
+              {/* Foreground image */}
+              <a
+                href={champion.championUrl}
+                target="_blank"
+                className="relative z-10 flex justify-center h-full"
+              >
+                <img
+                  src={champion.imgUrl}
+                  alt={champion.name}
+                  onError={() => setImgFailed(true)}
+                  className={`object-contain h-full hover:scale-105 transition duration-300 ${nsfw ? "invisible" : "visible"}`}
+                />
+              </a>
+            </>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600">
+              <MdImageNotSupported size={40} />
+              <span className="text-xs font-medium">No Image</span>
+            </div>
+          )}
         </div>
 
         {/* ── IDENTITY STRIP: Faction · Rarity dot · Type · Roles ── */}
