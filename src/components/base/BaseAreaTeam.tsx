@@ -150,9 +150,9 @@ export default function BaseAreaTeam({
         {/* ── Header ── */}
         <div className="page-header">
           <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-base font-bold text-gray-900 truncate">{title}</h1>
+            <h1 className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">{title}</h1>
             {team?.clearing_stage && (
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 shrink-0">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900 shrink-0">
                 {team.clearing_stage}
               </span>
             )}
@@ -163,7 +163,7 @@ export default function BaseAreaTeam({
             onClick={() => setShowTeamModal(true)}
             className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0
               ${team
-                ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300"
                 : "btn-primary"
               }`}
           >
@@ -177,7 +177,7 @@ export default function BaseAreaTeam({
 
         {/* ── Notes ── */}
         {team?.notes && (
-          <div className="mx-4 mt-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          <div className="mx-4 mt-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 dark:bg-amber-950/30 dark:border-amber-900 dark:text-amber-300">
             {team.notes}
           </div>
         )}
@@ -230,7 +230,7 @@ export default function BaseAreaTeam({
                   <button
                     type="button"
                     onClick={() => { setDraftReqs(getTeamRequirements(teamKey)); setEditingRoles(true); }}
-                    className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                    className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer"
                   >
                     <FaEdit size={10} /> Edit
                   </button>
@@ -283,10 +283,10 @@ export default function BaseAreaTeam({
                       <div
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition
                           ${editingRoles
-                            ? "bg-white border-gray-300 text-gray-600"
+                            ? "bg-white border-gray-300 text-gray-600 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
                             : covered
-                              ? "bg-green-50 border-green-300 text-green-700 cursor-default"
-                              : "bg-gray-50 border-gray-200 text-gray-400 cursor-default"
+                              ? "bg-green-50 border-green-300 text-green-700 cursor-default dark:bg-green-950/40 dark:border-green-800 dark:text-green-400"
+                              : "bg-gray-50 border-gray-200 text-gray-400 cursor-default dark:bg-gray-800 dark:border-gray-700"
                           }`}
                       >
                         {!editingRoles && <span>{covered ? "✓" : "✗"}</span>}
@@ -334,8 +334,8 @@ export default function BaseAreaTeam({
                   <div
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border
                       ${tied
-                        ? "bg-amber-50 border-amber-300 text-amber-700"
-                        : "bg-gray-50 border-gray-200 text-gray-600"
+                        ? "bg-amber-50 border-amber-300 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400"
+                        : "bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                       }`}
                   >
                     <span className="font-bold">#{rank}</span>
@@ -343,7 +343,7 @@ export default function BaseAreaTeam({
                     <span className="text-gray-400">({champion.spd})</span>
                   </div>
                   {i < turnOrder.length - 1 && (
-                    <span className="text-gray-300 text-xs shrink-0">→</span>
+                    <span className="text-gray-300 dark:text-gray-600 text-xs shrink-0">→</span>
                   )}
                 </div>
               ))}
@@ -356,8 +356,8 @@ export default function BaseAreaTeam({
           {teamChampionList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
               <p className="text-3xl mb-2">⚔️</p>
-              <p className="text-gray-500 text-sm font-medium">No champions in this team yet.</p>
-              <p className="text-gray-400 text-xs mt-1">Add a team to get started.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">No champions in this team yet.</p>
+              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Add a team to get started.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start">

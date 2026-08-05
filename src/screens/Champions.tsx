@@ -1,7 +1,8 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaPlusSquare, FaFileImport } from "react-icons/fa";
-import { TbRefreshDot, TbTool } from "react-icons/tb";
+import { TbTool } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { MdChecklist, MdClose, MdDeleteSweep, MdDownload, MdImportExport } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
@@ -17,7 +18,7 @@ import { fetchChampions, generateChampions, findOtherChampionDuplicates, removeC
 import { fetchTeams } from "../helpers/handleTeams";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import SelectChampionFilter from "../components/forms/inputs/SelectChampionFilter";
-import type { ChampionFilter } from "../models/ChampionFilter";
+import type { ChampionFilter, FilterStat } from "../models/ChampionFilter";
 import {
   sortByBookPriorityDesc,
   sortByMasteryPriorityDesc,
@@ -34,8 +35,6 @@ import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
-import { clearRoleReqCache } from "../helpers/teamRoleOverrides";
-import { fetchRslAccounts } from "../helpers/handleRslAccounts";
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -51,15 +50,52 @@ const initial_filter_info: ChampionFilter = {
 
 export default function Champions() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
-  const [onFilterMode, setOnFilterMode] = useState<boolean>(false);
-  const [filterInfo, setFilterInfo] =
-    useState<ChampionFilter>(initial_filter_info);
   const [teams, setTeams] = useState<ITeam[]>([]);
+
+  // Every filter (and the search box) lives in the URL — not local state —
+  // so a specific filtered view is bookmarkable/shareable and back/forward
+  // navigation works as expected.
+  const onFilterMode = searchParams.get("filterOpen") === "1";
+
+  const searchText = searchParams.get("q") ?? "";
+  const setSearchText = (value: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set("q", value);
+      else next.delete("q");
+      return next;
+    }, { replace: true });
+  };
+
+  const filterInfo = useMemo<ChampionFilter>(() => ({
+    stat: (searchParams.get("stat") as FilterStat) ?? initial_filter_info.stat,
+    type: searchParams.get("type") ?? initial_filter_info.type,
+    role: searchParams.get("role") ?? initial_filter_info.role,
+    faction: searchParams.get("faction") ?? initial_filter_info.faction,
+    rarity: searchParams.get("rarity") ?? initial_filter_info.rarity,
+    sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") ?? initial_filter_info.sortOrder,
+    buff: searchParams.get("buff") ?? initial_filter_info.buff,
+    debuff: searchParams.get("debuff") ?? initial_filter_info.debuff,
+    aura: searchParams.get("aura") ?? initial_filter_info.aura,
+  }), [searchParams]);
+
+  const setFilterInfo: Dispatch<SetStateAction<ChampionFilter>> = (update) => {
+    const nextFilter = typeof update === "function" ? update(filterInfo) : update;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      (Object.keys(initial_filter_info) as (keyof ChampionFilter)[]).forEach((key) => {
+        const value = nextFilter[key];
+        if (value === initial_filter_info[key]) next.delete(key);
+        else next.set(key, String(value));
+      });
+      return next;
+    }, { replace: true });
+  };
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
 
@@ -117,15 +153,8 @@ export default function Champions() {
     setBulkUpdating(false);
   };
 
-  const loadChampions = useCallback(async (forceRefresh = false) => {
+  const loadChampions = useCallback(async () => {
     setLoading(true);
-    if (forceRefresh) {
-      localStorage.removeItem("supabase_champion_list");
-      localStorage.removeItem("supabase_team_list");
-      clearRoleReqCache();
-      await fetchRslAccounts();
-    }
-
     try {
       await fetchChampions();
       const generated = await generateChampions();
@@ -142,12 +171,6 @@ export default function Champions() {
   useEffect(() => {
     loadChampions();
   }, [loadChampions]);
-
-  const [searchParams] = useSearchParams();
-  useEffect(() => {
-    const q = searchParams.get("q");
-    if (q) setSearchText(q);
-  }, [searchParams]);
 
   useEffect(() => {
     fetchTeams().then(setTeams);
@@ -306,11 +329,16 @@ export default function Champions() {
     if (should_reload) await loadChampions();
   };
   const handleFilterMode = (isTrue: boolean) => {
-    if (isTrue) setOnFilterMode(true);
-    else {
-      setFilterInfo(initial_filter_info);
-      setOnFilterMode(false);
-    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (isTrue) {
+        next.set("filterOpen", "1");
+      } else {
+        next.delete("filterOpen");
+        (Object.keys(initial_filter_info) as (keyof ChampionFilter)[]).forEach((key) => next.delete(key));
+      }
+      return next;
+    }, { replace: true });
   };
 
   const duplicateOtherChampions = useMemo(
@@ -445,15 +473,6 @@ export default function Champions() {
                     className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition"
                   >
                     <FaPlusSquare size={20} />
-                  </button>
-                </Tooltip>
-                <Tooltip content="Refresh">
-                  <button
-                    type="button"
-                    onClick={() => loadChampions(true)}
-                    className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
-                  >
-                    <TbRefreshDot size={22} />
                   </button>
                 </Tooltip>
                 <div

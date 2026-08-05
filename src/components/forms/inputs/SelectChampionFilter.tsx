@@ -80,7 +80,7 @@ export default function SelectChampionFilter({
         className={`relative flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition cursor-pointer
           ${isOpen
             ? "bg-amber-500 text-white shadow-sm"
-            : "bg-white border border-gray-200 text-gray-600 hover:border-amber-400 hover:text-amber-600"
+            : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400"
           }`}
       >
         <FaFilter size={11} />
@@ -94,7 +94,7 @@ export default function SelectChampionFilter({
 
       {/* ── Dropdown panel ── */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-72 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
           {/* Panel header */}
           <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900 border-b border-white/10">
             <span className="text-xs font-bold text-white uppercase tracking-wider">
@@ -242,8 +242,8 @@ export default function SelectChampionFilter({
           type="button"
           onClick={() => handleSortOrderChange(isDesc ? "asc" : "desc")}
           className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg
-                     border border-gray-200 bg-white text-gray-600
-                     hover:border-amber-400 hover:text-amber-600
+                     border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300
+                     hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400
                      transition cursor-pointer"
         >
           {isDesc ? (

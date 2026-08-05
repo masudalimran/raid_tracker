@@ -185,7 +185,7 @@ export default function ChampionMultiSelect({
     return (
       <div className="flex items-center gap-1 w-full pr-4">
         <label
-          className={`flex-1 flex items-center gap-2 cursor-pointer basic-padding-xs ${colorByRarity(
+          className={`flex-1 flex items-center gap-2 cursor-pointer basic-padding-xs text-gray-900 ${colorByRarity(
             champ.rarity,
           )}`}
         >
@@ -264,7 +264,7 @@ export default function ChampionMultiSelect({
 
     return (
       <div
-        className={`flex items-center gap-2 w-full pr-2 rounded basic-padding-xs ${colorByRarity(
+        className={`flex items-center gap-2 w-full pr-2 rounded basic-padding-xs text-gray-900 ${colorByRarity(
           champ.rarity,
         )} ${alreadySelected ? "ring-2 ring-emerald-400" : ""}`}
       >

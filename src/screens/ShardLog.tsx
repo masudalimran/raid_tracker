@@ -75,19 +75,19 @@ const SHARD_COLOR: Record<string, string> = {
 };
 
 const RARITY_COLOR: Record<string, string> = {
-  Common:    "bg-gray-200 text-gray-600",
-  Uncommon:  "bg-green-100 text-green-700",
-  Rare:      "bg-blue-100 text-blue-700",
-  Epic:      "bg-purple-100 text-purple-700",
-  Legendary: "bg-amber-100 text-amber-800 font-semibold",
-  Mythical:  "bg-red-100 text-red-700 font-semibold",
+  Common:    "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
+  Uncommon:  "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400",
+  Rare:      "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
+  Epic:      "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400",
+  Legendary: "bg-amber-100 text-amber-800 font-semibold dark:bg-amber-950/40 dark:text-amber-400",
+  Mythical:  "bg-red-100 text-red-700 font-semibold dark:bg-red-950/40 dark:text-red-400",
 };
 
 // Extra accent applied to whole pull rows so rare drops stand out.
 const PULL_ROW_ACCENT: Record<string, string> = {
-  Legendary: "border-amber-300 bg-gradient-to-r from-amber-50 via-white to-white ring-1 ring-amber-200 shadow-amber-100",
-  Mythical:  "border-amber-300 bg-gradient-to-r from-amber-50 via-white to-white ring-1 ring-amber-200 shadow-amber-100",
-  Epic:      "border-purple-200 bg-purple-50/50",
+  Legendary: "border-amber-300 dark:border-amber-800 bg-gradient-to-r from-amber-50 via-white to-white dark:from-amber-950/40 dark:via-gray-900 dark:to-gray-900 ring-1 ring-amber-200 dark:ring-amber-900 shadow-amber-100 dark:shadow-none",
+  Mythical:  "border-amber-300 dark:border-amber-800 bg-gradient-to-r from-amber-50 via-white to-white dark:from-amber-950/40 dark:via-gray-900 dark:to-gray-900 ring-1 ring-amber-200 dark:ring-amber-900 shadow-amber-100 dark:shadow-none",
+  Epic:      "border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20",
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ function PullDonut({
   let offset = 0;
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-      <circle cx="50" cy="50" r={r} fill="none" stroke="#f3f4f6" strokeWidth="12" />
+      <circle cx="50" cy="50" r={r} fill="none" stroke="currentColor" className="text-gray-100 dark:text-gray-800" strokeWidth="12" />
       {total > 0 && segments.map((seg, i) => {
         if (seg.value === 0) return null;
         const length = (seg.value / total) * circumference;
@@ -139,13 +139,13 @@ function PityBar({ count, max }: { count: number; max: number }) {
   const warn   = pct >= 50;
   return (
     <div className="space-y-0.5">
-      <div className="flex justify-between text-[10px] text-gray-500">
+      <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400">
         <span>Pity</span>
         <span className={danger ? "text-red-500 font-bold" : warn ? "text-amber-500" : ""}>
           {count} / {max}
         </span>
       </div>
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${danger ? "bg-red-400" : warn ? "bg-amber-400" : "bg-green-400"}`}
           style={{ width: `${pct}%` }}
@@ -191,8 +191,8 @@ function PullTrendChart({ pulls }: { pulls: IShardPull[] }) {
   const maxCount = Math.max(...buckets.map((w) => w.count), 1);
 
   return (
-    <div className="bg-white border rounded-xl p-4">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
         Pulls Per Week — last {TREND_WEEKS} weeks
       </p>
       <div className="flex items-end gap-2 h-28">
@@ -204,7 +204,7 @@ function PullTrendChart({ pulls }: { pulls: IShardPull[] }) {
           >
             <div className="flex flex-col items-center justify-end gap-1 h-full">
               {w.count > 0 && (
-                <span className="text-[10px] font-semibold text-gray-600">{w.count}</span>
+                <span className="text-[10px] font-semibold text-gray-600 dark:text-gray-300">{w.count}</span>
               )}
               <div
                 className="w-full max-w-6 rounded-t-md bg-amber-600 transition-all"
@@ -237,7 +237,7 @@ function ChampionAvatar({
         src={imgUrl}
         alt={name}
         onError={() => setFailed(true)}
-        className="rounded-full object-cover bg-gray-100 shrink-0 border border-gray-200"
+        className="rounded-full object-cover bg-gray-100 dark:bg-gray-700 shrink-0 border border-gray-200 dark:border-gray-700"
         style={{ width: size, height: size }}
       />
     );
@@ -604,7 +604,7 @@ export default function ShardLog() {
       {/* ── Header ── */}
       <div className="page-header flex-col md:flex-row">
         <div>
-          <h1 className="text-base font-bold text-gray-900">Shard Pull Log</h1>
+          <h1 className="text-base font-bold text-gray-900 dark:text-gray-100">Shard Pull Log</h1>
           <p className="text-xs text-gray-400 mt-0.5">
             Track every pull, monitor pity counters, and see your rates.
           </p>
@@ -630,7 +630,7 @@ export default function ShardLog() {
                 setResetConfirmText("");
                 setShowResetConfirm(true);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-red-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
             >
               <FaRedo size={11} /> Reset Pity
             </button>
@@ -642,10 +642,10 @@ export default function ShardLog() {
               disabled={syncStatus === "syncing"}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer border
                 ${syncStatus === "error"
-                  ? "border-red-300 text-red-600 hover:bg-red-50"
+                  ? "border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                   : syncStatus === "saved"
-                  ? "border-green-300 text-green-600 bg-green-50"
-                  : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+                  ? "border-green-300 dark:border-green-800 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40"
+                  : "border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}
                 disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               <FaCloudUploadAlt size={13} />
@@ -659,10 +659,10 @@ export default function ShardLog() {
               disabled={fetchStatus === "fetching"}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer border
                 ${fetchStatus === "error"
-                  ? "border-red-300 text-red-600 hover:bg-red-50"
+                  ? "border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                   : fetchStatus === "done"
-                  ? "border-green-300 text-green-600 bg-green-50"
-                  : "border-gray-300 text-gray-600 hover:bg-gray-100"}
+                  ? "border-green-300 dark:border-green-800 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40"
+                  : "border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}
                 disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               <FaCloudDownloadAlt size={13} />
@@ -674,7 +674,7 @@ export default function ShardLog() {
               type="button"
               onClick={handleExportCsv}
               disabled={pulls.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-600 hover:bg-gray-100 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <MdDownload size={14} /> Export CSV
             </button>
@@ -696,7 +696,7 @@ export default function ShardLog() {
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer
                 ${activeTab === type
                   ? `${SHARD_COLOR[type]} text-white shadow`
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
             >
               {type}
             </button>
@@ -704,11 +704,11 @@ export default function ShardLog() {
         </div>
 
         {/* ── Stats ── */}
-        <div className="bg-white border rounded-xl shadow-sm p-4 flex items-center gap-5 flex-wrap">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-4 flex items-center gap-5 flex-wrap">
           <div className="relative w-24 h-24 shrink-0">
             <PullDonut total={stats.total} legendary={stats.legendary} epic={stats.epic} rare={stats.rare} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-bold text-gray-700">{stats.total}</span>
+              <span className="text-xl font-bold text-gray-700 dark:text-gray-200">{stats.total}</span>
               <span className="text-[10px] text-gray-400">Total Pulls</span>
             </div>
           </div>
@@ -726,9 +726,9 @@ export default function ShardLog() {
                 dot: "bg-gray-300",
               },
             ].map(({ label, count, rate, dot }) => (
-              <div key={label} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50">
+              <div key={label} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
-                <span className="text-sm font-semibold text-gray-700">{count}</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{count}</span>
                 <span className="text-xs text-gray-400">{label} · {rate}%</span>
               </div>
             ))}
@@ -736,7 +736,7 @@ export default function ShardLog() {
         </div>
 
         {/* ── Pity bar ── */}
-        <div className="bg-white border rounded-xl p-3">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3">
           <PityBar count={stats.pityCount} max={PITY_THRESHOLD[activeTab as keyof typeof PITY_THRESHOLD]} />
         </div>
 
@@ -746,7 +746,7 @@ export default function ShardLog() {
         {/* ── Log pull form ── */}
         {showForm && (
           <div
-            className="border rounded-xl p-4 bg-gray-50 space-y-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 space-y-3"
             onKeyDown={(e) => {
               if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                 e.preventDefault();
@@ -756,7 +756,7 @@ export default function ShardLog() {
           >
             <div className="flex items-center gap-3">
               <ChampionAvatar name={form.championName || "?"} imgUrl={previewUrl} size={52} />
-              <h3 className="text-sm font-semibold">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 Log a Pull — {activeTab} Shard
                 {form.championName && (
                   <span className="ml-1 text-gray-400 font-normal">· {form.championName}</span>
@@ -766,7 +766,7 @@ export default function ShardLog() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1 relative">
-                <label className="text-xs font-medium text-gray-600">Champion Name</label>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Champion Name</label>
                 <input
                   ref={inputRef}
                   value={form.championName}
@@ -779,7 +779,7 @@ export default function ShardLog() {
                   autoFocus
                 />
                 {showSuggestions && (
-                  <ul className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                  <ul className="absolute z-30 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
                     {suggestions.map((name, i) => {
                       const info = championLookup.get(name.toLowerCase());
                       return (
@@ -788,7 +788,7 @@ export default function ShardLog() {
                           onMouseDown={() => selectSuggestion(name)}
                           onMouseEnter={() => setActiveSuggestion(i)}
                           className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
-                            i === activeSuggestion ? "bg-amber-50 text-amber-700" : "hover:bg-amber-50 hover:text-amber-700"
+                            i === activeSuggestion ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400" : "text-gray-900 dark:text-gray-100 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400"
                           }`}
                         >
                           <ChampionAvatar name={name} imgUrl={info?.imgUrl ?? ""} size={28} />
@@ -807,7 +807,7 @@ export default function ShardLog() {
                 )}
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-medium text-gray-600">Rarity</label>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Rarity</label>
                 <select
                   value={form.rarity}
                   onChange={(e) => setForm((f) => ({ ...f, rarity: e.target.value as PullRarity }))}
@@ -821,7 +821,7 @@ export default function ShardLog() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">Notes (optional)</label>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Notes (optional)</label>
               <input
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -842,7 +842,7 @@ export default function ShardLog() {
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setPreviewUrl(""); }}
-                className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 Close
               </button>
@@ -887,7 +887,7 @@ export default function ShardLog() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 text-gray-500 hover:bg-gray-100 transition cursor-pointer shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer shrink-0"
               >
                 <FaTimes size={11} /> Clear Filters
               </button>
@@ -895,12 +895,12 @@ export default function ShardLog() {
             <span className="text-xs text-gray-400 ml-auto shrink-0">
               Showing {filteredTabPulls.length} of {tabPulls.length} pulls
             </span>
-            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shrink-0">
+            <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden shrink-0">
               <Tooltip content="List view">
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`p-1.5 transition cursor-pointer ${viewMode === "list" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+                  className={`p-1.5 transition cursor-pointer ${viewMode === "list" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                 >
                   <FaList size={12} />
                 </button>
@@ -909,7 +909,7 @@ export default function ShardLog() {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`p-1.5 transition cursor-pointer ${viewMode === "grid" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100"}`}
+                  className={`p-1.5 transition cursor-pointer ${viewMode === "grid" ? "bg-amber-500 text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                 >
                   <FaThLarge size={12} />
                 </button>
@@ -940,13 +940,13 @@ export default function ShardLog() {
                 || (pull as IShardPull & { imgUrl?: string }).imgUrl
                 || "";
               const isEditing = editingId === pull.id;
-              const accent = PULL_ROW_ACCENT[pull.rarity] ?? "border-gray-200";
+              const accent = PULL_ROW_ACCENT[pull.rarity] ?? "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900";
 
               if (isEditing) {
                 return (
                   <div
                     key={pull.id}
-                    className={`flex flex-col gap-2 bg-white border-2 border-amber-300 rounded-xl px-3 py-2.5 shadow-sm ${viewMode === "grid" ? "col-span-full" : ""}`}
+                    className={`flex flex-col gap-2 bg-white dark:bg-gray-900 border-2 border-amber-300 dark:border-amber-800 rounded-xl px-3 py-2.5 shadow-sm ${viewMode === "grid" ? "col-span-full" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <ChampionAvatar name={editForm.championName || "?"} imgUrl={imgUrl} size={40} />
@@ -984,7 +984,7 @@ export default function ShardLog() {
                       <button
                         type="button"
                         onClick={cancelEdit}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold hover:bg-gray-100 transition cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
                       >
                         <FaTimes size={11} /> Cancel
                       </button>
@@ -1098,14 +1098,14 @@ export default function ShardLog() {
         title={resetReason === "auto" ? "Legendary Pulled! Reset Pity?" : "Reset Pity Counter"}
         onClose={closeResetConfirm}
       >
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
           {resetReason === "auto"
             ? `Nice pull! Resetting pity will permanently delete all logged ${activeTab} shard pulls for this account — locally and in the cloud — and bring the pity counter back to 0.`
             : `This will permanently delete all logged ${activeTab} shard pulls for this account — locally and in the cloud — and reset the pity counter to 0.`}
         </p>
         <p className="text-sm text-red-600 font-semibold mb-3">This cannot be undone.</p>
-        <label className="block text-xs font-medium text-gray-600 mb-1">
-          Type <span className="font-mono font-bold text-gray-800">{activeTab.toUpperCase()}</span> to confirm
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
+          Type <span className="font-mono font-bold text-gray-800 dark:text-gray-200">{activeTab.toUpperCase()}</span> to confirm
         </label>
         <input
           value={resetConfirmText}
@@ -1122,7 +1122,7 @@ export default function ShardLog() {
           <button
             type="button"
             onClick={closeResetConfirm}
-            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
           >
             {resetReason === "auto" ? "Keep Log" : "Cancel"}
           </button>
@@ -1143,14 +1143,14 @@ export default function ShardLog() {
         title="Save to Cloud"
         onClose={() => setShowSyncConfirm(false)}
       >
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           This will overwrite the cloud copy of this account&apos;s shard pull log with your current local data, making it available on other devices/browsers. Continue?
         </p>
         <div className="flex gap-2 justify-end">
           <button
             type="button"
             onClick={() => setShowSyncConfirm(false)}
-            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
           >
             Cancel
           </button>

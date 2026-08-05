@@ -64,7 +64,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gray-900 px-6 py-4 border-b border-white/5">
             <h2 className="text-lg font-bold text-white">Sign In</h2>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -120,7 +120,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link to="/signup" className="text-blue-600 hover:underline font-medium">

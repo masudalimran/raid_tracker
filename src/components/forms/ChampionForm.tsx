@@ -227,20 +227,20 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   };
 
   const TYPE_COLORS: Record<string, string> = {
-    [ChampionType.ATTACK]:  "bg-red-100 text-red-700 border-red-300",
-    [ChampionType.DEFENSE]: "bg-blue-100 text-blue-700 border-blue-300",
-    [ChampionType.HP]:      "bg-green-100 text-green-700 border-green-300",
-    [ChampionType.SUPPORT]: "bg-amber-100 text-amber-700 border-amber-300",
-    [ChampionType.OTHER]:   "bg-gray-100 text-gray-600 border-gray-300",
+    [ChampionType.ATTACK]:  "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+    [ChampionType.DEFENSE]: "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800",
+    [ChampionType.HP]:      "bg-green-100 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800",
+    [ChampionType.SUPPORT]: "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+    [ChampionType.OTHER]:   "bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
   };
 
   const RARITY_COLORS_BTN: Record<string, string> = {
-    [ChampionRarity.MYTHICAL]:  "bg-red-100 text-red-700 border-red-300",
-    [ChampionRarity.LEGENDARY]: "bg-orange-100 text-orange-700 border-orange-300",
-    [ChampionRarity.EPIC]:      "bg-purple-100 text-purple-700 border-purple-300",
-    [ChampionRarity.RARE]:      "bg-blue-100 text-blue-700 border-blue-300",
-    [ChampionRarity.UNCOMMON]:  "bg-green-100 text-green-700 border-green-300",
-    [ChampionRarity.COMMON]:    "bg-gray-100 text-gray-600 border-gray-300",
+    [ChampionRarity.MYTHICAL]:  "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+    [ChampionRarity.LEGENDARY]: "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800",
+    [ChampionRarity.EPIC]:      "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800",
+    [ChampionRarity.RARE]:      "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800",
+    [ChampionRarity.UNCOMMON]:  "bg-green-100 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800",
+    [ChampionRarity.COMMON]:    "bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
   };
 
   const w = watchedFormData;
@@ -261,7 +261,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   })();
 
   return (
-    <form onSubmit={handleSubmit(onSave)} className="bg-white">
+    <form onSubmit={handleSubmit(onSave)} className="bg-white dark:bg-gray-900 dark:text-gray-100">
       {isOnPreview ? (
         <div className="px-4 pb-4 max-h-[76vh] overflow-y-auto">
           <div className="max-w-xs mx-auto">
@@ -272,7 +272,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
         <div className="max-h-[76vh] overflow-y-auto">
 
           {/* ── Name — full width with autocomplete ── */}
-          <div className="p-4 border-b border-gray-100 relative">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800 relative">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</label>
             <input
               {...register("name", { onChange: (e) => handleNameInput(e.target.value) })}
@@ -290,14 +290,14 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             )}
 
             {showRosterDropdown && (
-              <ul className="absolute z-40 left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+              <ul className="absolute z-40 left-4 right-4 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
                 {rosterMatches.map((c, i) => (
                   <li
                     key={c.id}
                     onMouseDown={() => applyRosterChampion(c)}
                     onMouseEnter={() => setActiveRosterIndex(i)}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition ${
-                      i === activeRosterIndex ? "bg-amber-50 text-amber-700" : "hover:bg-amber-50 hover:text-amber-700"
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition text-gray-900 dark:text-gray-100 ${
+                      i === activeRosterIndex ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400" : "hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400"
                     }`}
                   >
                     {c.imgUrl ? (
@@ -306,7 +306,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                         onError={(e) => { e.currentTarget.style.display = "none"; }}
                       />
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-gray-200 shrink-0 flex items-center justify-center text-xs font-bold text-gray-500">
+                      <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-300">
                         {c.name.charAt(0)}
                       </div>
                     )}
@@ -321,12 +321,12 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
 
             {/* ══ LEFT COLUMN: identity ══ */}
-            <div className="lg:col-span-5 lg:border-r lg:border-gray-100">
+            <div className="lg:col-span-5 lg:border-r lg:border-gray-100 dark:lg:border-gray-800">
 
               {/* ── Image preview + URL fields + Faction ── */}
-              <div className="flex gap-3 p-4 bg-gray-50 border-b border-gray-100 lg:border-b-0 lg:mx-4 lg:mt-4 lg:rounded-xl lg:border">
+              <div className="flex gap-3 p-4 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-800 lg:border-b-0 lg:mx-4 lg:mt-4 lg:rounded-xl lg:border dark:lg:border-gray-800">
                 {/* Image fills the height of the right column */}
-                <div className="w-28 self-stretch rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                <div className="w-28 self-stretch rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 shrink-0">
                   <img
                     src={previewChampion.imgUrl || STOCK_EMPTY_IMAGE}
                     alt={previewChampion.name || "Champion"}
@@ -376,7 +376,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                           type="button"
                           onClick={() => setValue("affinity", path, { shouldDirty: true })}
                           className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border-2 text-[10px] font-semibold transition cursor-pointer
-                            ${selected ? "border-amber-500 bg-amber-50 text-amber-700" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"}`}
+                            ${selected ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                         >
                           <img src={path} alt={AFFINITY_LABELS[path]} className="w-6 h-6 object-contain" />
                           {AFFINITY_LABELS[path]}
@@ -400,7 +400,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                           type="button"
                           onClick={() => setValue("type", type, { shouldDirty: true })}
                           className={`py-2 rounded-xl border-2 text-xs font-semibold transition cursor-pointer
-                            ${selected ? `${TYPE_COLORS[type]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
+                            ${selected ? `${TYPE_COLORS[type]} border-current` : "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                         >
                           {type}
                         </button>
@@ -423,7 +423,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                           type="button"
                           onClick={() => setValue("rarity", rarity, { shouldDirty: true })}
                           className={`py-1.5 rounded-lg border-2 text-xs font-semibold transition cursor-pointer
-                            ${selected ? `${RARITY_COLORS_BTN[rarity]} border-current` : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
+                            ${selected ? `${RARITY_COLORS_BTN[rarity]} border-current` : "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                         >
                           {rarity}
                         </button>
@@ -495,17 +495,17 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                   <div className="grid grid-cols-2 gap-3">
 
                     {/* Books group */}
-                    <div className="border border-gray-200 rounded-xl p-3 space-y-3">
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-3">
                       <ToggleInput
                         label="Needs Books"
                         register={register("is_book_needed", {
                           onChange: (e) => { if (!e.target.checked) setValue("is_booked", false); },
                         })}
                       />
-                      <div className="flex items-center gap-1.5 text-gray-300">
-                        <div className="flex-1 h-px bg-gray-100" />
+                      <div className="flex items-center gap-1.5 text-gray-300 dark:text-gray-600">
+                        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
                         <FaArrowRight size={10} />
-                        <div className="flex-1 h-px bg-gray-100" />
+                        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
                       </div>
                       <ToggleInput
                         label="Is Booked"
@@ -515,17 +515,17 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                     </div>
 
                     {/* Mastery group */}
-                    <div className="border border-gray-200 rounded-xl p-3 space-y-3">
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 space-y-3">
                       <ToggleInput
                         label="Needs Mastery"
                         register={register("is_mastery_needed", {
                           onChange: (e) => { if (!e.target.checked) setValue("has_mastery", false); },
                         })}
                       />
-                      <div className="flex items-center gap-1.5 text-gray-300">
-                        <div className="flex-1 h-px bg-gray-100" />
+                      <div className="flex items-center gap-1.5 text-gray-300 dark:text-gray-600">
+                        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
                         <FaArrowRight size={10} />
-                        <div className="flex-1 h-px bg-gray-100" />
+                        <div className="flex-1 h-px bg-gray-100 dark:bg-gray-700" />
                       </div>
                       <ToggleInput
                         label="Has Mastery"
@@ -543,7 +543,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
           </div>
 
           {/* ── Roles — full width, since it has by far the most content ── */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800">
             {(() => {
               // Pair the two biggest categories together and the two
               // smallest together, so neither row in the 2-column layout
@@ -560,8 +560,8 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                   <label
                     className={`flex items-center gap-1.5 w-fit px-2 py-1.5 rounded-lg border cursor-pointer transition text-xs
                       ${notViableChecked
-                        ? "border-red-400 bg-red-50 text-red-700 font-semibold"
-                        : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+                        ? "border-red-400 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 font-semibold"
+                        : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                   >
                     <input
@@ -590,8 +590,8 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                                 key={role}
                                 className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border cursor-pointer transition text-xs
                                   ${checked
-                                    ? "border-amber-400 bg-amber-50 text-amber-700 font-semibold"
-                                    : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+                                    ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-semibold"
+                                    : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                                   }`}
                               >
                                 <input
@@ -648,18 +648,18 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
       )}
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100 bg-gray-50">
+      <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60">
         <button
           type="button"
           onClick={() => onClose(false)}
-          className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={() => setIsOnPreview((prev) => !prev)}
-          className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
         >
           {isOnPreview ? "← Edit" : "Preview"}
         </button>

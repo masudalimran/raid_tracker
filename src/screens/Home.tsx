@@ -7,6 +7,8 @@ import { fetchTeams } from "../helpers/handleTeams";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { evaluateAccountProgressDetailed } from "../helpers/evaluateAccountProgress";
 import { getChampionDataQualityCounts } from "../helpers/championDataQuality";
+import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { ProgressStage } from "../models/ProgressStage";
 import { getAreaCoverageBadge } from "../data/areaRoleRequirements";
 import { ALL_AREAS } from "../data/allAreas";
@@ -112,6 +114,15 @@ export default function Home() {
     { key: "not_viable", label: "Not Viable", count: dataQuality.notViable },
   ].filter((stat) => stat.count > 0);
   const totalDataIssues = dataQualityStats.reduce((sum, stat) => sum + stat.count, 0);
+
+  const builtCount = useMemo(
+    () => champions.filter((c) => checkIfChampionIsBuilt(c)).length,
+    [champions],
+  );
+  const improvingCount = useMemo(
+    () => champions.filter((c) => checkIfChampionIsBuilt(c) && needsImprovement(c)).length,
+    [champions],
+  );
 
   if (loading) return <ArcaneLoader label="Loading your progress" />;
 
@@ -431,25 +442,37 @@ export default function Home() {
           )}
         </div>
 
-        {totalDataIssues === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+        {totalDataIssues === 0 && (
+          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400 mb-3">
             <FaCheckCircle className="text-green-500 shrink-0" size={14} />
             No data-quality issues found on this account&apos;s champions.
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {dataQualityStats.map((stat) => (
-              <Link
-                key={stat.key}
-                to={`/dev-champions?filter=${stat.key}`}
-                className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2 hover:border-blue-400 hover:shadow-sm transition"
-              >
-                <span className="text-lg font-bold text-blue-700 dark:text-blue-400">{stat.count}</span>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{stat.label}</span>
-              </Link>
-            ))}
-          </div>
         )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {dataQualityStats.map((stat) => (
+            <Link
+              key={stat.key}
+              to={`/dev-champions?filter=${stat.key}`}
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2 hover:border-blue-400 hover:shadow-sm transition"
+            >
+              <span className="text-lg font-bold text-blue-700 dark:text-blue-400">{stat.count}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{stat.label}</span>
+            </Link>
+          ))}
+          {builtCount > 0 && (
+            <div className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-green-200 dark:border-green-900 rounded-lg px-3 py-2">
+              <span className="text-lg font-bold text-green-700 dark:text-green-400">{builtCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Built</span>
+            </div>
+          )}
+          {improvingCount > 0 && (
+            <div className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
+              <span className="text-lg font-bold text-amber-700 dark:text-amber-400">{improvingCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Needs Improvement</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

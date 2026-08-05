@@ -133,7 +133,7 @@ export default function TeamForm({
 
           {/* Clearing Stage */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
               Clearing Stage
             </label>
             <input
@@ -141,8 +141,8 @@ export default function TeamForm({
               className="input"
               placeholder="E.g. Stage 16, Gold, 1-KEY HARD, MAX"
             />
-            <div className="mt-1.5 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-xs text-gray-500 space-y-0.5">
-              <p className="font-medium text-gray-600">Format examples:</p>
+            <div className="mt-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
+              <p className="font-medium text-gray-600 dark:text-gray-300">Format examples:</p>
               <ul className="space-y-0.5 list-disc ml-4">
                 <li>Dungeons: Stage 16, Stage 20, Stage 25(MAX)</li>
                 <li>Demon Lord: 1-KEY HARD, 2-KEY ULTRA-NIGHTMARE</li>
@@ -161,12 +161,12 @@ export default function TeamForm({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
               Notes
             </label>
             <textarea
               {...register("notes")}
-              className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm
+              className="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg text-sm
                          focus:outline-none focus:ring-2 focus:ring-amber-400 transition
                          resize-none"
               rows={3}
@@ -177,7 +177,7 @@ export default function TeamForm({
 
         {/* ══ MAIN: Champions — the tall, primary part of this form ══ */}
         <div className="lg:col-span-8">
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
             Champions
           </label>
           <Controller

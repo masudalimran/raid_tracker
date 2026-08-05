@@ -179,7 +179,7 @@ export default function ChampionCard({
       <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
 
         {/* ── HEADER ── */}
-        <div className={`flex items-center justify-between px-3 py-2 ${colorByRarity(champion.rarity)}`}>
+        <div className={`flex items-center justify-between px-3 py-2 text-gray-900 ${colorByRarity(champion.rarity)}`}>
           <div className="flex items-center gap-2 min-w-0">
             <img src={champion.affinity} alt="" className="w-5 h-5 shrink-0" />
             <p className="font-bold text-sm truncate">{champion.name}</p>

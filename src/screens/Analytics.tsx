@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
@@ -81,7 +82,7 @@ function StatCard({
   label,
   value,
   sub,
-  color = "text-gray-800",
+  color = "text-gray-800 dark:text-gray-200",
 }: {
   label: string;
   value: string | number;
@@ -89,9 +90,9 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm text-center">
       <p className={`text-3xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs font-semibold text-gray-500 mt-0.5">{label}</p>
+      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
     </div>
   );
@@ -103,30 +104,46 @@ function BarRow({
   max,
   colorClass,
   textClass,
+  linkTo,
 }: {
   label: string;
   count: number;
   max: number;
   colorClass: string;
   textClass: string;
+  /** When set, the whole row links to a pre-filtered Champions view. */
+  linkTo?: string;
 }) {
   const pct = max > 0 ? Math.round((count / max) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3">
+  const content = (
+    <>
       <span className={`text-xs font-semibold w-24 shrink-0 ${textClass}`}>
         {label}
       </span>
-      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+      <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${colorClass}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-xs text-gray-500 w-12 text-right shrink-0 text-nowrap">
-        {count} <span className="text-gray-300">({pct}%)</span>
+      <span className="text-xs text-gray-500 dark:text-gray-400 w-12 text-right shrink-0 text-nowrap">
+        {count} <span className="text-gray-300 dark:text-gray-600">({pct}%)</span>
       </span>
-    </div>
+    </>
   );
+
+  if (linkTo) {
+    return (
+      <Link
+        to={linkTo}
+        className="flex items-center gap-3 -mx-1.5 px-1.5 py-0.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/60 transition"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className="flex items-center gap-3">{content}</div>;
 }
 
 // ── SVG Donut chart ───────────────────────────────────────────────────────────
@@ -146,7 +163,7 @@ function DonutChart({ segments }: { segments: PieSegment[] }) {
   return (
     <svg viewBox="0 0 140 140" className="w-36 h-36 shrink-0">
       {active.length === 0 ? (
-        <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R} fill="none" stroke="#f3f4f6" strokeWidth="18" />
+        <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R} fill="none" stroke="currentColor" className="text-gray-100 dark:text-gray-800" strokeWidth="18" />
       ) : (
         active.map((seg, i) => {
           const len = (seg.count / total) * DONUT_C;
@@ -166,30 +183,51 @@ function DonutChart({ segments }: { segments: PieSegment[] }) {
           );
         })
       )}
-      <text x={DONUT_CX} y={DONUT_CY - 5} textAnchor="middle" fontSize="22" fontWeight="bold" fill="#111827">
+      <text x={DONUT_CX} y={DONUT_CY - 5} textAnchor="middle" fontSize="22" fontWeight="bold" fill="currentColor" className="text-gray-900 dark:text-gray-100">
         {total}
       </text>
-      <text x={DONUT_CX} y={DONUT_CY + 13} textAnchor="middle" fontSize="10" fill="#9ca3af">
+      <text x={DONUT_CX} y={DONUT_CY + 13} textAnchor="middle" fontSize="10" fill="currentColor" className="text-gray-400 dark:text-gray-500">
         total
       </text>
     </svg>
   );
 }
 
-function PieChartBlock({ segments }: { segments: PieSegment[] }) {
+function PieChartBlock({
+  segments,
+  linkFor,
+}: {
+  segments: PieSegment[];
+  /** When set, each legend row links to a pre-filtered Champions view for that segment. */
+  linkFor?: (label: string) => string;
+}) {
   const total = segments.reduce((s, seg) => s + seg.count, 0);
   return (
-    <div className="bg-white border rounded-xl p-4 flex items-center gap-5 flex-wrap">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex items-center gap-5 flex-wrap">
       <DonutChart segments={segments} />
       <div className="flex-1 min-w-0 space-y-2">
         {segments.filter((s) => s.count > 0).map((seg) => {
           const pct = total > 0 ? Math.round((seg.count / total) * 100) : 0;
-          return (
-            <div key={seg.label} className="flex items-center gap-2">
+          const row = (
+            <>
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
-              <span className="text-xs text-gray-600 flex-1 truncate">{seg.label}</span>
-              <span className="text-xs font-semibold text-gray-800">{seg.count}</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400 flex-1 truncate">{seg.label}</span>
+              <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">{seg.count}</span>
               <span className="text-[10px] text-gray-400 w-8 text-right">({pct}%)</span>
+            </>
+          );
+
+          return linkFor ? (
+            <Link
+              key={seg.label}
+              to={linkFor(seg.label)}
+              className="flex items-center gap-2 -mx-1.5 px-1.5 py-0.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/60 transition"
+            >
+              {row}
+            </Link>
+          ) : (
+            <div key={seg.label} className="flex items-center gap-2">
+              {row}
             </div>
           );
         })}
@@ -324,18 +362,18 @@ export default function Analytics() {
     <div className="overflow-scroll h-[92vh] p-4 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-bold">Roster Analytics</h1>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           <button
             type="button"
             onClick={() => setShowPie(false)}
-            className={`px-3 py-1 rounded text-xs font-semibold transition ${!showPie ? "bg-white shadow text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
+            className={`px-3 py-1 rounded text-xs font-semibold transition ${!showPie ? "bg-white dark:bg-gray-700 shadow text-gray-800 dark:text-gray-100" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
           >
             Bar
           </button>
           <button
             type="button"
             onClick={() => setShowPie(true)}
-            className={`px-3 py-1 rounded text-xs font-semibold transition ${showPie ? "bg-white shadow text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
+            className={`px-3 py-1 rounded text-xs font-semibold transition ${showPie ? "bg-white dark:bg-gray-700 shadow text-gray-800 dark:text-gray-100" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
           >
             Pie
           </button>
@@ -348,7 +386,7 @@ export default function Analytics() {
           Overview
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Total" value={stats.total} color="text-gray-800" />
+          <StatCard label="Total" value={stats.total} color="text-gray-800 dark:text-gray-200" />
           <StatCard
             label="Built"
             value={stats.built}
@@ -385,7 +423,7 @@ export default function Analytics() {
             ]}
           />
         ) : (
-          <div className="bg-white border rounded-xl p-4 space-y-3">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
             {[
               { label: "Built ✓",           count: stats.built,     colorClass: "bg-green-500", textClass: "text-green-600" },
               { label: "Needs Improvement",  count: stats.improving, colorClass: "bg-amber-400", textClass: "text-amber-600" },
@@ -410,9 +448,10 @@ export default function Analytics() {
               count: stats.byRarity[rarity] ?? 0,
               color: RARITY_HEX[rarity],
             }))}
+            linkFor={(rarity) => `/champions?filterOpen=1&rarity=${encodeURIComponent(rarity)}`}
           />
         ) : (
-          <div className="bg-white border rounded-xl p-4 space-y-3">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
             {RARITY_ORDER.map((rarity) => (
               <BarRow
                 key={rarity}
@@ -421,6 +460,7 @@ export default function Analytics() {
                 max={stats.total}
                 colorClass={RARITY_COLORS[rarity]}
                 textClass={RARITY_TEXT[rarity]}
+                linkTo={`/champions?filterOpen=1&rarity=${encodeURIComponent(rarity)}`}
               />
             ))}
           </div>
@@ -440,11 +480,20 @@ export default function Analytics() {
                 count,
                 color: ROLE_PIE_PALETTE[i % ROLE_PIE_PALETTE.length],
               }))}
+              linkFor={(role) => `/champions?filterOpen=1&role=${encodeURIComponent(role)}`}
             />
           ) : (
-            <div className="bg-white border rounded-xl p-4 space-y-3">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
               {stats.topRoles.map(([role, count]) => (
-                <BarRow key={role} label={role} count={count} max={stats.total} colorClass="bg-violet-400" textClass="text-violet-700" />
+                <BarRow
+                  key={role}
+                  label={role}
+                  count={count}
+                  max={stats.total}
+                  colorClass="bg-violet-400"
+                  textClass="text-violet-700"
+                  linkTo={`/champions?filterOpen=1&role=${encodeURIComponent(role)}`}
+                />
               ))}
             </div>
           )}
@@ -458,15 +507,16 @@ export default function Analytics() {
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {stats.topFactions.map(([faction, count]) => (
-            <div
+            <Link
               key={faction}
-              className="bg-white border rounded-xl px-3 py-2.5 flex items-center justify-between shadow-sm"
+              to={`/champions?filterOpen=1&faction=${encodeURIComponent(faction)}`}
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-3 py-2.5 flex items-center justify-between shadow-sm hover:border-blue-400 dark:hover:border-blue-700 transition"
             >
-              <span className="text-xs text-gray-600 truncate">{faction}</span>
-              <span className="text-xs font-bold text-gray-800 shrink-0 ml-2">
+              <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{faction}</span>
+              <span className="text-xs font-bold text-gray-800 dark:text-gray-200 shrink-0 ml-2">
                 {count}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -477,20 +527,20 @@ export default function Analytics() {
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
             Team Role Gaps
           </h2>
-          <div className="bg-white border rounded-xl p-4 space-y-3">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
             {roleGaps.map((gap) => (
               <Tooltip key={gap.label} content={`Missing in: ${gap.areas.join(", ")}`} className="w-full">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-semibold w-28 shrink-0 text-amber-700 truncate">
                     {gap.label}
                   </span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 overflow-hidden">
                     <div
                       className="h-full rounded-full bg-amber-400 transition-all duration-500"
                       style={{ width: `${Math.round((gap.missing / gap.total) * 100)}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500 w-16 text-right shrink-0 text-nowrap">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0 text-nowrap">
                     {gap.missing}/{gap.total} areas
                   </span>
                 </div>

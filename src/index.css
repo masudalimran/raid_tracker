@@ -11,6 +11,15 @@
     font-family: "Geom", system-ui, sans-serif;
   }
 
+  /* Default text color for any element that doesn't set its own — without
+     this, unstyled text (e.g. a plain <p> or <span>) renders browser-default
+     black in dark mode too, since Tailwind utility classes only override
+     color where explicitly applied. Elements with their own text-* class
+     are unaffected — this only fills the gap. */
+  body {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+
   * {
     scrollbar-width: thin;
     scrollbar-color: #d1d5db #f9fafb;

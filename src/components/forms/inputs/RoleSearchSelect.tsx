@@ -61,15 +61,15 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-64 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-          <div className="p-2 border-b border-gray-100">
+        <div className="absolute left-0 top-full z-50 mt-1.5 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-gray-100 dark:border-gray-700">
             <input
               ref={searchRef}
               type="text"
               placeholder="Search roles…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
+              className="w-full text-xs border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
@@ -87,7 +87,7 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
                       key={role}
                       type="button"
                       onClick={() => handlePick(role)}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition cursor-pointer text-left"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 transition cursor-pointer text-left"
                     >
                       <img
                         src={ChampionRoleImageMap[role]}

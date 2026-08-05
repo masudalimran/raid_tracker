@@ -13,8 +13,10 @@ import { ChampionRole } from "../models/ChampionRole";
 import type { TeamIdentifier } from "./team_priority_weight";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
-import type { NavItemBadge } from "../components/modals/NavItem";
+import type { NavItemBadge, AreaBuildSlotStatus } from "../components/modals/NavItem";
 import toSlug from "../helpers/toSlug";
+import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { getBuildQuality } from "../helpers/getChampionBuildQuality";
 
 export interface AreaRoleReq {
   label: string;
@@ -477,4 +479,31 @@ export function getAreaCoverageBadge(
     tone: "warning",
     title: `Missing: ${missing.map((m) => m.req.label).join(", ")}`,
   };
+}
+
+/**
+ * Per-slot build status (Built / Needs Improvement / Not Built / Untouched /
+ * Empty) for a saved team, one entry per slot up to the area's team size —
+ * used to render a mini-bar next to an area's sidebar link where each slot
+ * is an equal-width segment, and an unfilled slot renders as "empty" rather
+ * than being silently omitted. Returns null when there's no saved team for
+ * the area at all.
+ */
+export function getAreaBuildStatus(
+  teamKey: string,
+  teams: ITeam[],
+  champions: IChampion[],
+  slotCount: number,
+): AreaBuildSlotStatus[] | null {
+  const team = teams.find((t) => t.team_name === toSlug(teamKey));
+  if (!team) return null;
+
+  const slots: AreaBuildSlotStatus[] = [];
+  for (let i = 0; i < slotCount; i++) {
+    const championId = team.champion_ids[i];
+    const champion = championId != null ? champions.find((c) => c.id === championId) : undefined;
+    slots.push(champion ? getBuildQuality(champion, checkIfChampionIsBuilt(champion)) : "empty");
+  }
+
+  return slots;
 }

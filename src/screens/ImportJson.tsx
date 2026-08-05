@@ -194,7 +194,7 @@ export default function ImportJson() {
       </p>
 
       {/* ── How to get a file ── */}
-      <div className="border rounded-xl p-4 bg-gray-50 space-y-2">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 space-y-2">
         <h2 className="font-semibold text-sm">How to get a JSON export</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-600">
           <div className="space-y-1">
@@ -232,7 +232,7 @@ export default function ImportJson() {
           onDragLeave={() => setIsDragging(false)}
           onDrop={onDrop}
           className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center gap-3 transition cursor-pointer
-            ${isDragging ? "border-amber-500 bg-amber-50" : "border-gray-300 hover:border-amber-400 hover:bg-gray-50"}`}
+            ${isDragging ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40" : "border-gray-300 dark:border-gray-700 hover:border-amber-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
           onClick={() => document.getElementById("json-file-input")?.click()}
         >
           <MdOutlineUploadFile size={40} className="text-gray-300" />
@@ -277,7 +277,7 @@ export default function ImportJson() {
               { label: "Artifacts found", value: preview.artifactCount,                     color: "text-amber-600" },
               { label: "Stats included",  value: preview.hasStats ? "Yes" : "No",           color: preview.hasStats ? "text-green-600" : "text-gray-400" },
             ].map(({ label, value, color }) => (
-              <div key={label} className="bg-gray-50 rounded-lg p-3 text-center border">
+              <div key={label} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-center border border-gray-200 dark:border-gray-700">
                 <p className={`text-xl font-bold ${color}`}>{value}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
               </div>
@@ -337,7 +337,7 @@ export default function ImportJson() {
                 { label: "Gear Items",    value: result.gearItems, color: "text-amber-600" },
                 { label: "Skipped",       value: result.skipped,   color: "text-gray-400" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="text-center bg-white rounded-lg p-3 shadow-sm">
+                <div key={label} className="text-center bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-800">
                   <p className={`text-2xl font-bold ${color}`}>{value}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{label}</p>
                 </div>

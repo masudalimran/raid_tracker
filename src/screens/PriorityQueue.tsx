@@ -86,12 +86,12 @@ const MASTERY_RARITY_ORDER = [
 ];
 
 const RARITY_BADGE: Record<string, string> = {
-  [ChampionRarity.MYTHICAL]:  "bg-red-100 text-red-700 border border-red-200",
-  [ChampionRarity.LEGENDARY]: "bg-orange-100 text-orange-700 border border-orange-200",
-  [ChampionRarity.EPIC]:      "bg-purple-100 text-purple-700 border border-purple-200",
-  [ChampionRarity.RARE]:      "bg-blue-100 text-blue-700 border border-blue-200",
-  [ChampionRarity.UNCOMMON]:  "bg-green-100 text-green-700 border border-green-200",
-  [ChampionRarity.COMMON]:    "bg-gray-100 text-gray-600 border border-gray-200",
+  [ChampionRarity.MYTHICAL]:  "bg-red-100 text-red-700 border border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800",
+  [ChampionRarity.LEGENDARY]: "bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800",
+  [ChampionRarity.EPIC]:      "bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800",
+  [ChampionRarity.RARE]:      "bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800",
+  [ChampionRarity.UNCOMMON]:  "bg-green-100 text-green-700 border border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800",
+  [ChampionRarity.COMMON]:    "bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -126,7 +126,7 @@ function ChampionPortrait({ champion, badge }: { champion: IChampion; badge?: st
       className="w-full h-full object-cover object-top rounded-full"
     />
   ) : (
-    <div className="w-full h-full rounded-full flex items-center justify-center font-bold text-base">
+    <div className="w-full h-full rounded-full flex items-center justify-center font-bold text-base text-gray-900">
       {initial}
     </div>
   );
@@ -184,7 +184,7 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
       : champion.is_booked   ? "Booked ✓"   : null;
 
   return (
-    <div className="flex items-center gap-3 bg-white border rounded-xl px-4 py-3 shadow-sm">
+    <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 shadow-sm">
       {/* rank badge */}
       <span className="text-xs font-bold text-gray-300 w-5 shrink-0 text-center">
         {rank}
@@ -249,13 +249,13 @@ function SectionedQueuePanel({
       <div className="flex items-center gap-2">
         <span className="text-gray-600">{icon}</span>
         <h2 className="font-bold text-base">{title}</h2>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
           {total}
         </span>
       </div>
 
       {total === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 text-gray-400 gap-2">
+        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 gap-2">
           <FaCheckCircle size={24} className="text-green-300" />
           <p className="text-sm">{emptyMsg}</p>
         </div>
@@ -271,7 +271,7 @@ function SectionedQueuePanel({
                 <span className="text-xs text-gray-400">
                   {items.length} champion{items.length !== 1 ? "s" : ""}
                 </span>
-                <div className="flex-1 h-px bg-gray-100" />
+                <div className="flex-1 h-px bg-gray-100 dark:bg-gray-800" />
               </div>
               {/* Champions in this rarity */}
               {items.map(({ champion, teamCount }, i) => (
@@ -324,7 +324,7 @@ function FlatQueuePanel({
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-gray-600">{icon}</span>
         <h2 className="font-bold text-base">{title}</h2>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
           {total}
         </span>
       </div>
@@ -343,7 +343,7 @@ function FlatQueuePanel({
       )}
 
       {total === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 text-gray-400 gap-2">
+        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 gap-2">
           <FaCheckCircle size={24} className="text-green-300" />
           <p className="text-sm">{emptyMsg}</p>
         </div>
@@ -473,12 +473,12 @@ export default function PriorityQueue() {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {needsBooks.length > 0 && (
-            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 flex items-center gap-1.5">
+            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-800 flex items-center gap-1.5">
               <FaBook size={11} /> {needsBooks.length} books pending
             </span>
           )}
           {needsMasteries.length > 0 && (
-            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
               <FaShieldAlt size={11} /> {needsMasteries.length} masteries pending
             </span>
           )}
@@ -518,10 +518,10 @@ export default function PriorityQueue() {
       </div>
 
       {totalPending === 0 && (
-        <div className="text-center py-12 rounded-xl bg-green-50 border-2 border-green-300">
+        <div className="text-center py-12 rounded-xl bg-green-50 dark:bg-green-950/30 border-2 border-green-300 dark:border-green-800">
           <FaCheckCircle className="text-green-400 mx-auto mb-3" size={36} />
-          <p className="font-bold text-green-800 text-lg">All caught up!</p>
-          <p className="text-sm text-green-600 mt-1">
+          <p className="font-bold text-green-800 dark:text-green-300 text-lg">All caught up!</p>
+          <p className="text-sm text-green-600 dark:text-green-400 mt-1">
             Every champion that needs books or masteries is sorted.
           </p>
         </div>

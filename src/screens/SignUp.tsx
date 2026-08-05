@@ -61,7 +61,7 @@ export default function SignUp() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gray-900 px-6 py-4 border-b border-white/5">
             <h2 className="text-lg font-bold text-white">Create Account</h2>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -130,7 +130,7 @@ export default function SignUp() {
             </button>
           </form>
 
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <Link to="/login" className="text-blue-600 hover:underline font-medium">

@@ -107,10 +107,10 @@ export default function GlobalSearch() {
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
           <FaSearch className="text-gray-400 shrink-0" size={14} />
           <input
             ref={inputRef}
@@ -121,10 +121,10 @@ export default function GlobalSearch() {
             }}
             onKeyDown={handleInputKeyDown}
             placeholder="Search champions or teams…"
-            className="flex-1 outline-none text-sm"
+            className="flex-1 outline-none text-sm text-gray-900 dark:text-gray-100 bg-transparent"
             autoComplete="off"
           />
-          <kbd className="text-[10px] font-semibold text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">
+          <kbd className="text-[10px] font-semibold text-gray-400 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-0.5">
             Esc
           </kbd>
         </div>
@@ -137,7 +137,7 @@ export default function GlobalSearch() {
                 onMouseDown={() => select(item)}
                 onMouseEnter={() => setActiveIndex(i)}
                 className={`flex items-center justify-between gap-2 px-4 py-2 cursor-pointer text-sm transition
-                  ${i === activeIndex ? "bg-amber-50 text-amber-700" : "text-gray-700 hover:bg-gray-50"}`}
+                  ${i === activeIndex ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
               >
                 <span className="truncate">{item.label}</span>
                 <span className="text-[10px] text-gray-400 shrink-0">{item.sub}</span>

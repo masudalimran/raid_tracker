@@ -259,7 +259,7 @@ export default function DevChampions() {
     <div className="flex flex-col h-full">
       <div className="page-header flex-col md:flex-row">
         <div className="min-w-0">
-          <h1 className="text-base font-bold text-gray-900">{title}</h1>
+          <h1 className="text-base font-bold text-gray-900 dark:text-gray-100">{title}</h1>
           <p className="text-xs text-gray-400 mt-0.5">{subtitle(flaggedChampions.length)}</p>
         </div>
 
@@ -287,7 +287,7 @@ export default function DevChampions() {
                 type="button"
                 title="Clear search"
                 onClick={() => setSearchText("")}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 <MdClose size={14} />
               </button>
@@ -303,7 +303,7 @@ export default function DevChampions() {
               type="button"
               title="Reduce Default — fill in image/identity data from other accounts"
               onClick={() => setShowReconcileConfirm(true)}
-              className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition"
+              className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition"
             >
               <MdAutoFixHigh size={20} />
             </button>
@@ -314,31 +314,31 @@ export default function DevChampions() {
                 type="button"
                 title="Research names, export, or import champion data"
                 onClick={() => setShowToolsMenu((prev) => !prev)}
-                className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition"
+                className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-950/40 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition"
               >
                 <MdImportExport size={22} />
               </button>
 
               {showToolsMenu && (
-                <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden">
+                <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden">
                   <button
                     type="button"
                     onClick={handleExportNames}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 transition cursor-pointer"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-950/40 hover:text-green-700 dark:hover:text-green-400 transition cursor-pointer"
                   >
                     <FaFileExport size={12} /> Export Names ({filteredChampions.length})
                   </button>
                   <button
                     type="button"
                     onClick={handleCopyPrompt}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition cursor-pointer border-t border-gray-100"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-400 transition cursor-pointer border-t border-gray-100 dark:border-gray-700"
                   >
                     <FaMagic size={12} /> {promptCopied ? "Copied!" : isRoleImportMode ? "Copy AI Role Prompt" : "Copy AI Research Prompt"}
                   </button>
                   <button
                     type="button"
                     onClick={openImportModal}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 hover:bg-amber-50 hover:text-amber-700 transition cursor-pointer border-t border-gray-100"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-600 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-700 dark:hover:text-amber-400 transition cursor-pointer border-t border-gray-100 dark:border-gray-700"
                   >
                     <FaFileImport size={12} /> {isRoleImportMode ? "Import Roles" : "Import Data"}
                   </button>
@@ -350,7 +350,7 @@ export default function DevChampions() {
             type="button"
             title="Refresh"
             onClick={() => loadChampions(true)}
-            className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+            className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
           >
             <TbRefreshDot size={22} />
           </button>
@@ -358,7 +358,7 @@ export default function DevChampions() {
             type="button"
             title="Back to Champions"
             onClick={() => navigate("/champions")}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition"
           >
             <MdArrowBack size={20} />
           </button>
@@ -395,7 +395,7 @@ export default function DevChampions() {
         title="Reduce Default"
         onClose={() => setShowReconcileConfirm(false)}
       >
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
           Across all your RSL accounts, <span className="font-semibold">{reconcileAffectedNames}</span> champion name{reconcileAffectedNames === 1 ? "" : "s"} {reconcileAffectedNames === 1 ? "has" : "have"} copies with mismatched data — one copy with a real image/champion URL/faction while others are still on the default, or one copy with more roles tagged than another. This will copy image, champion URL, faction, affinity, and type from whichever copy has the real image, and roles from whichever copy has the most roles tagged, onto the <span className="font-semibold">{reconcilePlan.length}</span> less-complete cop{reconcilePlan.length === 1 ? "y" : "ies"} — the source copies are never modified.
         </p>
         {reconcileStatus === "error" && (
@@ -405,7 +405,7 @@ export default function DevChampions() {
           <button
             type="button"
             onClick={() => setShowReconcileConfirm(false)}
-            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
           >
             Cancel
           </button>
@@ -426,7 +426,7 @@ export default function DevChampions() {
         onClose={() => setShowImportModal(false)}
         maxWidthClass="max-w-2xl"
       >
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
           {isRoleImportMode
             ? "Paste the JSON array an AI (e.g. Gemini) returned after tagging roles for the exported champion names. Matching is by exact champion name — recognized roles are merged into whatever roles a champion already has (nothing is removed)."
             : "Paste the JSON array an AI (e.g. Gemini) returned after researching the exported champion names. Matching is by exact champion name — only recognized rarity/faction/affinity/type values and non-empty URLs are applied."}
@@ -473,7 +473,7 @@ export default function DevChampions() {
           <button
             type="button"
             onClick={() => setShowImportModal(false)}
-            className="px-4 py-2 border text-sm rounded-lg hover:bg-gray-100 transition cursor-pointer"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-sm rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
           >
             Close
           </button>

@@ -189,7 +189,7 @@ export default function RtkSync() {
       </p>
 
       {/* ── Setup guide ── */}
-      <div className="border rounded-xl p-4 bg-gray-50 space-y-2">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 space-y-2">
         <h2 className="font-semibold text-sm">Setup (one-time)</h2>
         <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
           <li>
@@ -337,7 +337,7 @@ export default function RtkSync() {
               { label: "Gear Items", value: syncResult.gearItems, color: "text-amber-600" },
               { label: "Skipped", value: syncResult.skipped, color: "text-gray-400" },
             ].map(({ label, value, color }) => (
-              <div key={label} className="text-center bg-white rounded-lg p-3 shadow-sm">
+              <div key={label} className="text-center bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-800">
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{label}</p>
               </div>

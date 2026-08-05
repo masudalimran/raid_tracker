@@ -29,7 +29,7 @@ export default function Onboarding() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gray-900 px-6 py-4 border-b border-white/5">
             <h2 className="text-lg font-bold text-white">Welcome to Raid Tracker</h2>
             <p className="text-xs text-gray-400 mt-0.5">Create your first RSL account</p>

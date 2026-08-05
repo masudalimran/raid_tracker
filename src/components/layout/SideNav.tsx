@@ -14,7 +14,7 @@ import { DOOM_TOWER_BOSS } from "../../models/game_areas/DoomTowerBoss";
 import type ITeam from "../../models/ITeam";
 import type IChampion from "../../models/IChampion";
 import toSlug from "../../helpers/toSlug";
-import { getAreaCoverageBadge } from "../../data/areaRoleRequirements";
+import { getAreaBuildStatus, getAreaCoverageBadge } from "../../data/areaRoleRequirements";
 import Tooltip from "../utility/Tooltip";
 
 interface SideNavProps {
@@ -57,12 +57,12 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     localStorage.getItem("supabase_champion_list") ?? "[]",
   );
 
-  const PotionKeepNavItems = buildNavItems(POTION_KEEP, teams, champions);
-  const DungeonNavItems = buildNavItems(DUNGEON, teams, champions);
-  const ClanBossNavItems = buildNavItems(CLAN_BOSS, teams, champions);
-  const HydraNavItems = buildNavItems(HYDRA, teams, champions);
-  const ArenaNavItems = buildNavItems(ARENA, teams, champions);
-  const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS, teams, champions);
+  const PotionKeepNavItems = buildNavItems(POTION_KEEP, teams, champions, 5);
+  const DungeonNavItems = buildNavItems(DUNGEON, teams, champions, 5);
+  const ClanBossNavItems = buildNavItems(CLAN_BOSS, teams, champions, 5);
+  const HydraNavItems = buildNavItems(HYDRA, teams, champions, 6);
+  const ArenaNavItems = buildNavItems(ARENA, teams, champions, 4);
+  const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS, teams, champions, 5);
 
   const FactionNavItems: NavItem[] = Object.keys(ChampionFaction).map((key) => {
     const slug = toSlug(key);
@@ -79,6 +79,7 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
       badge: isMaxed
         ? { label: "MAX", tone: "success" as const, title: "Clearing stage maxed" }
         : getAreaCoverageBadge(key, teams, champions) ?? undefined,
+      buildStatus: getAreaBuildStatus(key, teams, champions, 5) ?? undefined,
     };
   });
 

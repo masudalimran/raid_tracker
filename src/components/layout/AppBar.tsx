@@ -7,10 +7,13 @@ import { getNsfwStatus } from "../../helpers/getNsfwStatus";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaSearch } from "react-icons/fa";
 import { FaQuestion } from "react-icons/fa6";
+import { TbRefreshDot } from "react-icons/tb";
 import { MdBrightnessAuto, MdDarkMode, MdLightMode } from "react-icons/md";
 import Tooltip from "../utility/Tooltip";
 import HelpGuideModal from "../modals/HelpGuideModal";
 import { useTheme, type ThemePreference } from "../../hooks/useTheme";
+import { clearRoleReqCache } from "../../helpers/teamRoleOverrides";
+import { fetchRslAccounts } from "../../helpers/handleRslAccounts";
 
 const THEME_CYCLE: ThemePreference[] = ["light", "dark", "system"];
 const THEME_META: Record<ThemePreference, { icon: typeof MdLightMode; label: string }> = {
@@ -28,8 +31,18 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
   const [showHelp, setShowHelp] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const supabase_auth = localStorage.getItem("supabase_auth");
   const { preference, setPreference } = useTheme();
+
+  const handleGlobalRefresh = async () => {
+    setRefreshing(true);
+    localStorage.removeItem("supabase_champion_list");
+    localStorage.removeItem("supabase_team_list");
+    clearRoleReqCache();
+    await fetchRslAccounts();
+    window.location.reload();
+  };
 
   const cycleTheme = () => {
     const next = THEME_CYCLE[(THEME_CYCLE.indexOf(preference) + 1) % THEME_CYCLE.length];
@@ -111,6 +124,17 @@ function AppBar({ onMenuToggle }: AppBarProps) {
               className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
             >
               <FaQuestion size={15} />
+            </button>
+          </Tooltip>
+
+          <Tooltip content="Refresh roster & teams from the cloud" position="bottom">
+            <button
+              type="button"
+              onClick={handleGlobalRefresh}
+              disabled={refreshing}
+              className="p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer disabled:opacity-50"
+            >
+              <TbRefreshDot size={19} className={refreshing ? "animate-spin" : ""} />
             </button>
           </Tooltip>
 
