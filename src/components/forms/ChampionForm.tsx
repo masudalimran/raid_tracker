@@ -52,6 +52,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const [rosterMatches, setRosterMatches] = useState<IChampion[]>([]);
   const [showRosterDropdown, setShowRosterDropdown] = useState(false);
   const [activeRosterIndex, setActiveRosterIndex] = useState(-1);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { addChampion, updateChampion, loading } = useChampion();
 
   const champion_list = JSON.parse(
@@ -157,61 +158,69 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   };
 
   const onSave = async (data: ChampionFormData) => {
+    setSaveError(null);
+
     if (champion?.id) {
-      await updateChampion(champion.id.toString(), data)
-        .then((res) => {
-          const supabase_champions = JSON.parse(
-            localStorage.getItem("supabase_champion_list") || "[]",
-          );
-          const updatedChampions = supabase_champions.map((c: IChampion) =>
-            String(c.id) === String(champion.id) ? { ...c, ...res } : c,
-          );
-          localStorage.setItem(
-            "supabase_champion_list",
-            JSON.stringify(updatedChampions),
-          );
-          syncRolesForChampionName(res.name).catch((error) => {
-            console.error("Error syncing roles across accounts:", error);
-          });
-          window.dispatchEvent(
-            new CustomEvent("celebrate-champion", {
-              detail: {
-                championName: res.name,
-                imgUrl: res.imgUrl,
-                rarity: res.rarity,
-                label: "Champion Updated!",
-              },
-            }),
-          );
-        })
-        .catch((error) => {
-          console.error("Error updating champion:", error);
+      try {
+        const res = await updateChampion(champion.id.toString(), data);
+        const supabase_champions = JSON.parse(
+          localStorage.getItem("supabase_champion_list") || "[]",
+        );
+        const updatedChampions = supabase_champions.map((c: IChampion) =>
+          String(c.id) === String(champion.id) ? { ...c, ...res } : c,
+        );
+        localStorage.setItem(
+          "supabase_champion_list",
+          JSON.stringify(updatedChampions),
+        );
+        syncRolesForChampionName(res.name).catch((error) => {
+          console.error("Error syncing roles across accounts:", error);
         });
+        window.dispatchEvent(
+          new CustomEvent("celebrate-champion", {
+            detail: {
+              championName: res.name,
+              imgUrl: res.imgUrl,
+              rarity: res.rarity,
+              label: "Champion Updated!",
+            },
+          }),
+        );
+      } catch (error) {
+        // Bail out here without closing the modal — otherwise a failed save
+        // (e.g. a Supabase RLS/network error) looks identical to a
+        // successful one, since the roster list would simply reload with
+        // whatever's already cached and the edit would appear to vanish.
+        console.error("Error updating champion:", error);
+        setSaveError("Couldn't save this champion. Please try again.");
+        return;
+      }
     } else {
-      await addChampion(data)
-        .then((res) => {
-          const supabase_champions = JSON.parse(
-            localStorage.getItem("supabase_champion_list") || "[]",
-          );
-          supabase_champions.push(res);
-          localStorage.setItem(
-            "supabase_champion_list",
-            JSON.stringify(supabase_champions),
-          );
-          window.dispatchEvent(
-            new CustomEvent("celebrate-champion", {
-              detail: {
-                championName: res.name,
-                imgUrl: res.imgUrl,
-                rarity: res.rarity,
-                label: "New Champion!",
-              },
-            }),
-          );
-        })
-        .catch((error) => {
-          console.error("Error adding champion:", error);
-        });
+      try {
+        const res = await addChampion(data);
+        const supabase_champions = JSON.parse(
+          localStorage.getItem("supabase_champion_list") || "[]",
+        );
+        supabase_champions.push(res);
+        localStorage.setItem(
+          "supabase_champion_list",
+          JSON.stringify(supabase_champions),
+        );
+        window.dispatchEvent(
+          new CustomEvent("celebrate-champion", {
+            detail: {
+              championName: res.name,
+              imgUrl: res.imgUrl,
+              rarity: res.rarity,
+              label: "New Champion!",
+            },
+          }),
+        );
+      } catch (error) {
+        console.error("Error adding champion:", error);
+        setSaveError("Couldn't add this champion. Please try again.");
+        return;
+      }
     }
 
     onClose(true);
@@ -649,6 +658,9 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
       {/* ── Footer ── */}
       <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60">
+        {saveError && (
+          <p className="text-red-500 text-xs mr-auto">{saveError}</p>
+        )}
         <button
           type="button"
           onClick={() => onClose(false)}

@@ -17,12 +17,22 @@ export function getThresholdFailCount(champion: IChampion): number {
     if (threshold > 0 && value < threshold) fails++;
   };
 
+  // Poison/HP Burn/debuff damage doesn't scale off crit damage at all, and a
+  // Crit Based champion is built around crit rate rather than crit damage —
+  // so none of these roles should be held to the crit damage bar, even if
+  // also tagged Nuker/Max HP DPS for other skills.
+  const skipsCritDamage =
+    role.includes(ChampionRole.POISONER) ||
+    role.includes(ChampionRole.HP_BURNER) ||
+    role.includes(ChampionRole.DEBUFFER) ||
+    role.includes(ChampionRole.CRIT_BASED);
+
   check(champion.hp,     champion.type === ChampionType.HP ? 45000 : 30000);
   check(champion.atk,    champion.type === ChampionType.ATTACK && role.includes(ChampionRole.NUKER) ? 4000 : 0);
-  check(champion.def,    champion.type === ChampionType.DEFENSE ? 4000 : 2500);
+  check(champion.def,    champion.type === ChampionType.DEFENSE ? 4000 : role.includes(ChampionRole.NUKER) ? 1500 : 2500);
   check(champion.spd,    role.includes(ChampionRole.DEBUFFER) ? 180 : 160);
-  check(champion.c_rate, role.includes(ChampionRole.NUKER) ? 100 : 0);
-  check(champion.c_dmg,  role.includes(ChampionRole.NUKER) || role.includes(ChampionRole.MAX_HP_DPS) ? 200 : 0);
+  check(champion.c_rate, (role.includes(ChampionRole.NUKER) || role.includes(ChampionRole.CRIT_BASED)) ? 100 : 0);
+  check(champion.c_dmg,  skipsCritDamage ? 0 : (role.includes(ChampionRole.NUKER) || role.includes(ChampionRole.MAX_HP_DPS)) ? 200 : 0);
   check(champion.acc,    role.includes(ChampionRole.DEBUFFER) || role.includes(ChampionRole.TM_REDUCER) ? 200 : 0);
 
   return fails;

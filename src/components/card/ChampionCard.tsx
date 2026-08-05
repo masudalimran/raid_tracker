@@ -74,6 +74,16 @@ export default function ChampionCard({
 
   if (!current_rsl_account) return;
 
+  // Poison/HP Burn/debuff damage doesn't scale off crit damage at all, and a
+  // Crit Based champion is built around crit rate rather than crit damage —
+  // so none of these roles should be held to the crit damage bar, even if
+  // also tagged Nuker/Max HP DPS for other skills.
+  const skipsCritDamage =
+    !!champion.role?.includes(ChampionRole.POISONER) ||
+    !!champion.role?.includes(ChampionRole.HP_BURNER) ||
+    !!champion.role?.includes(ChampionRole.DEBUFFER) ||
+    !!champion.role?.includes(ChampionRole.CRIT_BASED);
+
   const stats = [
     {
       label: "HP",
@@ -92,7 +102,12 @@ export default function ChampionCard({
     {
       label: "DEF",
       key: "def",
-      threshold: champion.type === ChampionType.DEFENSE ? 4000 : 2500,
+      threshold:
+        champion.type === ChampionType.DEFENSE
+          ? 4000
+          : champion.role?.includes(ChampionRole.NUKER)
+            ? 1500
+            : 2500,
     },
     {
       label: "SPD",
@@ -102,16 +117,22 @@ export default function ChampionCard({
     {
       label: "C.Rate",
       key: "c_rate",
-      threshold: champion.role?.includes(ChampionRole.NUKER) ? 100 : 0,
+      threshold:
+        champion.role?.includes(ChampionRole.NUKER) ||
+        champion.role?.includes(ChampionRole.CRIT_BASED)
+          ? 100
+          : 0,
     },
     {
       label: "C.DMG",
       key: "c_dmg",
       threshold:
-        champion.role?.includes(ChampionRole.NUKER) ||
-        champion.role?.includes(ChampionRole.MAX_HP_DPS)
-          ? 200
-          : 0,
+        skipsCritDamage
+          ? 0
+          : champion.role?.includes(ChampionRole.NUKER) ||
+              champion.role?.includes(ChampionRole.MAX_HP_DPS)
+            ? 200
+            : 0,
     },
     { label: "RES", key: "res", threshold: 0 },
     {

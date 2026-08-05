@@ -29,6 +29,7 @@ export const ROLE_CATEGORIES: RoleCategory[] = [
     accent: "text-blue-600",
     roles: [
       ChampionRole.BUFFER,
+      ChampionRole.CRIT_BASED,
       ChampionRole.SKILL_RESET,
       ChampionRole.SPEED_BOOSTER,
       ChampionRole.TM_BOOSTER,
