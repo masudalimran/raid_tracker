@@ -4,6 +4,7 @@ import type IChampion from "../models/IChampion";
 export const checkIfChampionIsBuilt: (champion: IChampion) => boolean = (
   champion: IChampion
 ): boolean => {
+  if (champion.stars < 5) return false;
   if (champion.role?.includes(ChampionRole.NUKER) && champion.level < 60)
     return false;
   if (champion.level < 50) return false;

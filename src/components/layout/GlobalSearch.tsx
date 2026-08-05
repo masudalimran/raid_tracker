@@ -21,7 +21,7 @@ export default function GlobalSearch() {
 
   useEffect(() => {
     const handleShortcut = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }

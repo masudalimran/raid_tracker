@@ -7,8 +7,8 @@ import { fetchTeams } from "../helpers/handleTeams";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { evaluateAccountProgressDetailed } from "../helpers/evaluateAccountProgress";
 import { getChampionDataQualityCounts } from "../helpers/championDataQuality";
-import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
-import { needsImprovement } from "../helpers/getChampionBuildQuality";
+import { getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
+import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { ProgressStage } from "../models/ProgressStage";
 import { getAreaCoverageBadge } from "../data/areaRoleRequirements";
 import { ALL_AREAS } from "../data/allAreas";
@@ -115,14 +115,15 @@ export default function Home() {
   ].filter((stat) => stat.count > 0);
   const totalDataIssues = dataQualityStats.reduce((sum, stat) => sum + stat.count, 0);
 
-  const builtCount = useMemo(
-    () => champions.filter((c) => checkIfChampionIsBuilt(c)).length,
-    [champions],
-  );
-  const improvingCount = useMemo(
-    () => champions.filter((c) => checkIfChampionIsBuilt(c) && needsImprovement(c)).length,
-    [champions],
-  );
+  const buildBreakdown = useMemo(() => getChampionBuildBreakdown(champions), [champions]);
+  const {
+    built: builtCount,
+    needsImprovement: improvingCount,
+    needsLevel: needsLevelCount,
+    notBuilt: notBuiltCount,
+    untouched: untouchedCount,
+  } = buildBreakdown;
+  const inUseCount = useMemo(() => getCurrentlyInUseChampions(champions).length, [champions]);
 
   if (loading) return <ArcaneLoader label="Loading your progress" />;
 
@@ -460,17 +461,59 @@ export default function Home() {
               <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{stat.label}</span>
             </Link>
           ))}
+          {inUseCount > 0 && (
+            <Link
+              to="/champions?status=in_use"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-900 rounded-lg px-3 py-2 hover:border-blue-400 hover:shadow-sm transition"
+            >
+              <span className="text-lg font-bold text-blue-700 dark:text-blue-400">{inUseCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">In Use</span>
+            </Link>
+          )}
           {builtCount > 0 && (
-            <div className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-green-200 dark:border-green-900 rounded-lg px-3 py-2">
+            <Link
+              to="/champions?status=built"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-green-200 dark:border-green-900 rounded-lg px-3 py-2 hover:border-green-400 hover:shadow-sm transition"
+            >
               <span className="text-lg font-bold text-green-700 dark:text-green-400">{builtCount}</span>
               <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Built</span>
-            </div>
+            </Link>
           )}
           {improvingCount > 0 && (
-            <div className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
+            <Link
+              to="/champions?status=needs_work"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2 hover:border-amber-400 hover:shadow-sm transition"
+            >
               <span className="text-lg font-bold text-amber-700 dark:text-amber-400">{improvingCount}</span>
               <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Needs Improvement</span>
-            </div>
+            </Link>
+          )}
+          {needsLevelCount > 0 && (
+            <Link
+              to="/champions?status=needs_level"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-sky-200 dark:border-sky-900 rounded-lg px-3 py-2 hover:border-sky-400 hover:shadow-sm transition"
+            >
+              <span className="text-lg font-bold text-sky-700 dark:text-sky-400">{needsLevelCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Need Level</span>
+            </Link>
+          )}
+          {notBuiltCount > 0 && (
+            <Link
+              to="/champions?status=not_built"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-red-200 dark:border-red-900 rounded-lg px-3 py-2 hover:border-red-400 hover:shadow-sm transition"
+            >
+              <span className="text-lg font-bold text-red-700 dark:text-red-400">{notBuiltCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Not Built</span>
+            </Link>
+          )}
+          {untouchedCount > 0 && (
+            <Link
+              to="/champions?status=untouched"
+              className="flex flex-col gap-0.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 hover:border-gray-400 hover:shadow-sm transition"
+            >
+              <span className="text-lg font-bold text-gray-700 dark:text-gray-300">{untouchedCount}</span>
+              <span className="text-[11px] text-gray-500 dark:text-gray-400 truncate">Untouched</span>
+            </Link>
           )}
         </div>
       </div>

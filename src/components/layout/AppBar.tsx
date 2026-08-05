@@ -103,7 +103,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
             >
               <FaSearch size={12} />
               <span>Search</span>
-              <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘K</kbd>
+              <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘/</kbd>
             </button>
           </Tooltip>
 

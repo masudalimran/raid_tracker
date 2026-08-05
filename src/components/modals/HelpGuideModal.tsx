@@ -128,7 +128,7 @@ const CATEGORIES: GuideCategory[] = [
     chip: "bg-cyan-100 text-cyan-600",
     tabActive: "bg-cyan-500/15 text-cyan-400 border-cyan-400",
     features: [
-      { title: "⌘K / Ctrl+K", description: "Open the command palette from anywhere in the app — or click Search in the top bar." },
+      { title: "⌘/ / Ctrl+/", description: "Open the command palette from anywhere in the app — or click Search in the top bar." },
       { title: "Search Everything", description: "Type a champion's name to jump to it, or an area's name to open its team page directly." },
     ],
   },

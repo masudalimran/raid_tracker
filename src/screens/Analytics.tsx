@@ -7,8 +7,7 @@ import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
-import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
-import { needsImprovement } from "../helpers/getChampionBuildQuality";
+import { getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
 import { getTeamRequirements, checkTeamCoverage } from "../data/areaRoleRequirements";
 import { ALL_AREAS } from "../data/allAreas";
 import toSlug from "../helpers/toSlug";
@@ -56,8 +55,18 @@ const RARITY_HEX: Record<string, string> = {
 const BUILD_STATUS_HEX: Record<string, string> = {
   "Built ✓":           "#22c55e",
   "Needs Improvement": "#fbbf24",
+  "Need Level":        "#38bdf8",
   "Not Built":         "#f87171",
   "Untouched":         "#d1d5db",
+};
+
+// Maps each Build Status label to the matching Champions.tsx `status` URL param.
+const BUILD_STATUS_URL_KEY: Record<string, string> = {
+  "Built ✓":           "built",
+  "Needs Improvement": "needs_work",
+  "Need Level":        "needs_level",
+  "Not Built":         "not_built",
+  "Untouched":         "untouched",
 };
 
 // Cycling palette for role distribution
@@ -83,17 +92,37 @@ function StatCard({
   value,
   sub,
   color = "text-gray-800 dark:text-gray-200",
+  linkTo,
 }: {
   label: string;
   value: string | number;
   sub?: string;
   color?: string;
+  /** When set, the whole card links to a pre-filtered Champions view. */
+  linkTo?: string;
 }) {
-  return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm text-center">
+  const content = (
+    <>
       <p className={`text-3xl font-bold ${color}`}>{value}</p>
       <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+    </>
+  );
+
+  if (linkTo) {
+    return (
+      <Link
+        to={linkTo}
+        className="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm text-center hover:border-blue-400 dark:hover:border-blue-700 hover:shadow-md transition"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm text-center">
+      {content}
     </div>
   );
 }
@@ -265,8 +294,10 @@ export default function Analytics() {
     const inUse = champions.filter((c) =>
       teamChampionIds.has(String(c.id)),
     ).length;
-    const built = champions.filter((c) => checkIfChampionIsBuilt(c)).length;
-    const untouched = champions.filter((c) => c.spd <= 120).length;
+
+    // Build status — single source of truth shared with Home/Champions/Priority Queue.
+    const breakdown = getChampionBuildBreakdown(champions);
+    const { built, needsImprovement: improving, needsLevel, notBuilt, untouched } = breakdown;
 
     // By rarity
     const byRarity = Object.fromEntries(
@@ -292,14 +323,6 @@ export default function Analytics() {
     }
     const topFactions = Object.entries(byFaction).sort(([, a], [, b]) => b - a);
 
-    // Build status — using the shared threshold helper (>2 stats below threshold)
-    const improving = champions.filter(
-      (c) => checkIfChampionIsBuilt(c) && needsImprovement(c),
-    ).length;
-    const notBuilt = champions.filter(
-      (c) => !checkIfChampionIsBuilt(c) && c.spd > 120,
-    ).length;
-
     return {
       total,
       inUse,
@@ -311,6 +334,7 @@ export default function Analytics() {
       byFaction,
       topFactions,
       improving,
+      needsLevel,
       notBuilt,
     };
   }, [champions, teams]);
@@ -386,24 +410,27 @@ export default function Analytics() {
           Overview
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Total" value={stats.total} color="text-gray-800 dark:text-gray-200" />
+          <StatCard label="Total" value={stats.total} color="text-gray-800 dark:text-gray-200" linkTo="/champions" />
           <StatCard
             label="Built"
             value={stats.built}
             sub={`${Math.round((stats.built / stats.total) * 100)}% of roster`}
             color="text-green-600"
+            linkTo="/champions?status=built"
           />
           <StatCard
             label="In Teams"
             value={stats.inUse}
             sub={`${Math.round((stats.inUse / stats.total) * 100)}% of roster`}
             color="text-blue-600"
+            linkTo="/champions?status=in_use"
           />
           <StatCard
             label="Untouched"
             value={stats.untouched}
             sub={`${Math.round((stats.untouched / stats.total) * 100)}% of roster`}
             color="text-gray-400"
+            linkTo="/champions?status=untouched"
           />
         </div>
       </section>
@@ -418,19 +445,30 @@ export default function Analytics() {
             segments={[
               { label: "Built ✓",           count: stats.built,       color: BUILD_STATUS_HEX["Built ✓"] },
               { label: "Needs Improvement",  count: stats.improving,   color: BUILD_STATUS_HEX["Needs Improvement"] },
+              { label: "Need Level",         count: stats.needsLevel,  color: BUILD_STATUS_HEX["Need Level"] },
               { label: "Not Built",          count: stats.notBuilt,    color: BUILD_STATUS_HEX["Not Built"] },
               { label: "Untouched",          count: stats.untouched,   color: BUILD_STATUS_HEX["Untouched"] },
             ]}
+            linkFor={(label) => `/champions?status=${BUILD_STATUS_URL_KEY[label]}`}
           />
         ) : (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
             {[
-              { label: "Built ✓",           count: stats.built,     colorClass: "bg-green-500", textClass: "text-green-600" },
-              { label: "Needs Improvement",  count: stats.improving, colorClass: "bg-amber-400", textClass: "text-amber-600" },
-              { label: "Not Built",          count: stats.notBuilt,  colorClass: "bg-red-400",   textClass: "text-red-500" },
-              { label: "Untouched",          count: stats.untouched, colorClass: "bg-gray-300",  textClass: "text-gray-400" },
+              { label: "Built ✓",           count: stats.built,      colorClass: "bg-green-500", textClass: "text-green-600" },
+              { label: "Needs Improvement",  count: stats.improving,  colorClass: "bg-amber-400", textClass: "text-amber-600" },
+              { label: "Need Level",         count: stats.needsLevel, colorClass: "bg-sky-400",   textClass: "text-sky-600" },
+              { label: "Not Built",          count: stats.notBuilt,   colorClass: "bg-red-400",   textClass: "text-red-500" },
+              { label: "Untouched",          count: stats.untouched,  colorClass: "bg-gray-300",  textClass: "text-gray-400" },
             ].map(({ label, count, colorClass, textClass }) => (
-              <BarRow key={label} label={label} count={count} max={stats.total} colorClass={colorClass} textClass={textClass} />
+              <BarRow
+                key={label}
+                label={label}
+                count={count}
+                max={stats.total}
+                colorClass={colorClass}
+                textClass={textClass}
+                linkTo={`/champions?status=${BUILD_STATUS_URL_KEY[label]}`}
+              />
             ))}
           </div>
         )}

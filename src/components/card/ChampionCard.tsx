@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { MdCancel, MdImageNotSupported } from "react-icons/md";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
-import { needsImprovement } from "../../helpers/getChampionBuildQuality.ts";
+import { getBuildQuality } from "../../helpers/getChampionBuildQuality.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import {
   ChampionRole,
@@ -65,7 +65,7 @@ export default function ChampionCard({
   const championTeamNames = championTeams.map((t) => t.team_name);
 
   const isBuilt = checkIfChampionIsBuilt(champion);
-  const championNeedsImprovement = isBuilt && needsImprovement(champion);
+  const buildQuality = getBuildQuality(champion, isBuilt);
   let thresholdDifference = 0; // still used for per-stat colour only
 
   const current_rsl_account = JSON.parse(
@@ -158,21 +158,22 @@ export default function ChampionCard({
     handleOnClose();
   };
 
-  const statusBg = isBuilt
-    ? championNeedsImprovement
-      ? "bg-amber-400"
-      : "bg-green-500"
-    : champion.spd <= 120
-      ? "bg-gray-900"
-      : "bg-red-500";
-
-  const statusLabel = isBuilt
-    ? championNeedsImprovement
-      ? "Needs Improvement"
-      : "Built ✓"
-    : champion.spd <= 120
-      ? "Untouched"
-      : "Not Built";
+  const STATUS_BG: Record<typeof buildQuality, string> = {
+    built: "bg-green-500",
+    needs_improvement: "bg-amber-400",
+    needs_level: "bg-sky-500",
+    not_built: "bg-red-500",
+    untouched: "bg-gray-900",
+  };
+  const STATUS_LABEL: Record<typeof buildQuality, string> = {
+    built: "Built ✓",
+    needs_improvement: "Needs Improvement",
+    needs_level: "Need Level",
+    not_built: "Not Built",
+    untouched: "Untouched",
+  };
+  const statusBg = STATUS_BG[buildQuality];
+  const statusLabel = STATUS_LABEL[buildQuality];
 
   return (
     <>

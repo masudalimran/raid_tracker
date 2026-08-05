@@ -31,10 +31,32 @@ import EmptyChampionList from "../components/empty/EmptyChampionList";
 import type { ChampionRole } from "../models/ChampionRole";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
-import { getBuiltChampionsCount } from "../helpers/getChampionsBuilt";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
-import { needsImprovement } from "../helpers/getChampionBuildQuality";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { getBuildQuality, getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
+
+const STATUS_OPTIONS = [
+  { key: "in_use", label: "In Use" },
+  { key: "built", label: "Built" },
+  { key: "needs_work", label: "Needs Work" },
+  { key: "needs_level", label: "Need Level" },
+  { key: "not_built", label: "Not Built" },
+  { key: "untouched", label: "Untouched" },
+] as const;
+type BuildStatusKey = (typeof STATUS_OPTIONS)[number]["key"];
+const isBuildStatusKey = (value: string | null): value is BuildStatusKey =>
+  !!value && STATUS_OPTIONS.some((s) => s.key === value);
+
+function matchesBuildStatus(champion: IChampion, status: BuildStatusKey, inUseIds: Set<string>): boolean {
+  switch (status) {
+    case "in_use": return inUseIds.has(String(champion.id));
+    case "built": return getBuildQuality(champion, checkIfChampionIsBuilt(champion)) === "built";
+    case "needs_work": return getBuildQuality(champion, checkIfChampionIsBuilt(champion)) === "needs_improvement";
+    case "needs_level": return getBuildQuality(champion, checkIfChampionIsBuilt(champion)) === "needs_level";
+    case "not_built": return getBuildQuality(champion, checkIfChampionIsBuilt(champion)) === "not_built";
+    case "untouched": return getBuildQuality(champion, checkIfChampionIsBuilt(champion)) === "untouched";
+  }
+}
 
 const initial_filter_info: ChampionFilter = {
   stat: "name",
@@ -61,6 +83,28 @@ export default function Champions() {
   // so a specific filtered view is bookmarkable/shareable and back/forward
   // navigation works as expected.
   const onFilterMode = searchParams.get("filterOpen") === "1";
+
+  // Build-status pill (Total/In Use/Built/Needs Work/Need Level/Untouched) —
+  // a single-select filter layered on top of whatever search/filter-panel
+  // narrowing is already active. "Total" (or clicking the active pill again)
+  // clears it.
+  const statusParam = searchParams.get("status");
+  const buildStatus: BuildStatusKey | null = isBuildStatusKey(statusParam) ? statusParam : null;
+  const setBuildStatus = (status: BuildStatusKey) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (next.get("status") === status) next.delete("status");
+      else next.set("status", status);
+      return next;
+    }, { replace: true });
+  };
+  const clearBuildStatus = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("status");
+      return next;
+    }, { replace: true });
+  };
 
   const searchText = searchParams.get("q") ?? "";
   const setSearchText = (value: string) => {
@@ -178,7 +222,10 @@ export default function Champions() {
     // setShowSkills(getShowSkillsStatus()); // skills hidden
   }, []);
 
-  const filteredChampions = useMemo(() => {
+  // Search/filter-panel narrowing only — the build-status pill is layered on
+  // top of this separately, so pill counts stay stable no matter which pill
+  // (if any) is currently selected.
+  const baseFilteredChampions = useMemo(() => {
     if (!onFilterMode) {
       if (!searchText) return championList;
       const lower = searchText.toLowerCase();
@@ -253,6 +300,14 @@ export default function Champions() {
     filterInfo.sortOrder,
     teams,
   ]);
+
+  // Final displayed list — base narrowing plus the build-status pill, if any.
+  const filteredChampions = useMemo(() => {
+    const base = baseFilteredChampions ?? [];
+    if (!buildStatus) return base;
+    const inUseIds = new Set(getCurrentlyInUseChampions(base).map((c) => String(c.id)));
+    return base.filter((c) => matchesBuildStatus(c, buildStatus, inUseIds));
+  }, [baseFilteredChampions, buildStatus]);
 
   const handleDownloadJson = () => {
     const slugToReadable = (slug: string) =>
@@ -360,13 +415,12 @@ export default function Champions() {
 
   if (loading) return <ArcaneLoader label="Loading your roster" />;
 
-  const total = filteredChampions?.length ?? 0;
-  const inUse = getCurrentlyInUseChampions(filteredChampions ?? []).length;
-  const built = getBuiltChampionsCount(filteredChampions ?? []);
-  const untouched = (filteredChampions ?? []).filter((c) => c.spd <= 120).length;
-  const improving = (filteredChampions ?? []).filter(
-    (c) => checkIfChampionIsBuilt(c) && needsImprovement(c),
-  ).length;
+  // Pill counts always reflect the pre-status list, so every pill stays a
+  // valid, stable option to switch to regardless of which one is active.
+  const total = baseFilteredChampions?.length ?? 0;
+  const inUse = getCurrentlyInUseChampions(baseFilteredChampions ?? []).length;
+  const { built, needsImprovement: improving, needsLevel, notBuilt, untouched } =
+    getChampionBuildBreakdown(baseFilteredChampions ?? []);
 
   return (
     <>
@@ -376,31 +430,42 @@ export default function Champions() {
           <div className="min-w-0">
             <h1 className="text-base font-bold text-gray-900 dark:text-gray-100">Champions</h1>
             <div className="flex flex-wrap gap-1.5 mt-1">
-              {[
-                { label: "Total",      value: total,    color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300" },
-                { label: "In Use",     value: inUse,    color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" },
-                { label: "Built",      value: built,    color: "bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400" },
-                { label: "Needs Work", value: improving, color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
-                { label: "Untouched",  value: untouched, color: "bg-gray-50 text-gray-400 dark:bg-gray-800/60 dark:text-gray-500" },
-              ].map(({ label, value, color }) => (
-                <span
-                  key={label}
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${color}`}
-                >
-                  {value} {label}
-                </span>
-              ))}
+              {(
+                [
+                  { label: "Total",      value: total,      key: null,            color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300" },
+                  { label: "In Use",     value: inUse,      key: "in_use",        color: "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400" },
+                  { label: "Built",      value: built,      key: "built",         color: "bg-green-50 text-green-600 dark:bg-green-950/40 dark:text-green-400" },
+                  { label: "Needs Work", value: improving,  key: "needs_work",    color: "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400" },
+                  { label: "Need Level", value: needsLevel, key: "needs_level",   color: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400" },
+                  { label: "Not Built",  value: notBuilt,   key: "not_built",     color: "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400" },
+                  { label: "Untouched",  value: untouched,  key: "untouched",     color: "bg-gray-50 text-gray-400 dark:bg-gray-800/60 dark:text-gray-500" },
+                ] as { label: string; value: number; key: BuildStatusKey | null; color: string }[]
+              ).map(({ label, value, key, color }) => {
+                const isActive = key === null ? buildStatus === null : buildStatus === key;
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => (key === null ? clearBuildStatus() : setBuildStatus(key))}
+                    title={key === null ? "Show all champions" : `Show only ${label} champions`}
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full transition cursor-pointer ${color} ${
+                      isActive ? "ring-2 ring-current" : "opacity-80 hover:opacity-100"
+                    }`}
+                  >
+                    {value} {label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* ── Stacked build-status bar ── */}
             {total > 0 && (() => {
-              const perfectBuilt = built - improving;
-              const notBuilt     = total - built - untouched;
               const segments = [
-                { pct: (perfectBuilt / total) * 100, bg: "bg-green-500", label: `Built ✓: ${perfectBuilt}` },
-                { pct: (improving    / total) * 100, bg: "bg-amber-400", label: `Needs Work: ${improving}` },
-                { pct: (notBuilt     / total) * 100, bg: "bg-red-400",   label: `Not Built: ${notBuilt}` },
-                { pct: (untouched    / total) * 100, bg: "bg-gray-300",  label: `Untouched: ${untouched}` },
+                { pct: (built      / total) * 100, bg: "bg-green-500", label: `Built ✓: ${built}` },
+                { pct: (improving  / total) * 100, bg: "bg-amber-400", label: `Needs Work: ${improving}` },
+                { pct: (needsLevel / total) * 100, bg: "bg-sky-400",   label: `Need Level: ${needsLevel}` },
+                { pct: (notBuilt   / total) * 100, bg: "bg-red-400",   label: `Not Built: ${notBuilt}` },
+                { pct: (untouched  / total) * 100, bg: "bg-gray-300",  label: `Untouched: ${untouched}` },
               ];
               return (
                 <div className="flex h-1.5 rounded-full overflow-hidden mt-2 gap-px">

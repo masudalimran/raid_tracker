@@ -14,6 +14,7 @@ interface SideNavSectionProps {
 const SLOT_COLOR: Record<AreaBuildSlotStatus, string> = {
   built: "bg-green-500",
   needs_improvement: "bg-amber-400",
+  needs_level: "bg-sky-400",
   not_built: "bg-red-400",
   untouched: "bg-gray-500",
   empty: "bg-transparent border border-dashed border-white/20",
@@ -22,6 +23,7 @@ const SLOT_COLOR: Record<AreaBuildSlotStatus, string> = {
 const SLOT_LABEL: Record<AreaBuildSlotStatus, string> = {
   built: "Built",
   needs_improvement: "Needs Improvement",
+  needs_level: "Need Level",
   not_built: "Not Built",
   untouched: "Untouched",
   empty: "Empty slot",

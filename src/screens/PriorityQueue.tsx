@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBook, FaCheckCircle, FaShieldAlt } from "react-icons/fa";
+import { FaBook, FaCheckCircle, FaEdit, FaLevelUpAlt, FaShieldAlt } from "react-icons/fa";
 import { MdOutlineAutoAwesome } from "react-icons/md";
 import { supabase } from "../lib/supabaseClient";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { getBuildQuality } from "../helpers/getChampionBuildQuality";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
+import ChampionCard from "../components/card/ChampionCard";
+import ChampionModal from "../components/modals/ChampionModal";
+import Modal from "../components/modals/Modal";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -105,7 +109,15 @@ const RARITY_TEXT: Record<string, string> = {
   [ChampionRarity.COMMON]:    "text-gray-500",
 };
 
-function ChampionPortrait({ champion, badge }: { champion: IChampion; badge?: string }) {
+function ChampionPortrait({
+  champion,
+  badge,
+  onClick,
+}: {
+  champion: IChampion;
+  badge?: string;
+  onClick?: (champion: IChampion) => void;
+}) {
   const [failed, setFailed] = useState(false);
   const initial = champion.name.charAt(0).toUpperCase();
 
@@ -134,12 +146,24 @@ function ChampionPortrait({ champion, badge }: { champion: IChampion; badge?: st
   return (
     <div className="relative shrink-0" style={{ width: S, height: S }}>
       {/* Portrait image */}
-      <div
-        className={`absolute rounded-full overflow-hidden border-2 ${colorByRarity(champion.rarity)}`}
-        style={{ width: IMG, height: IMG, top: OFF, left: OFF }}
-      >
-        {portraitContent}
-      </div>
+      {onClick ? (
+        <button
+          type="button"
+          onClick={() => onClick(champion)}
+          title={`Preview ${champion.name}`}
+          className={`absolute rounded-full overflow-hidden border-2 cursor-pointer transition hover:brightness-110 hover:scale-105 ${colorByRarity(champion.rarity)}`}
+          style={{ width: IMG, height: IMG, top: OFF, left: OFF }}
+        >
+          {portraitContent}
+        </button>
+      ) : (
+        <div
+          className={`absolute rounded-full overflow-hidden border-2 ${colorByRarity(champion.rarity)}`}
+          style={{ width: IMG, height: IMG, top: OFF, left: OFF }}
+        >
+          {portraitContent}
+        </div>
+      )}
 
       {/* Curved arc text — upper semicircle */}
       {badge && (
@@ -174,9 +198,10 @@ interface QueueItemProps {
   doneLabel: string;
   isDoing: boolean;
   mode: "books" | "masteries";
+  onPreview: (champion: IChampion) => void;
 }
 
-function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode }: QueueItemProps) {
+function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode, onPreview }: QueueItemProps) {
   // Only show completion badge for the "other" upgrade type
   const crossBadge =
     mode === "books"
@@ -190,7 +215,7 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
         {rank}
       </span>
 
-      <ChampionPortrait champion={champion} badge={crossBadge ?? undefined} />
+      <ChampionPortrait champion={champion} badge={crossBadge ?? undefined} onClick={onPreview} />
 
       <div className="flex-1 min-w-0 space-y-0.5">
         <p className="font-semibold text-sm truncate">{champion.name}</p>
@@ -217,6 +242,57 @@ function QueueItem({ champion, rank, teamCount, onDone, doneLabel, isDoing, mode
   );
 }
 
+// Leveling isn't a togglable flag like books/masteries — it has to happen
+// in-game, so this row's action opens the champion for editing (to update
+// the level once it's done) instead of a one-click "mark done".
+interface NeedsLevelItemProps {
+  champion: IChampion;
+  rank: number;
+  teamCount: number;
+  onEdit: (champion: IChampion) => void;
+  onPreview: (champion: IChampion) => void;
+}
+
+function NeedsLevelItem({ champion, rank, teamCount, onEdit, onPreview }: NeedsLevelItemProps) {
+  const targetLevel = champion.stars * 10;
+
+  return (
+    <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 shadow-sm">
+      {/* rank badge */}
+      <span className="text-xs font-bold text-gray-300 w-5 shrink-0 text-center">
+        {rank}
+      </span>
+
+      <ChampionPortrait champion={champion} onClick={onPreview} />
+
+      <div className="flex-1 min-w-0 space-y-0.5">
+        <p className="font-semibold text-sm truncate">{champion.name}</p>
+        <p className={`text-[10px] font-semibold ${RARITY_TEXT[champion.rarity]}`}>
+          {champion.rarity}
+        </p>
+        {teamCount > 0 && (
+          <p className="text-[10px] text-blue-600 font-medium">
+            {teamCount} team{teamCount !== 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col items-end gap-1 shrink-0">
+        <span className="flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 whitespace-nowrap">
+          <FaLevelUpAlt size={11} /> Lv {champion.level} → {targetLevel}
+        </span>
+        <button
+          type="button"
+          onClick={() => onEdit(champion)}
+          className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full border border-sky-400 text-sky-600 hover:bg-sky-500 hover:text-white transition cursor-pointer"
+        >
+          <FaEdit size={11} /> Edit
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Sectioned queue panel (grouped by rarity) ────────────────────────────────
 
 interface SectionedQueuePanelProps {
@@ -230,10 +306,11 @@ interface SectionedQueuePanelProps {
   emptyMsg: string;
   rarityOrder: ChampionRarity[];
   rarityLabelSuffix: string;
+  onPreview: (champion: IChampion) => void;
 }
 
 function SectionedQueuePanel({
-  title, icon, champions, onDone, processing, mode, doneLabel, emptyMsg, rarityOrder, rarityLabelSuffix,
+  title, icon, champions, onDone, processing, mode, doneLabel, emptyMsg, rarityOrder, rarityLabelSuffix, onPreview,
 }: SectionedQueuePanelProps) {
   const groups = rarityOrder
     .map((rarity) => ({
@@ -284,6 +361,7 @@ function SectionedQueuePanel({
                   onDone={onDone}
                   isDoing={processing.has(String(champion.id))}
                   mode={mode}
+                  onPreview={onPreview}
                 />
               ))}
             </div>
@@ -304,10 +382,11 @@ interface FlatQueuePanelProps {
   processing: Set<string>;
   doneLabel: string;
   emptyMsg: string;
+  onPreview: (champion: IChampion) => void;
 }
 
 function FlatQueuePanel({
-  title, icon, champions, onDone, processing, doneLabel, emptyMsg,
+  title, icon, champions, onDone, processing, doneLabel, emptyMsg, onPreview,
 }: FlatQueuePanelProps) {
   const total = champions.length;
 
@@ -359,6 +438,75 @@ function FlatQueuePanel({
               onDone={onDone}
               isDoing={processing.has(String(champion.id))}
               mode="masteries"
+              onPreview={onPreview}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Needs Level panel (no rarity grouping, edit action instead of a toggle) ──
+
+interface NeedsLevelPanelProps {
+  title: string;
+  icon: React.ReactNode;
+  champions: Array<{ champion: IChampion; teamCount: number }>;
+  onEdit: (champion: IChampion) => void;
+  onPreview: (champion: IChampion) => void;
+  emptyMsg: string;
+}
+
+function NeedsLevelPanel({ title, icon, champions, onEdit, onPreview, emptyMsg }: NeedsLevelPanelProps) {
+  const total = champions.length;
+
+  const rarityCounts: Partial<Record<ChampionRarity, number>> = {};
+  for (const { champion } of champions) {
+    rarityCounts[champion.rarity as ChampionRarity] = (rarityCounts[champion.rarity as ChampionRarity] ?? 0) + 1;
+  }
+  const rarityBreakdown = MASTERY_RARITY_ORDER
+    .map((rarity) => ({ rarity, count: rarityCounts[rarity] ?? 0 }))
+    .filter((r) => r.count > 0);
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-gray-600">{icon}</span>
+        <h2 className="font-bold text-base">{title}</h2>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+          {total}
+        </span>
+      </div>
+
+      {rarityBreakdown.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {rarityBreakdown.map(({ rarity, count }) => (
+            <span
+              key={rarity}
+              className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${RARITY_BADGE[rarity] ?? ""}`}
+            >
+              {rarity} · {count}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {total === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400 gap-2">
+          <FaCheckCircle size={24} className="text-green-300" />
+          <p className="text-sm">{emptyMsg}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {champions.map(({ champion, teamCount }, i) => (
+            <NeedsLevelItem
+              key={champion.id}
+              champion={champion}
+              rank={i + 1}
+              teamCount={teamCount}
+              onEdit={onEdit}
+              onPreview={onPreview}
             />
           ))}
         </div>
@@ -429,6 +577,30 @@ export default function PriorityQueue() {
     ),
     [champions, ranked, teamCountMap],
   );
+  const needsLevel = useMemo(
+    () => ranked(
+      champions.filter((c) =>
+        (teamCountMap.get(String(c.id)) ?? 0) > 0 &&
+        getBuildQuality(c, checkIfChampionIsBuilt(c)) === "needs_level",
+      ),
+      masteryPriorityScore,
+    ),
+    [champions, ranked, teamCountMap],
+  );
+
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
+
+  const handleEditChampion = (champion: IChampion) => {
+    setEditingChampion(champion);
+    setShowEditModal(true);
+  };
+  const handleCloseEditModal = async (shouldReload: boolean) => {
+    setShowEditModal(false);
+    setEditingChampion(null);
+    if (shouldReload) await loadData();
+  };
 
   const markBookDone = async (id: string) => {
     setProcessingBooks((s) => new Set(s).add(id));
@@ -456,10 +628,10 @@ export default function PriorityQueue() {
 
   if (loading) return <ArcaneLoader label="Ranking your priorities" />;
 
-  const totalPending = needsBooks.length + needsMasteries.length;
+  const totalPending = needsBooks.length + needsMasteries.length + needsLevel.length;
 
   return (
-    <div className="overflow-auto h-[92vh] p-4 max-w-5xl mx-auto space-y-6">
+    <div className="overflow-auto h-[92vh] p-4 space-y-6">
       {/* ── Header ── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -468,7 +640,7 @@ export default function PriorityQueue() {
             Priority Queue
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            Books are ranked by team presence and rarity; masteries just by team presence — tick them off as you complete them.
+            Books are ranked by team presence and rarity; masteries and levels just by team presence — tick them off as you complete them.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -482,14 +654,19 @@ export default function PriorityQueue() {
               <FaShieldAlt size={11} /> {needsMasteries.length} masteries pending
             </span>
           )}
+          {needsLevel.length > 0 && (
+            <span className="text-sm font-semibold px-3 py-1 rounded-full bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 flex items-center gap-1.5">
+              <FaLevelUpAlt size={11} /> {needsLevel.length} levels pending
+            </span>
+          )}
         </div>
       </div>
 
-      {/* ── Two-column layout ── */}
+      {/* ── Three-column layout ── */}
       {/* Each column is sticky + self-start so whichever list is shorter simply
           stays pinned in view once its content ends, instead of leaving a
           blank gap while the taller column keeps scrolling past it. */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:sticky lg:top-0 lg:self-start">
           <SectionedQueuePanel
             title="Needs Books"
@@ -502,6 +679,7 @@ export default function PriorityQueue() {
             emptyMsg="All priority champions are booked!"
             rarityOrder={BOOK_RARITY_ORDER}
             rarityLabelSuffix="Tomes"
+            onPreview={setPreviewChampion}
           />
         </div>
         <div className="lg:sticky lg:top-0 lg:self-start">
@@ -513,6 +691,17 @@ export default function PriorityQueue() {
             processing={processingMasteries}
             doneLabel="Mark Mastered"
             emptyMsg="All priority champions have masteries!"
+            onPreview={setPreviewChampion}
+          />
+        </div>
+        <div className="lg:sticky lg:top-0 lg:self-start">
+          <NeedsLevelPanel
+            title="Needs Level"
+            icon={<FaLevelUpAlt size={16} />}
+            champions={needsLevel}
+            onEdit={handleEditChampion}
+            onPreview={setPreviewChampion}
+            emptyMsg="No priority champions need levelling!"
           />
         </div>
       </div>
@@ -522,9 +711,22 @@ export default function PriorityQueue() {
           <FaCheckCircle className="text-green-400 mx-auto mb-3" size={36} />
           <p className="font-bold text-green-800 dark:text-green-300 text-lg">All caught up!</p>
           <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-            Every champion that needs books or masteries is sorted.
+            Every champion that needs books, masteries, or levelling is sorted.
           </p>
         </div>
+      )}
+
+      {showEditModal && (
+        <ChampionModal
+          champion={editingChampion ?? undefined}
+          onClose={handleCloseEditModal}
+        />
+      )}
+
+      {previewChampion && (
+        <Modal isOpen title="Champion Preview" onClose={() => setPreviewChampion(null)}>
+          <ChampionCard champion={previewChampion} />
+        </Modal>
       )}
     </div>
   );
