@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "../lib/supabaseClient";
 import { useEffect, useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { loginSchema } from "../lib/zod/loginSchema";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -12,6 +13,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -92,12 +94,22 @@ export default function Login() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password
               </label>
-              <input
-                type="password"
-                {...register("password")}
-                placeholder="••••••••"
-                className="input"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password")}
+                  placeholder="••••••••"
+                  className="input pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer"
+                >
+                  {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                </button>
+              </div>
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}
