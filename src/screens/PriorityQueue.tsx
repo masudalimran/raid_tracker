@@ -593,6 +593,7 @@ export default function PriorityQueue() {
   const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
 
   const handleEditChampion = (champion: IChampion) => {
+    setPreviewChampion(null);
     setEditingChampion(champion);
     setShowEditModal(true);
   };
@@ -600,6 +601,10 @@ export default function PriorityQueue() {
     setShowEditModal(false);
     setEditingChampion(null);
     if (shouldReload) await loadData();
+  };
+  const handleDeletePreviewChampion = async () => {
+    setPreviewChampion(null);
+    await loadData();
   };
 
   const markBookDone = async (id: string) => {
@@ -724,8 +729,12 @@ export default function PriorityQueue() {
       )}
 
       {previewChampion && (
-        <Modal isOpen title="Champion Preview" onClose={() => setPreviewChampion(null)}>
-          <ChampionCard champion={previewChampion} />
+        <Modal isOpen bare maxWidthClass="max-w-xs" onClose={() => setPreviewChampion(null)}>
+          <ChampionCard
+            champion={previewChampion}
+            onEdit={handleEditChampion}
+            onDelete={handleDeletePreviewChampion}
+          />
         </Modal>
       )}
     </div>

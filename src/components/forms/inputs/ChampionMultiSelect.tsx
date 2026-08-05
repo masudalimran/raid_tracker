@@ -430,7 +430,7 @@ export default function ChampionMultiSelect({
       )}
 
       {previewChampion && (
-        <Modal isOpen title="Champion Preview" onClose={() => setPreviewChampion(null)}>
+        <Modal isOpen bare maxWidthClass="max-w-xs" onClose={() => setPreviewChampion(null)}>
           <ChampionCard champion={previewChampion} />
         </Modal>
       )}

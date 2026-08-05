@@ -9,6 +9,8 @@ interface ModalProps {
   children: React.ReactNode;
   /** Tailwind max-width class for the modal panel. Defaults to a compact size. */
   maxWidthClass?: string;
+  /** Skip the header bar and content padding, and close on backdrop click — for lightweight previews (e.g. a floating ChampionCard) rather than forms/dialogs. */
+  bare?: boolean;
 }
 
 export default function Modal({
@@ -17,6 +19,7 @@ export default function Modal({
   onClose,
   children,
   maxWidthClass = "max-w-lg",
+  bare = false,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -26,26 +29,41 @@ export default function Modal({
   // inside TeamForm's <form>), which is invalid HTML and makes the inner
   // form's submit button unreliable.
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClass} overflow-hidden`}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-gray-900 border-b border-white/10">
-          <h2 className="font-bold text-white text-base">{title}</h2>
-          <Tooltip content="Close">
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition cursor-pointer p-0.5 rounded"
-            >
-              <AiFillCloseSquare
-                size={26}
-                className="text-gray-400 hover:text-red-400 transition"
-              />
-            </button>
-          </Tooltip>
-        </div>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={bare ? onClose : undefined}
+    >
+      <div
+        className={
+          bare
+            ? `w-full ${maxWidthClass}`
+            : `bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${maxWidthClass} overflow-hidden`
+        }
+        onClick={bare ? (e) => e.stopPropagation() : undefined}
+      >
+        {!bare && (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 bg-gray-900 border-b border-white/10">
+              <h2 className="font-bold text-white text-base">{title}</h2>
+              <Tooltip content="Close">
+                <button
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-white transition cursor-pointer p-0.5 rounded"
+                >
+                  <AiFillCloseSquare
+                    size={26}
+                    className="text-gray-400 hover:text-red-400 transition"
+                  />
+                </button>
+              </Tooltip>
+            </div>
 
-        {/* Content */}
-        <div className="px-5 py-4 text-gray-900 dark:text-gray-100">{children}</div>
+            {/* Content */}
+            <div className="px-5 py-4 text-gray-900 dark:text-gray-100">{children}</div>
+          </>
+        )}
+        {bare && children}
       </div>
     </div>,
     document.body,

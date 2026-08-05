@@ -1168,7 +1168,8 @@ export default function ShardLog() {
       {/* ── Roster champion view ── */}
       <Modal
         isOpen={!!viewingChampion}
-        title="Champion"
+        bare
+        maxWidthClass="max-w-xs"
         onClose={() => setViewingChampion(null)}
       >
         {viewingChampion && (
