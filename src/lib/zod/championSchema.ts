@@ -4,6 +4,7 @@ import { ChampionAffinity } from "../../models/ChampionAffinity";
 import { ChampionRole } from "../../models/ChampionRole";
 import { ChampionRarity } from "../../models/ChampionRarity";
 import { ChampionFaction } from "../../models/ChampionFaction";
+import { getMinStarsForRarity } from "../../helpers/getMinStarsForRarity";
 
 export const skillEffectSchema = z.object({
   name: z.string().min(1, "Effect name required"),
@@ -114,6 +115,24 @@ export const championSchema = z.object({
 
   skills: z.array(skillSchema),
   aura: auraSchema.optional(),
+}).superRefine((data, ctx) => {
+  const minStars = getMinStarsForRarity(data.rarity);
+  if (data.stars < minStars) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["stars"],
+      message: `${data.rarity} champions can't be below ${minStars}★.`,
+    });
+  }
+
+  const maxLevel = data.stars * 10;
+  if (data.level > maxLevel) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["level"],
+      message: `Level can't exceed ${maxLevel} for ${data.stars}★.`,
+    });
+  }
 });
 
 export type ChampionFormData = z.infer<typeof championSchema>;

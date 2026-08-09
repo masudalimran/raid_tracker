@@ -20,7 +20,8 @@ import { useState } from "react";
 import ChampionCard from "../card/ChampionCard";
 import getFactionLogo from "../../helpers/getFactionLogo";
 import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaExclamationTriangle } from "react-icons/fa";
+import { getMinStarsForRarity } from "../../helpers/getMinStarsForRarity";
 // import SkillsFieldArray from "./inputs/SkillsFieldArray"; // skills hidden
 // import AuraField from "./inputs/AuraField"; // skills hidden
 
@@ -112,9 +113,15 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const handleNameInput = (value: string) => {
     if (value.trim().length >= 2) {
       const lower = value.toLowerCase();
-      const hits = champion_list
-        .filter((c) => c.name.toLowerCase().includes(lower))
-        .slice(0, 6);
+      const seenNames = new Set<string>();
+      const hits: IChampion[] = [];
+      for (const c of champion_list) {
+        const name = c.name.toLowerCase();
+        if (!name.includes(lower) || seenNames.has(name)) continue;
+        seenNames.add(name);
+        hits.push(c);
+        if (hits.length === 6) break;
+      }
       setRosterMatches(hits);
       setShowRosterDropdown(hits.length > 0);
       setActiveRosterIndex(-1);
@@ -139,6 +146,29 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     setShowRosterDropdown(false);
     setActiveRosterIndex(-1);
   };
+
+  // Rarity sets a floor on stars (e.g. Rare can't be under 3★) — bump stars
+  // up to match if the newly-picked rarity's minimum is higher than whatever
+  // is currently set. Never lowers stars the user already raised on purpose.
+  const handleRarityChange = (rarity: ChampionRarity) => {
+    setValue("rarity", rarity, { shouldDirty: true });
+    const newMinStars = getMinStarsForRarity(rarity);
+    if ((getValues("stars") ?? 1) < newMinStars) {
+      applyStarsChange(newMinStars);
+    }
+  };
+
+  // Stars set a ceiling on level (10x stars) — clamp level down if it's now
+  // above what the new star count allows, same cascade RaidStarInput already
+  // does internally for ascension/awaken.
+  const applyStarsChange = (v: number) => {
+    setValue("stars", v, { shouldDirty: true });
+    if ((getValues("ascension_stars") ?? 0) > v) setValue("ascension_stars", v, { shouldDirty: true });
+    if ((getValues("awaken_stars") ?? 0) > v) setValue("awaken_stars", v, { shouldDirty: true });
+    const newMaxLevel = v * 10;
+    if ((getValues("level") ?? 1) > newMaxLevel) setValue("level", newMaxLevel, { shouldDirty: true });
+  };
+  const handleStarsChange = (v: number) => applyStarsChange(v);
 
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showRosterDropdown || rosterMatches.length === 0) return;
@@ -253,6 +283,17 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   };
 
   const w = watchedFormData;
+  const minStars = getMinStarsForRarity(w.rarity);
+  const maxLevel = (w.stars ?? minStars) * 10;
+
+  // Flags the champion's level as it was when the modal was opened (not the
+  // live, still-being-edited value) — a heads-up for legacy roster data that
+  // predates this level-can't-exceed-10x-stars rule, surfaced immediately
+  // rather than only after the user happens to touch level/stars themselves.
+  const existingLevelWarning =
+    champion?.level != null && champion.stars != null && champion.level > champion.stars * 10
+      ? `This champion was saved at level ${champion.level}, above the max of ${champion.stars * 10} for ${champion.stars}★. Lower the level or raise the stars to fix it.`
+      : null;
 
   // Exact-name match within the current roster account — a nudge to use the
   // autocomplete dropdown above instead of accidentally creating a duplicate.
@@ -271,6 +312,12 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSave)} className="bg-white dark:bg-gray-900 dark:text-gray-100">
+      {existingLevelWarning && (
+        <div className="flex items-start gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+          <FaExclamationTriangle size={14} className="mt-0.5 shrink-0" />
+          <p className="text-xs">{existingLevelWarning}</p>
+        </div>
+      )}
       {isOnPreview ? (
         <div className="px-4 pb-4 max-h-[76vh] overflow-y-auto">
           <div className="max-w-xs mx-auto">
@@ -430,7 +477,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                         <button
                           key={rarity}
                           type="button"
-                          onClick={() => setValue("rarity", rarity, { shouldDirty: true })}
+                          onClick={() => handleRarityChange(rarity)}
                           className={`py-1.5 rounded-lg border-2 text-xs font-semibold transition cursor-pointer
                             ${selected ? `${RARITY_COLORS_BTN[rarity]} border-current` : "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                         >
@@ -460,19 +507,23 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                         type="number"
                         inputMode="numeric"
                         {...register("level", { valueAsNumber: true })}
+                        min={1}
+                        max={maxLevel}
                         className="input w-full"
                       />
                       {errors.level && <p className="text-red-500 text-[10px]">{errors.level?.message}</p>}
                     </div>
                     <div className="flex-1">
                       <RaidStarInput
-                        stars={w.stars ?? 1}
+                        stars={w.stars ?? minStars}
                         ascension={w.ascension_stars ?? 0}
                         awaken={w.awaken_stars ?? 0}
-                        onStarsChange={(v) => setValue("stars", v, { shouldDirty: true })}
+                        minStars={minStars}
+                        onStarsChange={handleStarsChange}
                         onAscensionChange={(v) => setValue("ascension_stars", v, { shouldDirty: true })}
                         onAwakenChange={(v) => setValue("awaken_stars", v, { shouldDirty: true })}
                       />
+                      {errors.stars && <p className="text-red-500 text-xs mt-1">{errors.stars?.message}</p>}
                     </div>
                   </div>
                 </div>

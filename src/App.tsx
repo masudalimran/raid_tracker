@@ -1,4 +1,4 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import "./App.css";
 import Home from "./screens/Home";
 import MainLayout from "./layouts/MainLayout.tsx";
@@ -43,7 +43,8 @@ function App() {
         <Route path="/priority-queue" element={<PriorityQueue />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/rtk-sync" element={<RtkSync />} />
-        <Route path="/shard-log" element={<ShardLog />} />
+        <Route path="/shard-log" element={<Navigate to="/shard-log/ancient" replace />} />
+        <Route path="/shard-log/:shardType" element={<ShardLog />} />
         {AREA_ROUTES.map((area) => (
           <Route
             key={area.path}

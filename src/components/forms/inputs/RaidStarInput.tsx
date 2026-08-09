@@ -17,6 +17,8 @@ interface RaidStarInputProps {
   onStarsChange: (v: number) => void;
   onAscensionChange: (v: number) => void;
   onAwakenChange: (v: number) => void;
+  /** Lowest star count the current rarity allows — stars can't be clicked below this. */
+  minStars?: number;
 }
 
 const MAX = 6;
@@ -28,12 +30,13 @@ interface StarRowProps {
   activeColor: string;  // Tailwind text colour for filled stars
   dimColor: string;     // colour for stars beyond max
   minValue?: number;    // lowest allowed value (default 0)
+  lockedTooltip?: string; // tooltip shown for positions below minValue
   onChange: (v: number) => void;
 }
 
-function StarRow({ label, value, max, activeColor, dimColor, minValue = 0, onChange }: StarRowProps) {
+function StarRow({ label, value, max, activeColor, dimColor, minValue = 0, lockedTooltip, onChange }: StarRowProps) {
   const handleClick = (n: number) => {
-    if (n > max) return;
+    if (n > max || n < minValue) return;
     if (n === value) {
       // clicking the current star goes down by one (minimum minValue)
       onChange(Math.max(n - 1, minValue));
@@ -49,14 +52,17 @@ function StarRow({ label, value, max, activeColor, dimColor, minValue = 0, onCha
       </span>
       <div className="flex gap-1">
         {Array.from({ length: MAX }, (_, i) => i + 1).map((n) => {
-          const filled   = n <= value;
-          const inRange  = n <= max;
-          const disabled = !inRange;
+          const filled     = n <= value;
+          const belowFloor = n < minValue;
+          const inRange    = n <= max && !belowFloor;
+          const disabled   = !inRange;
+          const tooltip = belowFloor
+            ? (lockedTooltip ?? `Locked — minimum ${minValue}`)
+            : disabled
+              ? `Unlock by raising ${label === "Ascension" ? "Stars" : "Ascension"} first`
+              : `Set ${label} to ${n}`;
           return (
-            <Tooltip
-              key={n}
-              content={disabled ? `Unlock by raising ${label === "Ascension" ? "Stars" : "Ascension"} first` : `Set ${label} to ${n}`}
-            >
+            <Tooltip key={n} content={tooltip}>
               <button
                 type="button"
                 disabled={disabled}
@@ -87,6 +93,7 @@ export default function RaidStarInput({
   onStarsChange,
   onAscensionChange,
   onAwakenChange,
+  minStars = 1,
 }: RaidStarInputProps) {
   const handleStarsChange = (v: number) => {
     onStarsChange(v);
@@ -108,7 +115,8 @@ export default function RaidStarInput({
         max={MAX}
         activeColor="text-amber-400"
         dimColor="text-amber-200"
-        minValue={1}
+        minValue={minStars}
+        lockedTooltip={`Locked — this rarity requires at least ${minStars}★`}
         onChange={handleStarsChange}
       />
       <StarRow

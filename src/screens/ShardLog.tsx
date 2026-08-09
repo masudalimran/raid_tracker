@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo, FaList, FaThLarge } from "react-icons/fa";
 import { MdCasino, MdDownload } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
@@ -19,6 +20,7 @@ import { useChampion } from "../hooks/useChampion";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import type { ChampionFormData } from "../lib/zod/championSchema";
 import type { ChampionRarity } from "../models/ChampionRarity";
+import { getMinStarsForRarity } from "../helpers/getMinStarsForRarity";
 import { ChampionType } from "../models/ChampionType";
 import { ChampionFaction } from "../models/ChampionFaction";
 import Modal from "../components/modals/Modal";
@@ -57,6 +59,18 @@ const PULL_RARITY_MAP: Partial<Record<string, PullRarity>> = {
 const ALL_SHARD_TYPES = Object.values(ShardType);
 const ALL_RARITIES = Object.values(PullRarity).filter(
   (r) => r !== "Common" && r !== "Uncommon",
+);
+
+// Each shard tab is its own sub-page (/shard-log/ancient, /shard-log/void, …)
+// so a specific tab is bookmarkable/shareable and back/forward works.
+const SHARD_TYPE_SLUG: Record<ShardType, string> = {
+  [ShardType.ANCIENT]: "ancient",
+  [ShardType.VOID]: "void",
+  [ShardType.SACRED]: "sacred",
+  [ShardType.PRISM]: "prism",
+};
+const SHARD_TYPE_BY_SLUG: Record<string, ShardType> = Object.fromEntries(
+  Object.entries(SHARD_TYPE_SLUG).map(([type, slug]) => [slug, type as ShardType]),
 );
 
 // Ancient & Void shards can't pull Legendary+ in practice and skew toward
@@ -256,8 +270,20 @@ function ChampionAvatar({
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function ShardLog() {
+  const navigate = useNavigate();
+  const { shardType: shardTypeSlug } = useParams<{ shardType: string }>();
+  const activeTab: ShardType = (shardTypeSlug && SHARD_TYPE_BY_SLUG[shardTypeSlug]) || ShardType.ANCIENT;
+
+  // An unknown/missing slug (e.g. bare /shard-log) settles on Ancient's URL
+  // rather than silently rendering it, so the address bar always matches
+  // what's on screen.
+  useEffect(() => {
+    if (!shardTypeSlug || !SHARD_TYPE_BY_SLUG[shardTypeSlug]) {
+      navigate(`/shard-log/${SHARD_TYPE_SLUG[ShardType.ANCIENT]}`, { replace: true });
+    }
+  }, [shardTypeSlug, navigate]);
+
   const [pulls, setPulls] = useState<IShardPull[]>(() => loadShardPullsForActiveAccount());
-  const [activeTab, setActiveTab] = useState<string>(ShardType.ANCIENT);
   const [championLookup, setChampionLookup] = useState<Map<string, ChampionInfo>>(() => loadChampionLookup());
   const { addChampion } = useChampion();
 
@@ -489,6 +515,7 @@ export default function ShardLog() {
       ...DefaultChampionObject,
       name,
       rarity: "N/A" as unknown as ChampionRarity,
+      stars: getMinStarsForRarity(rarity),
       type: ChampionType.OTHER,
       faction: ChampionFaction.OTHER,
       user_id: userId,
@@ -690,7 +717,7 @@ export default function ShardLog() {
               key={type}
               type="button"
               onClick={() => {
-                setActiveTab(type);
+                navigate(`/shard-log/${SHARD_TYPE_SLUG[type]}`);
                 setForm((f) => ({ ...f, rarity: getDefaultRarity(type) }));
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer

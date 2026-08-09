@@ -3,6 +3,7 @@ import { ChampionFaction } from "../../models/ChampionFaction";
 import { ChampionRarity } from "../../models/ChampionRarity";
 import { ChampionType } from "../../models/ChampionType";
 import type IChampion from "../../models/IChampion";
+import { getMinStarsForRarity } from "../../helpers/getMinStarsForRarity";
 
 export const DefaultChampionObject: Partial<IChampion> = {
   championUrl: ``,
@@ -26,7 +27,7 @@ export const DefaultChampionObject: Partial<IChampion> = {
   rarity: ChampionRarity.RARE,
   faction: ChampionFaction.BANNER_LORDS,
 
-  stars: 5,
+  stars: getMinStarsForRarity(ChampionRarity.RARE),
   ascension_stars: 0,
   awaken_stars: 0,
   is_booked: false,
