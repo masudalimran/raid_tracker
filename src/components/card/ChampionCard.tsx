@@ -9,8 +9,11 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { MdCancel, MdImageNotSupported } from "react-icons/md";
+import { GiCrossedSwords, GiShield, GiHealing, GiHeartPlus } from "react-icons/gi";
+import type { IconType } from "react-icons";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { getBuildQuality } from "../../helpers/getChampionBuildQuality.ts";
+import { getChampionRating, type ChampionArchetype } from "../../helpers/getChampionRating.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import {
   ChampionRole,
@@ -24,6 +27,15 @@ import { fromSlug } from "../../helpers/fromSlug.ts";
 import colorByRarity from "../../helpers/colorByRarity.ts";
 import getFactionLogo from "../../helpers/getFactionLogo.ts";
 import Tooltip from "../utility/Tooltip.tsx";
+
+// Icon for the rating badge's archetype tag — swapped in for the plain
+// C/T/S/H letters so it reads at a glance rather than needing a legend.
+const ARCHETYPE_ICON: Record<ChampionArchetype, IconType> = {
+  C: GiCrossedSwords, // Carry
+  T: GiShield,        // Tank
+  S: GiHealing,       // Support
+  H: GiHeartPlus,     // Bulky (HP)
+};
 
 interface ChampionCardProps {
   champion: IChampion;
@@ -63,6 +75,8 @@ export default function ChampionCard({
   );
   const championTeamCount = championTeams.length;
   const championTeamNames = championTeams.map((t) => t.team_name);
+
+  const rating = getChampionRating(champion, supabase_team_list);
 
   const isBuilt = checkIfChampionIsBuilt(champion);
   const buildQuality = getBuildQuality(champion, isBuilt);
@@ -196,16 +210,43 @@ export default function ChampionCard({
   const statusBg = STATUS_BG[buildQuality];
   const statusLabel = STATUS_LABEL[buildQuality];
 
+  const RATING_TIER =
+    rating.score >= 8 ? "bg-emerald-500 text-white" :
+    rating.score >= 6 ? "bg-amber-400 text-gray-900" :
+    rating.score >= 4 ? "bg-gray-400 text-white" :
+    "bg-red-500/90 text-white";
+
+  const ratingTooltip = (
+    <div className="text-left space-y-0.5 whitespace-nowrap">
+      <p className="font-bold">
+        {rating.score.toFixed(1)}/10{rating.archetypeLabel ? ` · ${rating.archetypeLabel}` : ""}
+      </p>
+      <p>Team Usage: {Math.round(rating.teamUsage * 100)}%</p>
+      <p>Progression: {Math.round(rating.progression * 100)}%</p>
+      <p>Stat Quality: {Math.round(rating.statQuality * 100)}%</p>
+      <p>Role Value: {Math.round(rating.roleValue * 100)}%</p>
+    </div>
+  );
+
   return (
     <>
       <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
 
         {/* ── HEADER ── */}
-        <div className={`flex items-center justify-between px-3 py-2 text-gray-900 ${colorByRarity(champion.rarity)}`}>
-          <div className="flex items-center gap-2 min-w-0">
+        <div className={`flex items-center gap-2 px-3 py-2 text-gray-900 ${colorByRarity(champion.rarity)}`}>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <img src={champion.affinity} alt="" className="w-5 h-5 shrink-0" />
             <p className="font-bold text-sm truncate">{champion.name}</p>
           </div>
+          <Tooltip content={ratingTooltip} position="bottom">
+            <div className={`flex items-center gap-1 px-1.5 h-6 rounded-full text-[11px] font-bold shrink-0 ${RATING_TIER}`}>
+              <span>{rating.score.toFixed(1)}</span>
+              {rating.archetype && (() => {
+                const ArchetypeIcon = ARCHETYPE_ICON[rating.archetype];
+                return <ArchetypeIcon size={11} className="opacity-90" />;
+              })()}
+            </div>
+          </Tooltip>
           {champion.level === 60 && champion.stars === 6 ? (
             <div className="relative h-7 w-7 shrink-0 flex items-center justify-center">
               <div className="absolute inset-0 rounded-full fire-border" />
