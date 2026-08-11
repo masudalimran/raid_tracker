@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import RslAccountForm from "../forms/RslAccountForm";
 import { CiImageOff, CiImageOn } from "react-icons/ci";
 import { getNsfwStatus } from "../../helpers/getNsfwStatus";
@@ -8,10 +9,11 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { FaSearch } from "react-icons/fa";
 import { FaQuestion } from "react-icons/fa6";
 import { TbRefreshDot } from "react-icons/tb";
-import { MdBrightnessAuto, MdDarkMode, MdLightMode } from "react-icons/md";
+import { MdBrightnessAuto, MdDarkMode, MdLightMode, MdCompareArrows } from "react-icons/md";
 import Tooltip from "../utility/Tooltip";
 import HelpGuideModal from "../modals/HelpGuideModal";
 import { useTheme, type ThemePreference } from "../../hooks/useTheme";
+import { useCompareList } from "../../hooks/useCompareList";
 import { clearRoleReqCache } from "../../helpers/teamRoleOverrides";
 import { fetchRslAccounts } from "../../helpers/handleRslAccounts";
 
@@ -27,6 +29,7 @@ interface AppBarProps {
 }
 
 function AppBar({ onMenuToggle }: AppBarProps) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<string>("");
   const [nsfw, setNsfw] = useState<boolean>(false);
   // const [showSkills, setShowSkills] = useState<boolean>(false); // skills hidden
@@ -34,6 +37,7 @@ function AppBar({ onMenuToggle }: AppBarProps) {
   const [refreshing, setRefreshing] = useState(false);
   const supabase_auth = localStorage.getItem("supabase_auth");
   const { preference, setPreference } = useTheme();
+  const compareList = useCompareList();
 
   const handleGlobalRefresh = async () => {
     setRefreshing(true);
@@ -104,6 +108,21 @@ function AppBar({ onMenuToggle }: AppBarProps) {
               <FaSearch size={12} />
               <span>Search</span>
               <kbd className="text-[9px] font-semibold text-gray-500 border border-white/10 rounded px-1">⌘/</kbd>
+            </button>
+          </Tooltip>
+
+          <Tooltip content={compareList.length > 0 ? `Champion Comparison (${compareList.length})` : "Champion Comparison"} position="bottom">
+            <button
+              type="button"
+              onClick={() => navigate("/champion-comparison")}
+              className="relative p-1.5 rounded-md hover:bg-white/10 transition text-gray-300 hover:text-white cursor-pointer"
+            >
+              <MdCompareArrows size={19} />
+              {compareList.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-3.75 h-3.75 px-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                  {compareList.length}
+                </span>
+              )}
             </button>
           </Tooltip>
 

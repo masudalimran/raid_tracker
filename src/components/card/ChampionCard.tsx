@@ -8,12 +8,14 @@ import {
   FaInfoCircle,
   FaTrash,
 } from "react-icons/fa";
-import { MdCancel, MdImageNotSupported } from "react-icons/md";
+import { MdCancel, MdImageNotSupported, MdCompareArrows } from "react-icons/md";
 import { GiCrossedSwords, GiShield, GiHealing, GiHeartPlus } from "react-icons/gi";
 import type { IconType } from "react-icons";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { getBuildQuality } from "../../helpers/getChampionBuildQuality.ts";
 import { getChampionRating, type ChampionArchetype } from "../../helpers/getChampionRating.ts";
+import { toggleCompareList, MAX_COMPARE } from "../../helpers/compareList.ts";
+import { useCompareList } from "../../hooks/useCompareList.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import {
   ChampionRole,
@@ -60,6 +62,9 @@ export default function ChampionCard({
   const [rolesExpanded, setRolesExpanded] = useState<boolean>(false);
   const [imgFailed, setImgFailed] = useState<boolean>(false);
   const { deleteChampion, loading } = useChampion();
+  const compareIds = useCompareList();
+  const inCompare = compareIds.includes(String(champion.id));
+  const compareFull = !inCompare && compareIds.length >= MAX_COMPARE;
 
   const ROLE_PREVIEW_COUNT = 3;
   const visibleRoles = champion.role.filter((r) => ChampionRoleImageMap[r]);
@@ -289,6 +294,31 @@ export default function ChampionCard({
               </Tooltip>
             </div>
           )}
+
+          {/* Compare toggle – bottom-right */}
+          <div className="absolute bottom-2 right-2 z-20">
+            <Tooltip
+              content={
+                inCompare
+                  ? "Remove from comparison"
+                  : compareFull
+                    ? `Comparison list is full (${MAX_COMPARE}/${MAX_COMPARE}) — remove one first`
+                    : "Add to comparison"
+              }
+            >
+              <button
+                type="button"
+                onClick={() => toggleCompareList(champion.id)}
+                disabled={compareFull}
+                className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm border transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed
+                  ${inCompare
+                    ? "bg-violet-500/90 border-violet-300 text-white hover:bg-violet-500"
+                    : "bg-black/50 border-white/20 text-white hover:bg-black/70"}`}
+              >
+                <MdCompareArrows size={15} />
+              </button>
+            </Tooltip>
+          </div>
 
           {champion.imgUrl && !imgFailed ? (
             <>

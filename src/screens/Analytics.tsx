@@ -8,6 +8,7 @@ import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
 import { getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
+import { getChampionRating } from "../helpers/getChampionRating";
 import { getTeamRequirements, checkTeamCoverage } from "../data/areaRoleRequirements";
 import { ALL_AREAS } from "../data/allAreas";
 import toSlug from "../helpers/toSlug";
@@ -339,6 +340,34 @@ export default function Analytics() {
     };
   }, [champions, teams]);
 
+  // Top-rated champions + a distribution across rating buckets — reuses the
+  // same 0-10 composite score shown on each ChampionCard.
+  const ratingLeaderboard = useMemo(() => {
+    if (!champions.length) return null;
+
+    const rated = champions
+      .map((c) => ({ champion: c, rating: getChampionRating(c, teams) }))
+      .sort((a, b) => b.rating.score - a.rating.score);
+
+    const top = rated.slice(0, 10);
+
+    const buckets = [
+      { label: "8–10", min: 8, max: 10.01, count: 0 },
+      { label: "6–8", min: 6, max: 8, count: 0 },
+      { label: "4–6", min: 4, max: 6, count: 0 },
+      { label: "2–4", min: 2, max: 4, count: 0 },
+      { label: "0–2", min: 0, max: 2, count: 0 },
+    ];
+    for (const { rating } of rated) {
+      const bucket = buckets.find((b) => rating.score >= b.min && rating.score < b.max);
+      if (bucket) bucket.count++;
+    }
+
+    const average = rated.reduce((sum, r) => sum + r.rating.score, 0) / rated.length;
+
+    return { top, buckets, average: Math.round(average * 10) / 10, total: rated.length };
+  }, [champions, teams]);
+
   // How many saved-team areas are missing each required role, account-wide —
   // e.g. "Cleanser missing in 3/5 areas that need it".
   const roleGaps = useMemo(() => {
@@ -473,6 +502,60 @@ export default function Analytics() {
           </div>
         )}
       </section>
+
+      {/* ── Rating Leaderboard ── */}
+      {ratingLeaderboard && (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-1">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+              Rating Leaderboard
+            </h2>
+            <span className="text-xs text-gray-400">
+              Roster average:{" "}
+              <span className="font-semibold text-gray-600 dark:text-gray-300">
+                {ratingLeaderboard.average.toFixed(1)}/10
+              </span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-1.5">
+              {ratingLeaderboard.top.map(({ champion, rating }, i) => (
+                <Link
+                  key={champion.id}
+                  to={`/champion-comparison?ids=${champion.id}`}
+                  className="flex items-center gap-2.5 -mx-1.5 px-1.5 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/60 transition"
+                >
+                  <span className="text-xs font-bold text-gray-300 w-4 shrink-0 text-center">{i + 1}</span>
+                  {champion.imgUrl ? (
+                    <img src={champion.imgUrl} alt="" className="w-8 h-8 rounded-full object-cover object-top shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 shrink-0" />
+                  )}
+                  <span className="text-sm flex-1 truncate">{champion.name}</span>
+                  <span className="text-[10px] text-gray-400 shrink-0">{rating.archetypeLabel ?? ""}</span>
+                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400 w-12 text-right shrink-0">
+                    {rating.score.toFixed(1)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
+              {ratingLeaderboard.buckets.map((b) => (
+                <BarRow
+                  key={b.label}
+                  label={b.label}
+                  count={b.count}
+                  max={ratingLeaderboard.total}
+                  colorClass="bg-amber-400"
+                  textClass="text-amber-600"
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── By Rarity ── */}
       <section className="space-y-2">

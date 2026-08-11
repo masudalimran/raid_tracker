@@ -28,6 +28,7 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Priority Queue", path: "/priority-queue", className: "" },
   { name: "Analytics", path: "/analytics", className: "" },
   { name: "Shard Log", path: "/shard-log", className: "" },
+  { name: "Team Suggestion", path: "/team-suggestion", className: "" },
 ];
 
 const OPEN_SECTION_STORAGE_KEY = "sidenav_open_section";
