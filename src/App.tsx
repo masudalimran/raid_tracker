@@ -16,6 +16,7 @@ import PriorityQueue from "./screens/PriorityQueue.tsx";
 import ChampionComparison from "./screens/ChampionComparison.tsx";
 import TeamSuggestion from "./screens/TeamSuggestion.tsx";
 import Relics from "./screens/Relics.tsx";
+import Blessings from "./screens/Blessings.tsx";
 import { useEffect } from "react";
 import { AREA_ROUTES } from "./components/modals/AreanRoutes.ts";
 import BaseAreaTeam from "./components/base/BaseAreaTeam.tsx";
@@ -48,6 +49,7 @@ function App() {
         <Route path="/champion-comparison" element={<ChampionComparison />} />
         <Route path="/team-suggestion" element={<TeamSuggestion />} />
         <Route path="/relics" element={<Relics />} />
+        <Route path="/blessings" element={<Blessings />} />
         <Route path="/rtk-sync" element={<RtkSync />} />
         <Route path="/shard-log" element={<Navigate to="/shard-log/ancient" replace />} />
         <Route path="/shard-log/:shardType" element={<ShardLog />} />

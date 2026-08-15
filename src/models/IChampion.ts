@@ -33,6 +33,8 @@ export default interface IChampion {
 
   /** Id of the relic currently equipped on this champion (a champion can equip at most 1). */
   relic?: string;
+  /** Id of the blessing currently equipped on this champion (at most 1; requires awaken_stars >= 1). */
+  blessing?: string;
 
   is_booked: boolean;
   is_book_needed: boolean;

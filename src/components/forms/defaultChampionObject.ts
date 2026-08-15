@@ -23,6 +23,7 @@ export const DefaultChampionObject: Partial<IChampion> = {
   level: 1,
   role: [],
   relic: "",
+  blessing: "",
   affinity: ChampionAffinity.MAGIC,
   type: ChampionType.ATTACK,
   rarity: ChampionRarity.RARE,

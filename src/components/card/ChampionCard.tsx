@@ -18,7 +18,9 @@ import { toggleCompareList, MAX_COMPARE } from "../../helpers/compareList.ts";
 import { useCompareList } from "../../hooks/useCompareList.ts";
 import { getRelicById } from "../../data/relics.ts";
 import { getRelicImagePath } from "../../helpers/getRelicImage.ts";
-import { RELIC_RARITY_BORDER } from "../../helpers/relicRarityBorder.ts";
+import { RARITY_BORDER_COLOR } from "../../helpers/rarityBorderColor.ts";
+import { getBlessingById } from "../../data/blessings.ts";
+import { getBlessingImagePath } from "../../helpers/getBlessingImage.ts";
 import { ChampionType } from "../../models/ChampionType.ts";
 import {
   ChampionRole,
@@ -86,6 +88,7 @@ export default function ChampionCard({
 
   const rating = getChampionRating(champion, supabase_team_list);
   const equippedRelic = champion.relic ? getRelicById(champion.relic) : undefined;
+  const equippedBlessing = champion.blessing ? getBlessingById(champion.blessing) : undefined;
 
   const isBuilt = checkIfChampionIsBuilt(champion);
   const buildQuality = getBuildQuality(champion, isBuilt);
@@ -523,7 +526,7 @@ export default function ChampionCard({
           {equippedRelic ? (
             <>
               <Tooltip content={equippedRelic.description}>
-                <div className={`w-7 h-7 rounded-md overflow-hidden border-2 shrink-0 ${RELIC_RARITY_BORDER[equippedRelic.rarity]}`}>
+                <div className={`w-7 h-7 rounded-md overflow-hidden border-2 shrink-0 ${RARITY_BORDER_COLOR[equippedRelic.rarity]}`}>
                   <img src={getRelicImagePath(equippedRelic.id)} alt={equippedRelic.name} className="w-full h-full object-cover" />
                 </div>
               </Tooltip>
@@ -533,6 +536,25 @@ export default function ChampionCard({
             <>
               <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-200 dark:border-gray-700 shrink-0" />
               <span className="text-[10px] text-gray-300 dark:text-gray-600 truncate">No Relic Equipped</span>
+            </>
+          )}
+        </div>
+
+        {/* ── BLESSING (equipped) — always rendered so every card is the same height ── */}
+        <div className="flex items-center gap-1.5 px-3 pb-1 h-9">
+          {equippedBlessing ? (
+            <>
+              <Tooltip content={equippedBlessing.description}>
+                <div className={`w-7 h-7 rounded-md overflow-hidden border-2 shrink-0 ${RARITY_BORDER_COLOR[equippedBlessing.rarity]}`}>
+                  <img src={getBlessingImagePath(equippedBlessing.id)} alt={equippedBlessing.name} className="w-full h-full object-cover" />
+                </div>
+              </Tooltip>
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{equippedBlessing.name}</span>
+            </>
+          ) : (
+            <>
+              <div className="w-7 h-7 rounded-md border-2 border-dashed border-gray-200 dark:border-gray-700 shrink-0" />
+              <span className="text-[10px] text-gray-300 dark:text-gray-600 truncate">No Blessing Equipped</span>
             </>
           )}
         </div>

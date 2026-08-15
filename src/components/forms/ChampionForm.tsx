@@ -25,7 +25,9 @@ import { MdClose } from "react-icons/md";
 import { getMinStarsForRarity } from "../../helpers/getMinStarsForRarity";
 import { RELICS, getRelicById } from "../../data/relics";
 import { getRelicImagePath } from "../../helpers/getRelicImage";
-import { RELIC_RARITY_BORDER } from "../../helpers/relicRarityBorder";
+import { RARITY_BORDER_COLOR } from "../../helpers/rarityBorderColor";
+import { BLESSINGS, getBlessingById } from "../../data/blessings";
+import { getBlessingImagePath } from "../../helpers/getBlessingImage";
 import Tooltip from "../utility/Tooltip";
 // import SkillsFieldArray from "./inputs/SkillsFieldArray"; // skills hidden
 // import AuraField from "./inputs/AuraField"; // skills hidden
@@ -79,7 +81,7 @@ function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
           <img
             src={getRelicImagePath(selectedRelic.id)}
             alt={selectedRelic.name}
-            className={`w-9 h-9 rounded-md object-cover border-2 shrink-0 ${RELIC_RARITY_BORDER[selectedRelic.rarity]}`}
+            className={`w-9 h-9 rounded-md object-cover border-2 shrink-0 ${RARITY_BORDER_COLOR[selectedRelic.rarity]}`}
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">{selectedRelic.name}</p>
@@ -124,9 +126,103 @@ function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
                   title={relic.description}
                   className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
                 >
-                  <img src={getRelicImagePath(relic.id)} alt="" className={`w-7 h-7 rounded-md object-cover border-2 shrink-0 ${RELIC_RARITY_BORDER[relic.rarity]}`} />
+                  <img src={getRelicImagePath(relic.id)} alt="" className={`w-7 h-7 rounded-md object-cover border-2 shrink-0 ${RARITY_BORDER_COLOR[relic.rarity]}`} />
                   <span className="text-sm flex-1 truncate">{relic.name}</span>
                   <span className="text-[10px] text-gray-400 shrink-0">{relic.rarity}</span>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ── Blessing search/autocomplete picker — a champion equips at most 1, and
+// only once they have at least 1 Awakened Star ─────────────────────────────
+
+interface BlessingPickerProps {
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onClear: () => void;
+  disabled: boolean;
+}
+
+function BlessingPicker({ selectedId, onSelect, onClear, disabled }: BlessingPickerProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const selectedBlessing = selectedId ? getBlessingById(selectedId) : undefined;
+
+  const pick = (id: string) => {
+    onSelect(id);
+    setQuery("");
+    setOpen(false);
+  };
+
+  if (selectedBlessing) {
+    return (
+      <Tooltip content={selectedBlessing.description}>
+        <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5">
+          <img
+            src={getBlessingImagePath(selectedBlessing.id)}
+            alt={selectedBlessing.name}
+            className={`w-9 h-9 rounded-md object-cover border-2 shrink-0 ${RARITY_BORDER_COLOR[selectedBlessing.rarity]}`}
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">{selectedBlessing.name}</p>
+            <p className="text-[10px] text-gray-400">{selectedBlessing.rarity} · {selectedBlessing.group}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClear}
+            title="Remove blessing"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+          >
+            <MdClose size={16} />
+          </button>
+        </div>
+      </Tooltip>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <div className="basic-input w-full flex items-center text-gray-400 dark:text-gray-500 opacity-70 cursor-not-allowed">
+        Requires at least 1 Awakened Star
+      </div>
+    );
+  }
+
+  const lower = query.trim().toLowerCase();
+  const matches = lower ? BLESSINGS.filter((b) => b.name.toLowerCase().includes(lower)) : BLESSINGS;
+
+  return (
+    <div className="relative">
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search a blessing to equip, or leave empty…"
+        className="basic-input w-full pr-3"
+      />
+      {open && (
+        <ul className="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+          {matches.length === 0 ? (
+            <li className="px-3 py-2 text-xs text-gray-400">No blessings match "{query}"</li>
+          ) : (
+            matches.map((blessing) => (
+              <li key={blessing.id}>
+                <button
+                  type="button"
+                  onMouseDown={() => pick(blessing.id)}
+                  title={blessing.description}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
+                >
+                  <img src={getBlessingImagePath(blessing.id)} alt="" className={`w-7 h-7 rounded-md object-cover border-2 shrink-0 ${RARITY_BORDER_COLOR[blessing.rarity]}`} />
+                  <span className="text-sm flex-1 truncate">{blessing.name}</span>
+                  <span className="text-[10px] text-gray-400 shrink-0">{blessing.rarity}</span>
                 </button>
               </li>
             ))
@@ -261,6 +357,16 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
 
   const setRelic = (relicId: string) => setValue("relic", relicId, { shouldDirty: true });
   const clearRelic = () => setValue("relic", "", { shouldDirty: true });
+
+  const setBlessing = (blessingId: string) => setValue("blessing", blessingId, { shouldDirty: true });
+  const clearBlessing = () => setValue("blessing", "", { shouldDirty: true });
+
+  // A blessing requires at least 1 Awakened Star — drop it if the champion
+  // is un-awakened, mirroring how applyStarsChange cascades other fields.
+  const handleAwakenChange = (v: number) => {
+    setValue("awaken_stars", v, { shouldDirty: true });
+    if (v < 1 && getValues("blessing")) clearBlessing();
+  };
 
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showRosterDropdown || rosterMatches.length === 0) return;
@@ -613,7 +719,7 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
                         minStars={minStars}
                         onStarsChange={handleStarsChange}
                         onAscensionChange={(v) => setValue("ascension_stars", v, { shouldDirty: true })}
-                        onAwakenChange={(v) => setValue("awaken_stars", v, { shouldDirty: true })}
+                        onAwakenChange={handleAwakenChange}
                       />
                       {errors.stars && <p className="text-red-500 text-xs mt-1">{errors.stars?.message}</p>}
                     </div>
@@ -699,6 +805,18 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Relic</label>
             <RelicPicker selectedId={w.relic ?? ""} onSelect={setRelic} onClear={clearRelic} />
             {errors.relic && <p className="text-red-500 text-xs mt-1">{errors.relic.message}</p>}
+          </div>
+
+          {/* ── Blessing — a champion equips at most 1, requires 1+ Awakened Star ── */}
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Blessing</label>
+            <BlessingPicker
+              selectedId={w.blessing ?? ""}
+              onSelect={setBlessing}
+              onClear={clearBlessing}
+              disabled={(w.awaken_stars ?? 0) < 1}
+            />
+            {errors.blessing && <p className="text-red-500 text-xs mt-1">{errors.blessing.message}</p>}
           </div>
 
           {/* ── Roles — full width, since it has by far the most content ── */}

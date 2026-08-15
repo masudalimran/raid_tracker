@@ -101,6 +101,7 @@ export const championSchema = z.object({
     z.enum(Object.values(ChampionRole) as [ChampionRole, ...ChampionRole[]]),
   ),
   relic: z.string().optional().or(z.literal("")),
+  blessing: z.string().optional().or(z.literal("")),
 
   stars: z.number().int().min(1).max(6),
   ascension_stars: z.number().int().min(0).max(6),
@@ -132,6 +133,14 @@ export const championSchema = z.object({
       code: "custom",
       path: ["level"],
       message: `Level can't exceed ${maxLevel} for ${data.stars}★.`,
+    });
+  }
+
+  if (data.blessing && data.awaken_stars < 1) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["blessing"],
+      message: "A blessing requires at least 1 Awakened Star.",
     });
   }
 });
