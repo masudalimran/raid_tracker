@@ -32,6 +32,80 @@ const RARITY_BADGE: Record<string, string> = {
 
 const MAX_AVATARS = 6;
 
+// Shows up to MAX_AVATARS champion avatars; "+N more" opens a scrollable
+// list of everyone in a modal instead of expanding in place — a relic used
+// by 40 champions would otherwise wrap across many lines and blow out that
+// one card's height relative to its siblings in the grid.
+function EquippedByList({
+  itemName,
+  users,
+  onPreview,
+}: {
+  itemName: string;
+  users: IChampion[];
+  onPreview: (c: IChampion) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+
+  if (users.length === 0) {
+    return <p className="text-[10px] text-gray-300 dark:text-gray-600 pt-0.5">Not equipped by anyone</p>;
+  }
+
+  const visible = users.slice(0, MAX_AVATARS);
+  const hiddenCount = users.length - MAX_AVATARS;
+
+  return (
+    <>
+      <div className="flex items-center gap-1 flex-wrap pt-0.5">
+        {visible.map((c) => (
+          <Tooltip key={c.id} content={c.name}>
+            <button
+              type="button"
+              onClick={() => onPreview(c)}
+              className="block rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
+            >
+              {c.imgUrl ? (
+                <img src={c.imgUrl} alt={c.name} className="w-5 h-5 rounded-full object-cover object-top" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700" />
+              )}
+            </button>
+          </Tooltip>
+        ))}
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowAll(true)}
+            className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold hover:underline cursor-pointer"
+          >
+            +{hiddenCount} more
+          </button>
+        )}
+      </div>
+
+      <Modal isOpen={showAll} title={`Equipped by ${itemName} (${users.length})`} onClose={() => setShowAll(false)}>
+        <div className="max-h-80 overflow-y-auto -mx-1 space-y-0.5">
+          {users.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => { setShowAll(false); onPreview(c); }}
+              className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
+            >
+              {c.imgUrl ? (
+                <img src={c.imgUrl} alt="" className="w-7 h-7 rounded-full object-cover object-top shrink-0" />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />
+              )}
+              <span className="text-sm truncate">{c.name}</span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+    </>
+  );
+}
+
 export default function Relics() {
   const [loading, setLoading] = useState(true);
   const [champions, setChampions] = useState<IChampion[]>([]);
@@ -117,36 +191,7 @@ export default function Relics() {
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{relic.description}</p>
 
-                        {users.length > 0 ? (
-                          <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                            {users.slice(0, MAX_AVATARS).map((c) => (
-                              <Tooltip key={c.id} content={c.name}>
-                                <button
-                                  type="button"
-                                  onClick={() => setPreviewChampion(c)}
-                                  className="block rounded-full cursor-pointer hover:ring-2 hover:ring-amber-400 transition"
-                                >
-                                  {c.imgUrl ? (
-                                    <img
-                                      src={c.imgUrl}
-                                      alt={c.name}
-                                      className="w-5 h-5 rounded-full object-cover object-top"
-                                    />
-                                  ) : (
-                                    <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700" />
-                                  )}
-                                </button>
-                              </Tooltip>
-                            ))}
-                            {users.length > MAX_AVATARS && (
-                              <span className="text-[10px] text-gray-400 font-medium">
-                                +{users.length - MAX_AVATARS}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-[10px] text-gray-300 dark:text-gray-600 pt-0.5">Not equipped by anyone</p>
-                        )}
+                        <EquippedByList itemName={relic.name} users={users} onPreview={setPreviewChampion} />
                       </div>
                     </div>
                   );
