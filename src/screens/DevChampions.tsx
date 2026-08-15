@@ -27,12 +27,13 @@ import {
 } from "../helpers/championImportExport";
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
+import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
 
-type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable";
+type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable" | "no_relic";
 
-const DEV_FILTER_MODES: DevFilterMode[] = ["default_image", "no_image", "under_roled", "not_viable"];
+const DEV_FILTER_MODES: DevFilterMode[] = ["default_image", "no_image", "under_roled", "not_viable", "no_relic"];
 const isDevFilterMode = (value: string | null): value is DevFilterMode =>
   !!value && (DEV_FILTER_MODES as string[]).includes(value);
 
@@ -53,6 +54,10 @@ const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number
   not_viable: {
     title: "Not Viable Champions",
     subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} tagged as Not Viable.`,
+  },
+  no_relic: {
+    title: "No Equipped Relic",
+    subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} used in at least 1 team but with no relic equipped.`,
   },
 };
 
@@ -133,6 +138,8 @@ export default function DevChampions() {
         );
       case "not_viable":
         return championList.filter((c) => c.role?.includes(ChampionRole.NOT_VIABLE));
+      case "no_relic":
+        return getCurrentlyInUseChampions(championList).filter((c) => !c.relic);
       case "default_image":
       default:
         return championList.filter((c) => c.imgUrl === DefaultChampionObject.imgUrl);
@@ -273,6 +280,7 @@ export default function DevChampions() {
             <option value="no_image">No image</option>
             <option value="under_roled">Under-roled (&lt; {MIN_ROLES})</option>
             <option value="not_viable">Not Viable</option>
+            <option value="no_relic">No Equipped Relic</option>
           </select>
 
           <div className="relative">

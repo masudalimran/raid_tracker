@@ -100,6 +100,7 @@ export const championSchema = z.object({
   role: z.array(
     z.enum(Object.values(ChampionRole) as [ChampionRole, ...ChampionRole[]]),
   ),
+  relic: z.string().optional().or(z.literal("")),
 
   stars: z.number().int().min(1).max(6),
   ascension_stars: z.number().int().min(0).max(6),

@@ -31,6 +31,9 @@ export default interface IChampion {
   ascension_stars: number;
   awaken_stars: number;
 
+  /** Id of the relic currently equipped on this champion (a champion can equip at most 1). */
+  relic?: string;
+
   is_booked: boolean;
   is_book_needed: boolean;
   has_mastery: boolean;

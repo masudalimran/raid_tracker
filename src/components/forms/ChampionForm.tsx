@@ -21,7 +21,12 @@ import ChampionCard from "../card/ChampionCard";
 import getFactionLogo from "../../helpers/getFactionLogo";
 import { STOCK_EMPTY_IMAGE } from "../../data/stock_image";
 import { FaArrowRight, FaExclamationTriangle } from "react-icons/fa";
+import { MdClose } from "react-icons/md";
 import { getMinStarsForRarity } from "../../helpers/getMinStarsForRarity";
+import { RELICS, getRelicById } from "../../data/relics";
+import { getRelicImagePath } from "../../helpers/getRelicImage";
+import { RELIC_RARITY_BORDER } from "../../helpers/relicRarityBorder";
+import Tooltip from "../utility/Tooltip";
 // import SkillsFieldArray from "./inputs/SkillsFieldArray"; // skills hidden
 // import AuraField from "./inputs/AuraField"; // skills hidden
 
@@ -47,6 +52,90 @@ const CC_TRIGGER_ROLES: ChampionRole[] = [
 
 // Roles that count as continuous healing — checking any of these auto-selects the Healer role.
 const HEALER_TRIGGER_ROLES: ChampionRole[] = [ChampionRole.CONTINUOUS_HEAL];
+
+// ── Relic search/autocomplete picker — a champion equips at most 1 ─────────
+
+interface RelicPickerProps {
+  selectedId: string;
+  onSelect: (id: string) => void;
+  onClear: () => void;
+}
+
+function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const selectedRelic = selectedId ? getRelicById(selectedId) : undefined;
+
+  const pick = (id: string) => {
+    onSelect(id);
+    setQuery("");
+    setOpen(false);
+  };
+
+  if (selectedRelic) {
+    return (
+      <Tooltip content={selectedRelic.description}>
+        <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5">
+          <img
+            src={getRelicImagePath(selectedRelic.id)}
+            alt={selectedRelic.name}
+            className={`w-9 h-9 rounded-md object-cover border-2 shrink-0 ${RELIC_RARITY_BORDER[selectedRelic.rarity]}`}
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">{selectedRelic.name}</p>
+            <p className="text-[10px] text-gray-400">{selectedRelic.rarity} · {selectedRelic.group}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClear}
+            title="Remove relic"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+          >
+            <MdClose size={16} />
+          </button>
+        </div>
+      </Tooltip>
+    );
+  }
+
+  const lower = query.trim().toLowerCase();
+  const matches = lower ? RELICS.filter((r) => r.name.toLowerCase().includes(lower)) : RELICS;
+
+  return (
+    <div className="relative">
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search a relic to equip, or leave empty…"
+        className="basic-input w-full pr-3"
+      />
+      {open && (
+        <ul className="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+          {matches.length === 0 ? (
+            <li className="px-3 py-2 text-xs text-gray-400">No relics match "{query}"</li>
+          ) : (
+            matches.map((relic) => (
+              <li key={relic.id}>
+                <button
+                  type="button"
+                  onMouseDown={() => pick(relic.id)}
+                  title={relic.description}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
+                >
+                  <img src={getRelicImagePath(relic.id)} alt="" className={`w-7 h-7 rounded-md object-cover border-2 shrink-0 ${RELIC_RARITY_BORDER[relic.rarity]}`} />
+                  <span className="text-sm flex-1 truncate">{relic.name}</span>
+                  <span className="text-[10px] text-gray-400 shrink-0">{relic.rarity}</span>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const [isOnPreview, setIsOnPreview] = useState<boolean>(false);
@@ -169,6 +258,9 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
     if ((getValues("level") ?? 1) > newMaxLevel) setValue("level", newMaxLevel, { shouldDirty: true });
   };
   const handleStarsChange = (v: number) => applyStarsChange(v);
+
+  const setRelic = (relicId: string) => setValue("relic", relicId, { shouldDirty: true });
+  const clearRelic = () => setValue("relic", "", { shouldDirty: true });
 
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showRosterDropdown || rosterMatches.length === 0) return;
@@ -600,6 +692,13 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
               </div>
             </div>
 
+          </div>
+
+          {/* ── Relic — a champion equips at most 1 ── */}
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Relic</label>
+            <RelicPicker selectedId={w.relic ?? ""} onSelect={setRelic} onClear={clearRelic} />
+            {errors.relic && <p className="text-red-500 text-xs mt-1">{errors.relic.message}</p>}
           </div>
 
           {/* ── Roles — full width, since it has by far the most content ── */}
