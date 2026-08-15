@@ -100,8 +100,10 @@ export const championSchema = z.object({
   role: z.array(
     z.enum(Object.values(ChampionRole) as [ChampionRole, ...ChampionRole[]]),
   ),
-  relic: z.string().optional().or(z.literal("")),
-  blessing: z.string().optional().or(z.literal("")),
+  // .nullish() (not just .optional()) since existing champions saved before
+  // these columns existed come back from Supabase as `null`, not `undefined`.
+  relic: z.string().nullish(),
+  blessing: z.string().nullish(),
 
   stars: z.number().int().min(1).max(6),
   ascension_stars: z.number().int().min(0).max(6),

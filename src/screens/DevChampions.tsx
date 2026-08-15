@@ -57,11 +57,13 @@ const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number
   },
   no_relic: {
     title: "No Equipped Relic",
-    subtitle: (n) => `${n} champion${n !== 1 ? "s" : ""} used in at least 1 team but with no relic equipped.`,
+    subtitle: (n) =>
+      `${n} champion${n !== 1 ? "s" : ""} used in at least 1 team but with no relic equipped (Not Viable champions excluded).`,
   },
   no_blessing: {
     title: "No Equipped Blessing",
-    subtitle: (n) => `${n} awakened champion${n !== 1 ? "s" : ""} (1+ Awakened Star) with no blessing equipped.`,
+    subtitle: (n) =>
+      `${n} awakened champion${n !== 1 ? "s" : ""} (1+ Awakened Star) with no blessing equipped (Not Viable champions excluded).`,
   },
 };
 
@@ -143,9 +145,13 @@ export default function DevChampions() {
       case "not_viable":
         return championList.filter((c) => c.role?.includes(ChampionRole.NOT_VIABLE));
       case "no_relic":
-        return getCurrentlyInUseChampions(championList).filter((c) => !c.relic);
+        return getCurrentlyInUseChampions(championList).filter(
+          (c) => !c.relic && !c.role?.includes(ChampionRole.NOT_VIABLE),
+        );
       case "no_blessing":
-        return championList.filter((c) => c.awaken_stars >= 1 && !c.blessing);
+        return championList.filter(
+          (c) => c.awaken_stars >= 1 && !c.blessing && !c.role?.includes(ChampionRole.NOT_VIABLE),
+        );
       case "default_image":
       default:
         return championList.filter((c) => c.imgUrl === DefaultChampionObject.imgUrl);

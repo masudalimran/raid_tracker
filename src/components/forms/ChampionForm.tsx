@@ -286,6 +286,11 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const previewChampion: IChampion = {
     ...(champion ?? DefaultChampionObject),
     ...watchedFormData,
+    // watchedFormData's relic/blessing can be `null` (Supabase's shape for
+    // existing champions saved before these columns existed) — IChampion
+    // only allows `string | undefined`.
+    relic: watchedFormData.relic ?? undefined,
+    blessing: watchedFormData.blessing ?? undefined,
     aura: watchedFormData.aura ? {
       ...watchedFormData.aura,
       effect: watchedFormData.aura.effect ?? "",
