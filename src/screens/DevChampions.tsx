@@ -28,8 +28,20 @@ import {
 import { getNsfwStatus } from "../helpers/getNsfwStatus";
 import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
+import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
+import { getBuildQuality, type BuildQuality } from "../helpers/getChampionBuildQuality";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
+
+const BUILD_STATUS_OPTIONS: { key: BuildQuality; label: string }[] = [
+  { key: "built", label: "Built" },
+  { key: "needs_improvement", label: "Needs Improvement" },
+  { key: "needs_level", label: "Need Level" },
+  { key: "not_built", label: "Not Built" },
+  { key: "untouched", label: "Untouched" },
+];
+const isBuildQuality = (value: string | null): value is BuildQuality =>
+  !!value && BUILD_STATUS_OPTIONS.some((o) => o.key === value);
 
 type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable" | "no_relic" | "no_blessing";
 
@@ -88,6 +100,21 @@ export default function DevChampions() {
       return next;
     }, { replace: true });
   };
+
+  // Build status is a separate, layered-on-top narrowing — applies within
+  // whichever dev filter mode is currently active, same as everywhere else.
+  const buildStatus: BuildQuality | null = isBuildQuality(searchParams.get("build"))
+    ? (searchParams.get("build") as BuildQuality)
+    : null;
+  const setBuildStatus = (status: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (isBuildQuality(status)) next.set("build", status);
+      else next.delete("build");
+      return next;
+    }, { replace: true });
+  };
+
   const [nsfw, setNsfw] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
@@ -159,12 +186,15 @@ export default function DevChampions() {
   }, [championList, filterMode]);
 
   const filteredChampions = useMemo(() => {
-    const list = searchText
+    let list = searchText
       ? flaggedChampions.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
       : flaggedChampions;
+    if (buildStatus) {
+      list = list.filter((c) => getBuildQuality(c, checkIfChampionIsBuilt(c)) === buildStatus);
+    }
     if (filterMode === "under_roled") return list;
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
-  }, [flaggedChampions, searchText, filterMode]);
+  }, [flaggedChampions, searchText, filterMode, buildStatus]);
 
   // Cross-account sync plan: fills in image/identity/URL/faction gaps on
   // default-image duplicates using whichever same-named champion (in any RSL
@@ -294,6 +324,18 @@ export default function DevChampions() {
             <option value="not_viable">Not Viable</option>
             <option value="no_relic">No Equipped Relic</option>
             <option value="no_blessing">No Equipped Blessing</option>
+          </select>
+
+          <select
+            value={buildStatus ?? ""}
+            onChange={(e) => setBuildStatus(e.target.value)}
+            title="Further narrow by build status"
+            className="basic-select w-auto"
+          >
+            <option value="">Any build status</option>
+            {BUILD_STATUS_OPTIONS.map(({ key, label }) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
           </select>
 
           <div className="relative">
