@@ -17,6 +17,7 @@ import {
   type AreaRoleReq,
 } from "../../../data/areaRoleRequirements";
 import { suggestTeam } from "../../../helpers/suggestTeam";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 interface ChampionMultiSelectProps {
   value: string[];
@@ -97,7 +98,8 @@ export default function ChampionMultiSelect({
   max = 6,
   requiredRoles = [],
 }: ChampionMultiSelectProps) {
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
   const [viewMode, setViewMode] = useState<"all" | "suggested">("all");
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
   const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
@@ -391,16 +393,16 @@ export default function ChampionMultiSelect({
             <input
               type="text"
               placeholder="Search champions..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
               className="w-full border px-2 py-1 pr-7 rounded"
             />
-            {query && (
+            {queryInput && (
               <div className="absolute right-1 top-1/2 -translate-y-1/2">
                 <Tooltip content="Clear search">
                   <button
                     type="button"
-                    onClick={() => setQuery("")}
+                    onClick={() => setQueryInput("")}
                     className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition cursor-pointer"
                   >
                     <MdClose size={14} />

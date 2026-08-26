@@ -30,6 +30,7 @@ import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { getBuildQuality, type BuildQuality } from "../helpers/getChampionBuildQuality";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
 
@@ -89,7 +90,8 @@ export default function DevChampions() {
   const [championList, setChampionList] = useState<IChampion[]>([]);
   const [allAccountsChampionList, setAllAccountsChampionList] = useState<IChampion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const searchText = useDebouncedValue(searchInput, 300);
   const filterMode: DevFilterMode = isDevFilterMode(searchParams.get("filter"))
     ? (searchParams.get("filter") as DevFilterMode)
     : "default_image";
@@ -340,16 +342,16 @@ export default function DevChampions() {
 
           <div className="relative">
             <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search…"
               className="basic-input w-36 sm:w-48 pr-8"
             />
-            {searchText ? (
+            {searchInput ? (
               <button
                 type="button"
                 title="Clear search"
-                onClick={() => setSearchText("")}
+                onClick={() => setSearchInput("")}
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition cursor-pointer"
               >
                 <MdClose size={14} />

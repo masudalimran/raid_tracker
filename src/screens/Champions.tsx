@@ -34,6 +34,7 @@ import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { getBuildQuality, getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
+import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 
 const STATUS_OPTIONS = [
   { key: "in_use", label: "In Use" },
@@ -106,14 +107,27 @@ export default function Champions() {
     }, { replace: true });
   };
 
+  // The input stays bound to this so typing feels instant; the URL (which
+  // drives the actual filtering) is only updated once typing pauses, so the
+  // expensive roster filter/sort doesn't run on every keystroke.
+  const [searchInput, setSearchInput] = useState(() => searchParams.get("q") ?? "");
   const searchText = searchParams.get("q") ?? "";
-  const setSearchText = (value: string) => {
+  const writeSearchTextToUrl = (value: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (value) next.set("q", value);
       else next.delete("q");
       return next;
     }, { replace: true });
+  };
+  const commitSearchText = useDebouncedCallback(writeSearchTextToUrl, 300);
+  const setSearchText = (value: string) => {
+    setSearchInput(value);
+    commitSearchText(value);
+  };
+  const clearSearchText = () => {
+    setSearchInput("");
+    writeSearchTextToUrl("");
   };
 
   const filterInfo = useMemo<ChampionFilter>(() => ({
@@ -507,17 +521,17 @@ export default function Champions() {
               <>
                 <div className="relative">
                   <input
-                    value={searchText}
+                    value={searchInput}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Search…"
                     className="basic-input w-36 sm:w-48 pr-8"
                   />
-                  {searchText ? (
+                  {searchInput ? (
                     <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
                       <Tooltip content="Clear search">
                         <button
                           type="button"
-                          onClick={() => setSearchText("")}
+                          onClick={clearSearchText}
                           className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300 transition cursor-pointer"
                         >
                           <MdClose size={14} />

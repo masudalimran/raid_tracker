@@ -17,6 +17,8 @@ import {
   resetPityForShardType,
 } from "../helpers/handleShardPulls";
 import { useChampion } from "../hooks/useChampion";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
 import type { ChampionFormData } from "../lib/zod/championSchema";
 import type { ChampionRarity } from "../models/ChampionRarity";
@@ -300,7 +302,8 @@ export default function ShardLog() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Log list search & filter
-  const [logSearch, setLogSearch] = useState("");
+  const [logSearchInput, setLogSearchInput] = useState("");
+  const logSearch = useDebouncedValue(logSearchInput, 300);
   const [logRarityFilter, setLogRarityFilter] = useState<string>("rarity_all");
   const [logSort, setLogSort] = useState<"newest" | "oldest">("newest");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -402,10 +405,10 @@ export default function ShardLog() {
     return list;
   }, [tabPulls, logSearch, logRarityFilter, logSort]);
 
-  const filtersActive = logSearch.trim() !== "" || logRarityFilter !== "rarity_all" || logSort !== "newest";
+  const filtersActive = logSearchInput.trim() !== "" || logRarityFilter !== "rarity_all" || logSort !== "newest";
 
   const clearFilters = () => {
-    setLogSearch("");
+    setLogSearchInput("");
     setLogRarityFilter("rarity_all");
     setLogSort("newest");
   };
@@ -415,9 +418,11 @@ export default function ShardLog() {
     [pulls, activeTab],
   );
 
-  const handleNameChange = (value: string) => {
-    setForm((f) => ({ ...f, championName: value }));
-    setPreviewUrl("");
+  // Computing suggestions parses the full roster from localStorage on every
+  // call, so it's debounced separately from the name field itself — the
+  // input stays instant while the (heavier) suggestion lookup waits for
+  // typing to pause.
+  const updateSuggestions = useDebouncedCallback((value: string) => {
     if (value.trim().length >= 2) {
       const lower = value.toLowerCase();
       const rawNames = JSON.parse(
@@ -435,6 +440,12 @@ export default function ShardLog() {
       setShowSuggestions(false);
       setActiveSuggestion(-1);
     }
+  }, 300);
+
+  const handleNameChange = (value: string) => {
+    setForm((f) => ({ ...f, championName: value }));
+    setPreviewUrl("");
+    updateSuggestions(value);
   };
 
   const selectSuggestion = (name: string) => {
@@ -882,8 +893,8 @@ export default function ShardLog() {
           <div className="flex gap-2 flex-wrap items-center">
             <div className="relative flex-1 min-w-40">
               <input
-                value={logSearch}
-                onChange={(e) => setLogSearch(e.target.value)}
+                value={logSearchInput}
+                onChange={(e) => setLogSearchInput(e.target.value)}
                 placeholder="Search pulled champions…"
                 className="basic-input w-full pr-8"
               />

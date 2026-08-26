@@ -7,6 +7,7 @@ import Tooltip from "../components/utility/Tooltip";
 import { generateChampions } from "../helpers/handleChampions";
 import { getBlessingImagePath } from "../helpers/getBlessingImage";
 import { RARITY_BORDER_COLOR } from "../helpers/rarityBorderColor";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { BLESSINGS } from "../data/blessings";
 import { BlessingGroup } from "../models/IBlessing";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -105,7 +106,8 @@ function EquippedByList({
 export default function Blessings() {
   const [loading, setLoading] = useState(true);
   const [champions, setChampions] = useState<IChampion[]>([]);
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebouncedValue(searchInput, 300);
   const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
 
   useEffect(() => {
@@ -151,8 +153,8 @@ export default function Blessings() {
           </p>
         </div>
         <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search blessings…"
           className="basic-input w-full sm:w-64 pr-3"
         />

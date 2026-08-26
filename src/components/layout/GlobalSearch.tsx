@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 import type IChampion from "../../models/IChampion";
 import { ALL_AREAS } from "../../data/allAreas";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 
 interface ResultItem {
   key: string;
@@ -14,7 +15,8 @@ interface ResultItem {
 
 export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ export default function GlobalSearch() {
 
   useEffect(() => {
     if (isOpen) {
-      setQuery("");
+      setQueryInput("");
       setActiveIndex(0);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
@@ -114,9 +116,9 @@ export default function GlobalSearch() {
           <FaSearch className="text-gray-400 shrink-0" size={14} />
           <input
             ref={inputRef}
-            value={query}
+            value={queryInput}
             onChange={(e) => {
-              setQuery(e.target.value);
+              setQueryInput(e.target.value);
               setActiveIndex(0);
             }}
             onKeyDown={handleInputKeyDown}
@@ -146,7 +148,7 @@ export default function GlobalSearch() {
           </ul>
         )}
 
-        {query.trim() && results.length === 0 && (
+        {queryInput.trim() && results.length === 0 && (
           <p className="px-4 py-6 text-sm text-gray-400 text-center">No matches found.</p>
         )}
       </div>

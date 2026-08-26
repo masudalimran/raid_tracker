@@ -3,6 +3,7 @@ import { FaPlus } from "react-icons/fa6";
 import { ROLE_CATEGORIES } from "../../../data/roleCategories";
 import { ChampionRoleImageMap } from "../../../models/ChampionRole";
 import type { ChampionRole } from "../../../models/ChampionRole";
+import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 
 interface RoleSearchSelectProps {
   excludeRoles: string[];
@@ -12,7 +13,8 @@ interface RoleSearchSelectProps {
 /** Searchable, grouped role picker — replaces a single long native <select>. */
 export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -20,7 +22,7 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setQuery("");
+        setQueryInput("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -43,7 +45,7 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
 
   const handlePick = (role: ChampionRole) => {
     onSelect(role);
-    setQuery("");
+    setQueryInput("");
     searchRef.current?.focus();
   };
 
@@ -53,7 +55,7 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
         type="button"
         onClick={() => {
           setIsOpen((prev) => !prev);
-          setQuery("");
+          setQueryInput("");
         }}
         className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold border border-amber-200 rounded-full px-2 py-0.5 bg-amber-50 hover:bg-amber-100 transition cursor-pointer"
       >
@@ -67,8 +69,8 @@ export default function RoleSearchSelect({ excludeRoles, onSelect }: RoleSearchS
               ref={searchRef}
               type="text"
               placeholder="Search roles…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
               className="w-full text-xs border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
             />
           </div>

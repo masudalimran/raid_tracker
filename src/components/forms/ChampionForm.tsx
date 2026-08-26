@@ -15,6 +15,8 @@ import { ROLE_CATEGORIES } from "../../data/roleCategories";
 import RaidStarInput from "./inputs/RaidStarInput";
 import ToggleInput from "./inputs/ToggleInput";
 import { useChampion } from "../../hooks/useChampion";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { useDebouncedCallback } from "../../hooks/useDebouncedCallback";
 import { syncRolesForChampionName } from "../../helpers/handleChampions";
 import { useState } from "react";
 import ChampionCard from "../card/ChampionCard";
@@ -64,13 +66,14 @@ interface RelicPickerProps {
 }
 
 function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
   const [open, setOpen] = useState(false);
   const selectedRelic = selectedId ? getRelicById(selectedId) : undefined;
 
   const pick = (id: string) => {
     onSelect(id);
-    setQuery("");
+    setQueryInput("");
     setOpen(false);
   };
 
@@ -106,8 +109,8 @@ function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
   return (
     <div className="relative">
       <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={queryInput}
+        onChange={(e) => setQueryInput(e.target.value)}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Search a relic to equip, or leave empty…"
@@ -116,7 +119,7 @@ function RelicPicker({ selectedId, onSelect, onClear }: RelicPickerProps) {
       {open && (
         <ul className="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-64 overflow-y-auto">
           {matches.length === 0 ? (
-            <li className="px-3 py-2 text-xs text-gray-400">No relics match "{query}"</li>
+            <li className="px-3 py-2 text-xs text-gray-400">No relics match "{queryInput}"</li>
           ) : (
             matches.map((relic) => (
               <li key={relic.id}>
@@ -150,13 +153,14 @@ interface BlessingPickerProps {
 }
 
 function BlessingPicker({ selectedId, onSelect, onClear, disabled }: BlessingPickerProps) {
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
   const [open, setOpen] = useState(false);
   const selectedBlessing = selectedId ? getBlessingById(selectedId) : undefined;
 
   const pick = (id: string) => {
     onSelect(id);
-    setQuery("");
+    setQueryInput("");
     setOpen(false);
   };
 
@@ -200,8 +204,8 @@ function BlessingPicker({ selectedId, onSelect, onClear, disabled }: BlessingPic
   return (
     <div className="relative">
       <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={queryInput}
+        onChange={(e) => setQueryInput(e.target.value)}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Search a blessing to equip, or leave empty…"
@@ -210,7 +214,7 @@ function BlessingPicker({ selectedId, onSelect, onClear, disabled }: BlessingPic
       {open && (
         <ul className="absolute top-full left-0 right-0 mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden max-h-64 overflow-y-auto">
           {matches.length === 0 ? (
-            <li className="px-3 py-2 text-xs text-gray-400">No blessings match "{query}"</li>
+            <li className="px-3 py-2 text-xs text-gray-400">No blessings match "{queryInput}"</li>
           ) : (
             matches.map((blessing) => (
               <li key={blessing.id}>
@@ -244,6 +248,33 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
   const champion_list = JSON.parse(
     localStorage.getItem("supabase_champion_list") ?? "[]",
   ) as IChampion[];
+
+  // ── Roster-based name autocomplete ───────────────────────────────────────
+  // The name field itself is RHF-managed (uncontrolled), so typing stays
+  // instant regardless; only this matching pass against the full roster is
+  // debounced, since it re-runs on every keystroke otherwise. Declared here,
+  // before the early return below, so the hook it uses internally is always
+  // called in the same order every render.
+  const handleNameInput = useDebouncedCallback((value: string) => {
+    if (value.trim().length >= 2) {
+      const lower = value.toLowerCase();
+      const seenNames = new Set<string>();
+      const hits: IChampion[] = [];
+      for (const c of champion_list) {
+        const name = c.name.toLowerCase();
+        if (!name.includes(lower) || seenNames.has(name)) continue;
+        seenNames.add(name);
+        hits.push(c);
+        if (hits.length === 6) break;
+      }
+      setRosterMatches(hits);
+      setShowRosterDropdown(hits.length > 0);
+      setActiveRosterIndex(-1);
+    } else {
+      setShowRosterDropdown(false);
+      setActiveRosterIndex(-1);
+    }
+  }, 300);
 
   const { id: userId } = JSON.parse(
     localStorage.getItem("supabase_auth") || "{}",
@@ -296,29 +327,6 @@ export default function ChampionForm({ champion, onClose }: ChampionFormProps) {
       effect: watchedFormData.aura.effect ?? "",
       effectiveness: watchedFormData.aura.effectiveness ?? "",
     } : undefined,
-  };
-
-  // ── Roster-based name autocomplete ───────────────────────────────────────
-
-  const handleNameInput = (value: string) => {
-    if (value.trim().length >= 2) {
-      const lower = value.toLowerCase();
-      const seenNames = new Set<string>();
-      const hits: IChampion[] = [];
-      for (const c of champion_list) {
-        const name = c.name.toLowerCase();
-        if (!name.includes(lower) || seenNames.has(name)) continue;
-        seenNames.add(name);
-        hits.push(c);
-        if (hits.length === 6) break;
-      }
-      setRosterMatches(hits);
-      setShowRosterDropdown(hits.length > 0);
-      setActiveRosterIndex(-1);
-    } else {
-      setShowRosterDropdown(false);
-      setActiveRosterIndex(-1);
-    }
   };
 
   // Only identity fields carry over from the matched roster champion — stats,

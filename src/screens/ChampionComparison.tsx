@@ -11,6 +11,7 @@ import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { formatNumber } from "../helpers/formatNumber";
 import { addToCompareList, removeFromCompareList, MAX_COMPARE } from "../helpers/compareList";
 import { useCompareList } from "../hooks/useCompareList";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 
@@ -47,7 +48,8 @@ function AddChampionPicker({
   excludeIds: Set<string>;
   onPick: (id: string) => void;
 }) {
-  const [query, setQuery] = useState("");
+  const [queryInput, setQueryInput] = useState("");
+  const query = useDebouncedValue(queryInput, 300);
 
   const matches = useMemo(() => {
     if (query.trim().length < 1) return [];
@@ -67,15 +69,15 @@ function AddChampionPicker({
 
   const pick = (id: string) => {
     onPick(id);
-    setQuery("");
+    setQueryInput("");
   };
 
   return (
     <div className="relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-55 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-4">
       <FaSearch className="text-gray-300 dark:text-gray-600" size={20} />
       <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={queryInput}
+        onChange={(e) => setQueryInput(e.target.value)}
         placeholder="Add a champion…"
         className="basic-input w-full pr-3"
       />

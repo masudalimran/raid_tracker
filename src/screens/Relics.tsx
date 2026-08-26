@@ -7,6 +7,7 @@ import Tooltip from "../components/utility/Tooltip";
 import { generateChampions } from "../helpers/handleChampions";
 import { getRelicImagePath } from "../helpers/getRelicImage";
 import { RARITY_BORDER_COLOR } from "../helpers/rarityBorderColor";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { RELICS } from "../data/relics";
 import { RelicGroup } from "../models/IRelic";
 import { ChampionRarity } from "../models/ChampionRarity";
@@ -109,7 +110,8 @@ function EquippedByList({
 export default function Relics() {
   const [loading, setLoading] = useState(true);
   const [champions, setChampions] = useState<IChampion[]>([]);
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebouncedValue(searchInput, 300);
   const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
 
   useEffect(() => {
@@ -155,8 +157,8 @@ export default function Relics() {
           </p>
         </div>
         <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search relics…"
           className="basic-input w-full sm:w-64 pr-3"
         />
