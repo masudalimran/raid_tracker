@@ -75,6 +75,15 @@ function masteryPriorityScore(
 
 const MAX_LEVEL = 60;
 
+// Top priority: a champion that's already fully invested in (booked and
+// mastered, wherever those were needed) gets no more value from that side —
+// levelling it next is a clean win, ahead of one still waiting on a book/mastery.
+function isFullyInvested(champion: IChampion): boolean {
+  const bookDone = !champion.is_book_needed || champion.is_booked;
+  const masteryDone = !champion.is_mastery_needed || champion.has_mastery;
+  return bookDone && masteryDone;
+}
+
 // A champion at exactly stars×10 has hit its current natural checkpoint (5★→50,
 // 6★→60, …); anything off that mark represents free, already-unlocked level-ups
 // sitting unused, so it's fixed before anything else in the queue.
@@ -284,6 +293,8 @@ function NeedsLevelItem({ champion, rank, teamCount, onEdit, onPreview }: NeedsL
     : levelRoleGroup(champion) === 1
     ? "Reviver"
     : undefined;
+  const hadInvestmentRequirements = champion.is_book_needed || champion.is_mastery_needed;
+  const showInvestedTag = hadInvestmentRequirements && isFullyInvested(champion);
 
   return (
     <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 shadow-sm">
@@ -302,6 +313,11 @@ function NeedsLevelItem({ champion, rank, teamCount, onEdit, onPreview }: NeedsL
         {teamCount > 0 && (
           <p className="text-[10px] text-blue-600 font-medium">
             {teamCount} team{teamCount !== 1 ? "s" : ""}
+          </p>
+        )}
+        {showInvestedTag && (
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+            Booked & mastered — level next
           </p>
         )}
       </div>
@@ -615,11 +631,13 @@ export default function PriorityQueue() {
       .map((c) => ({
         champion: c,
         teamCount: teamCountMap.get(String(c.id)) ?? 0,
+        fullyInvested: isFullyInvested(c),
         offCheckpoint: isOffLevelCheckpoint(c),
         roleGroup: levelRoleGroup(c),
         teamWeight: getTeamScore(c, teams),
       }))
       .sort((a, b) => {
+        if (a.fullyInvested !== b.fullyInvested) return a.fullyInvested ? -1 : 1;
         if (a.offCheckpoint !== b.offCheckpoint) return a.offCheckpoint ? -1 : 1;
         if (!a.offCheckpoint && a.roleGroup !== b.roleGroup) return a.roleGroup - b.roleGroup;
         return b.teamWeight - a.teamWeight;
@@ -684,7 +702,7 @@ export default function PriorityQueue() {
             Priority Queue
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            Books are ranked by team presence and rarity; masteries by team presence; levels put off-checkpoint champions first, then Nuker → Reviver → others, weighted by team usage — tick them off as you complete them.
+            Books are ranked by team presence and rarity; masteries by team presence; levels put fully booked & mastered champions first, then off-checkpoint champions, then Nuker → Reviver → others, weighted by team usage — tick them off as you complete them.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
