@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { fetchTeams } from "../helpers/handleTeams";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
-import { getBuildQuality } from "../helpers/getChampionBuildQuality";
+import { getTeamScore } from "../helpers/sortChampions";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
 import ChampionCard from "../components/card/ChampionCard";
 import ChampionModal from "../components/modals/ChampionModal";
@@ -69,6 +69,27 @@ function masteryPriorityScore(
   if (checkIfChampionIsBuilt(champion)) score += 30;
   score += highValueRoleCount(champion) * 10;
   return score;
+}
+
+// ── Needs Level scoring ──────────────────────────────────────────────────────
+
+const MAX_LEVEL = 60;
+
+// A champion at exactly stars×10 has hit its current natural checkpoint (5★→50,
+// 6★→60, …); anything off that mark represents free, already-unlocked level-ups
+// sitting unused, so it's fixed before anything else in the queue.
+function isOffLevelCheckpoint(champion: IChampion): boolean {
+  return champion.level !== champion.stars * 10;
+}
+
+// Within the "already at checkpoint, just needs more levels" tier, Nukers and
+// Revivers carry the most fight-swinging value, so they queue ahead of
+// everything else. A champion with both roles counts as a Nuker.
+function levelRoleGroup(champion: IChampion): number {
+  const roles = champion.role ?? [];
+  if (roles.includes(ChampionRole.NUKER)) return 0;
+  if (roles.includes(ChampionRole.REVIVER)) return 1;
+  return 2;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -254,7 +275,15 @@ interface NeedsLevelItemProps {
 }
 
 function NeedsLevelItem({ champion, rank, teamCount, onEdit, onPreview }: NeedsLevelItemProps) {
-  const targetLevel = champion.stars * 10;
+  const offCheckpoint = isOffLevelCheckpoint(champion);
+  const targetLevel = offCheckpoint ? champion.stars * 10 : MAX_LEVEL;
+  const badge = offCheckpoint
+    ? "Off Target"
+    : levelRoleGroup(champion) === 0
+    ? "Nuker"
+    : levelRoleGroup(champion) === 1
+    ? "Reviver"
+    : undefined;
 
   return (
     <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 shadow-sm">
@@ -263,7 +292,7 @@ function NeedsLevelItem({ champion, rank, teamCount, onEdit, onPreview }: NeedsL
         {rank}
       </span>
 
-      <ChampionPortrait champion={champion} onClick={onPreview} />
+      <ChampionPortrait champion={champion} badge={badge} onClick={onPreview} />
 
       <div className="flex-1 min-w-0 space-y-0.5">
         <p className="font-semibold text-sm truncate">{champion.name}</p>
@@ -577,16 +606,26 @@ export default function PriorityQueue() {
     ),
     [champions, ranked, teamCountMap],
   );
-  const needsLevel = useMemo(
-    () => ranked(
-      champions.filter((c) =>
-        (teamCountMap.get(String(c.id)) ?? 0) > 0 &&
-        getBuildQuality(c, checkIfChampionIsBuilt(c)) === "needs_level",
-      ),
-      masteryPriorityScore,
-    ),
-    [champions, ranked, teamCountMap],
-  );
+  const needsLevel = useMemo(() => {
+    const eligible = champions.filter((c) =>
+      (teamCountMap.get(String(c.id)) ?? 0) > 0 && c.level < MAX_LEVEL,
+    );
+
+    return eligible
+      .map((c) => ({
+        champion: c,
+        teamCount: teamCountMap.get(String(c.id)) ?? 0,
+        offCheckpoint: isOffLevelCheckpoint(c),
+        roleGroup: levelRoleGroup(c),
+        teamWeight: getTeamScore(c, teams),
+      }))
+      .sort((a, b) => {
+        if (a.offCheckpoint !== b.offCheckpoint) return a.offCheckpoint ? -1 : 1;
+        if (!a.offCheckpoint && a.roleGroup !== b.roleGroup) return a.roleGroup - b.roleGroup;
+        return b.teamWeight - a.teamWeight;
+      })
+      .map(({ champion, teamCount }) => ({ champion, teamCount }));
+  }, [champions, teams, teamCountMap]);
 
   const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -645,7 +684,7 @@ export default function PriorityQueue() {
             Priority Queue
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
-            Books are ranked by team presence and rarity; masteries and levels just by team presence — tick them off as you complete them.
+            Books are ranked by team presence and rarity; masteries by team presence; levels put off-checkpoint champions first, then Nuker → Reviver → others, weighted by team usage — tick them off as you complete them.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
