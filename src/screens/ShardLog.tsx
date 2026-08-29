@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaTrash, FaPlus, FaEdit, FaCheck, FaTimes, FaCloudUploadAlt, FaCloudDownloadAlt, FaRedo, FaList, FaThLarge } from "react-icons/fa";
 import { MdCasino, MdDownload } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
-import { ShardType, PullRarity, PITY_THRESHOLD } from "../models/IShard";
+import { ShardType, PullRarity, PITY_THRESHOLD, EPIC_PITY_THRESHOLD, MYTHICAL_PITY_THRESHOLD } from "../models/IShard";
 import type { IShardPull } from "../models/IShard";
 import {
   loadShardPullsForActiveAccount,
@@ -17,6 +17,7 @@ import {
   resetPityForShardType,
 } from "../helpers/handleShardPulls";
 import { useChampion } from "../hooks/useChampion";
+import { getShardImagePath } from "../helpers/getShardImage";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 import DefaultChampionObject from "../components/forms/defaultChampionObject";
@@ -70,13 +71,14 @@ const SHARD_TYPE_SLUG: Record<ShardType, string> = {
   [ShardType.VOID]: "void",
   [ShardType.SACRED]: "sacred",
   [ShardType.PRISM]: "prism",
+  [ShardType.PRIMAL]: "primal",
 };
 const SHARD_TYPE_BY_SLUG: Record<string, ShardType> = Object.fromEntries(
   Object.entries(SHARD_TYPE_SLUG).map(([type, slug]) => [slug, type as ShardType]),
 );
 
 // Ancient & Void shards can't pull Legendary+ in practice and skew toward
-// Rare; Sacred/Prism shards default to Epic since those are far more common.
+// Rare; Sacred/Prism/Primal shards default to Epic since those are far more common.
 function getDefaultRarity(shardType: string): PullRarity {
   return shardType === ShardType.ANCIENT || shardType === ShardType.VOID
     ? PullRarity.RARE
@@ -88,6 +90,7 @@ const SHARD_COLOR: Record<string, string> = {
   Void:    "bg-purple-600",
   Sacred:  "bg-yellow-400",
   Prism:   "bg-cyan-500",
+  Primal:  "bg-rose-600",
 };
 
 const RARITY_COLOR: Record<string, string> = {
@@ -149,14 +152,14 @@ function PullDonut({
   );
 }
 
-function PityBar({ count, max }: { count: number; max: number }) {
+function PityBar({ count, max, label = "Pity" }: { count: number; max: number; label?: string }) {
   const pct = Math.min((count / max) * 100, 100);
   const danger = pct >= 80;
   const warn   = pct >= 50;
   return (
     <div className="space-y-0.5">
       <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400">
-        <span>Pity</span>
+        <span>{label}</span>
         <span className={danger ? "text-red-500 font-bold" : warn ? "text-amber-500" : ""}>
           {count} / {max}
         </span>
@@ -723,22 +726,30 @@ export default function ShardLog() {
       <div className="flex-1 overflow-auto p-4 space-y-4">
         {/* ── Shard tabs ── */}
         <div className="flex gap-2 flex-wrap">
-          {ALL_SHARD_TYPES.map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => {
-                navigate(`/shard-log/${SHARD_TYPE_SLUG[type]}`);
-                setForm((f) => ({ ...f, rarity: getDefaultRarity(type) }));
-              }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer
-                ${activeTab === type
-                  ? `${SHARD_COLOR[type]} text-white shadow`
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
-            >
-              {type}
-            </button>
-          ))}
+          {ALL_SHARD_TYPES.map((type) => {
+            const imgPath = getShardImagePath(type);
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  navigate(`/shard-log/${SHARD_TYPE_SLUG[type]}`);
+                  setForm((f) => ({ ...f, rarity: getDefaultRarity(type) }));
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer
+                  ${activeTab === type
+                    ? `${SHARD_COLOR[type]} text-white shadow`
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}
+              >
+                {imgPath ? (
+                  <img src={imgPath} alt="" className="w-5 h-5 rounded-full object-cover shrink-0" />
+                ) : (
+                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${SHARD_COLOR[type]}`} />
+                )}
+                {type}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Stats ── */}
@@ -773,9 +784,15 @@ export default function ShardLog() {
           </div>
         </div>
 
-        {/* ── Pity bar ── */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3">
-          <PityBar count={stats.pityCount} max={PITY_THRESHOLD[activeTab as keyof typeof PITY_THRESHOLD]} />
+        {/* ── Pity ── */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 space-y-3">
+          {activeTab in EPIC_PITY_THRESHOLD && (
+            <PityBar label="Epic Pity" count={stats.epicPityCount} max={EPIC_PITY_THRESHOLD[activeTab]!} />
+          )}
+          <PityBar label="Legendary Pity" count={stats.pityCount} max={PITY_THRESHOLD[activeTab as keyof typeof PITY_THRESHOLD]} />
+          {activeTab in MYTHICAL_PITY_THRESHOLD && (
+            <PityBar label="Mythical Pity" count={stats.mythicalPityCount} max={MYTHICAL_PITY_THRESHOLD[activeTab]!} />
+          )}
         </div>
 
         {/* ── Trend ── */}

@@ -187,15 +187,33 @@ export function clearAllPulls(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-// Pity counter: how many non-legendary pulls since last legendary for this shard type
-export function getPityCount(pulls: IShardPull[], shardType: ShardType): number {
+// Counts pulls of this shard type since the last one meeting `minRarities`
+// (i.e. how far into the mercy counter the account currently sits).
+function getPityCountAtLeast(pulls: IShardPull[], shardType: ShardType, minRarities: string[]): number {
   const filtered = pulls.filter((p) => p.shardType === shardType);
   let count = 0;
   for (const pull of filtered) {
-    if (pull.rarity === "Legendary" || pull.rarity === "Mythical") break;
+    if (minRarities.includes(pull.rarity)) break;
     count++;
   }
   return count;
+}
+
+// Pity counter: how many non-legendary pulls since last legendary for this shard type
+export function getPityCount(pulls: IShardPull[], shardType: ShardType): number {
+  return getPityCountAtLeast(pulls, shardType, ["Legendary", "Mythical"]);
+}
+
+// Secondary mercy counter (Ancient/Void only, see EPIC_PITY_THRESHOLD): pulls
+// since the last Epic-or-better.
+export function getEpicPityCount(pulls: IShardPull[], shardType: ShardType): number {
+  return getPityCountAtLeast(pulls, shardType, ["Epic", "Legendary", "Mythical"]);
+}
+
+// Third mercy counter (Primal only, see MYTHICAL_PITY_THRESHOLD): pulls since
+// the last Mythical specifically — independent of the Legendary+ pity above.
+export function getMythicalPityCount(pulls: IShardPull[], shardType: ShardType): number {
+  return getPityCountAtLeast(pulls, shardType, ["Mythical"]);
 }
 
 export interface ShardStats {
@@ -204,18 +222,22 @@ export interface ShardStats {
   epic: number;
   rare: number;
   pityCount: number;
+  epicPityCount: number;
+  mythicalPityCount: number;
   legendaryRate: string;
   epicRate: string;
   rareRate: string;
 }
 
 export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardStats {
-  const filtered  = pulls.filter((p) => p.shardType === shardType);
-  const total     = filtered.length;
+  const filtered = pulls.filter((p) => p.shardType === shardType);
+  const total = filtered.length;
   const legendary = filtered.filter((p) => p.rarity === "Legendary" || p.rarity === "Mythical").length;
-  const epic      = filtered.filter((p) => p.rarity === "Epic").length;
-  const rare      = filtered.filter((p) => p.rarity === "Rare").length;
+  const epic = filtered.filter((p) => p.rarity === "Epic").length;
+  const rare = filtered.filter((p) => p.rarity === "Rare").length;
   const pityCount = getPityCount(pulls, shardType);
+  const epicPityCount = getEpicPityCount(pulls, shardType);
+  const mythicalPityCount = getMythicalPityCount(pulls, shardType);
   const rate = (count: number) => (total > 0 ? ((count / total) * 100).toFixed(2) : "0.00");
   return {
     total,
@@ -223,6 +245,8 @@ export function getShardStats(pulls: IShardPull[], shardType: ShardType): ShardS
     epic,
     rare,
     pityCount,
+    epicPityCount,
+    mythicalPityCount,
     legendaryRate: rate(legendary),
     epicRate: rate(epic),
     rareRate: rate(rare),
