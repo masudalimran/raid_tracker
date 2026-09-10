@@ -38,6 +38,8 @@ interface BaseAreaTeamProps {
   isFaction: boolean;
   isHydra?: boolean;
   maxChampions: number;
+  /** Normal/Hard selector, rendered next to the title — only areas with a hard-mode sibling get one. */
+  modeSwitcher?: React.ReactNode;
 }
 
 export default function BaseAreaTeam({
@@ -46,6 +48,7 @@ export default function BaseAreaTeam({
   isFaction,
   isHydra = false,
   maxChampions,
+  modeSwitcher,
 }: BaseAreaTeamProps) {
   const [loading, setLoading] = useState(true);
   const [nsfw, setNsfw] = useState<boolean>(false);
@@ -156,6 +159,7 @@ export default function BaseAreaTeam({
                 {team.clearing_stage}
               </span>
             )}
+            {modeSwitcher}
           </div>
 
           <button

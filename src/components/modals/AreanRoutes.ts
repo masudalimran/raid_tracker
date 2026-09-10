@@ -1,4 +1,4 @@
-import { buildAreaRoutes } from "../../helpers/buildAreaRoutes";
+import { attachHardModePairs, buildAreaRoutes } from "../../helpers/buildAreaRoutes";
 import { ChampionFaction } from "../../models/ChampionFaction";
 import { ARENA } from "../../models/game_areas/Arena";
 import { CLAN_BOSS } from "../../models/game_areas/ClanBoss";
@@ -12,9 +12,9 @@ export const AREA_ROUTES = [
     maxChampions: 5,
   }),
 
-  ...buildAreaRoutes(DUNGEON, {
+  ...attachHardModePairs(buildAreaRoutes(DUNGEON, {
     maxChampions: 5,
-  }),
+  })),
 
   ...buildAreaRoutes(CLAN_BOSS, {
     maxChampions: 5,

@@ -26,11 +26,13 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Home", path: "/", className: "" },
   { name: "Champion List", path: "/champions", className: "" },
   { name: "Priority Queue", path: "/priority-queue", className: "" },
-  { name: "Analytics", path: "/analytics", className: "" },
-  { name: "Shard Log", path: "/shard-log", className: "" },
-  { name: "Team Suggestion", path: "/team-suggestion", className: "" },
   { name: "Relics", path: "/relics", className: "" },
   { name: "Blessings", path: "/blessings", className: "" },
+];
+
+const UtilitySideNavItems: NavItem[] = [
+  { name: "Analytics", path: "/analytics", className: "" },
+  { name: "Shard Log", path: "/shard-log", className: "" },
   { name: "Events", path: "/events", className: "" },
 ];
 
@@ -61,8 +63,15 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     localStorage.getItem("supabase_champion_list") ?? "[]",
   );
 
+  // Dungeons with a Hard mode (e.g. Dragon / Dragon Hard) get a single nav
+  // entry — the Hard variant is reached via the Normal/Hard selector on that
+  // area's own page instead of a separate sidebar link.
+  const dungeonNavSource: Record<string, string> = Object.fromEntries(
+    Object.entries(DUNGEON).filter(([key]) => !key.endsWith("_HARD")),
+  );
+
   const PotionKeepNavItems = buildNavItems(POTION_KEEP, teams, champions, 5);
-  const DungeonNavItems = buildNavItems(DUNGEON, teams, champions, 5);
+  const DungeonNavItems = buildNavItems(dungeonNavSource, teams, champions, 5);
   const ClanBossNavItems = buildNavItems(CLAN_BOSS, teams, champions, 5);
   const HydraNavItems = buildNavItems(HYDRA, teams, champions, 6);
   const ArenaNavItems = buildNavItems(ARENA, teams, champions, 4);
@@ -89,6 +98,7 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
 
   const sections: { name: string; items: NavItem[]; alwaysOpen?: boolean }[] = [
     { name: "Core", items: CoreSideNavItems, alwaysOpen: true },
+    { name: "Utility", items: UtilitySideNavItems },
     { name: "Potion Keeps", items: PotionKeepNavItems },
     { name: "Dungeons", items: DungeonNavItems },
     { name: "Clan Boss", items: ClanBossNavItems },

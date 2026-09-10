@@ -1,3 +1,5 @@
+// NOT USED — deemed unnecessary and removed from routing/navigation (Sep 2026).
+// Kept in the codebase rather than deleted; no route currently renders this screen.
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { MdAutoAwesome } from "react-icons/md";

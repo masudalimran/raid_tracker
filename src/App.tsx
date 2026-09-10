@@ -14,13 +14,13 @@ import DevChampions from "./screens/DevChampions.tsx";
 import Analytics from "./screens/Analytics.tsx";
 import PriorityQueue from "./screens/PriorityQueue.tsx";
 import ChampionComparison from "./screens/ChampionComparison.tsx";
-import TeamSuggestion from "./screens/TeamSuggestion.tsx";
 import Relics from "./screens/Relics.tsx";
 import Blessings from "./screens/Blessings.tsx";
 import Events from "./screens/Events.tsx";
 import { useEffect } from "react";
 import { AREA_ROUTES } from "./components/modals/AreanRoutes.ts";
 import BaseAreaTeam from "./components/base/BaseAreaTeam.tsx";
+import DungeonModeSwitcher from "./components/base/DungeonModeSwitcher.tsx";
 
 function App() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function App() {
         <Route path="/priority-queue" element={<PriorityQueue />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/champion-comparison" element={<ChampionComparison />} />
-        <Route path="/team-suggestion" element={<TeamSuggestion />} />
+        {/* /team-suggestion intentionally removed — screens/TeamSuggestion.tsx kept but unused, see project memory */}
         <Route path="/relics" element={<Relics />} />
         <Route path="/blessings" element={<Blessings />} />
         <Route path="/events" element={<Navigate to="/events/summon-rush" replace />} />
@@ -67,6 +67,7 @@ function App() {
                 maxChampions={area.maxChampions}
                 isFaction={!!area.isFaction}
                 isHydra={!!area.isHydra}
+                modeSwitcher={area.hardModePair && <DungeonModeSwitcher pair={area.hardModePair} />}
               />
             }
           />

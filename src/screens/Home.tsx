@@ -217,15 +217,6 @@ export default function Home() {
           {currentStage} Milestones
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {currentCompleted.map((desc) => (
-            <div
-              key={desc}
-              className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-green-500 bg-green-50 dark:bg-green-950/40"
-            >
-              <FaCheckCircle className="text-green-500 shrink-0" size={16} />
-              <span className="text-sm text-green-800 dark:text-green-300">{desc}</span>
-            </div>
-          ))}
           {currentNext.map((desc) => (
             <div
               key={desc}
@@ -233,6 +224,15 @@ export default function Home() {
             >
               <FaTimesCircle className="text-red-400 shrink-0" size={16} />
               <span className="text-sm text-red-800 dark:text-red-300">{desc}</span>
+            </div>
+          ))}
+          {currentCompleted.map((desc) => (
+            <div
+              key={desc}
+              className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-green-500 bg-green-50 dark:bg-green-950/40"
+            >
+              <FaCheckCircle className="text-green-500 shrink-0" size={16} />
+              <span className="text-sm text-green-800 dark:text-green-300">{desc}</span>
             </div>
           ))}
         </div>
@@ -331,18 +331,6 @@ export default function Home() {
 
                   {isExpanded && (
                     <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 border-t dark:border-gray-700">
-                      {stageDone.map((desc) => (
-                        <div
-                          key={desc}
-                          className="flex items-center gap-2 p-2 rounded border-l-4 border-green-400 bg-green-50 dark:bg-green-950/40"
-                        >
-                          <FaCheckCircle
-                            className="text-green-500 shrink-0"
-                            size={13}
-                          />
-                          <span className="text-xs text-green-700 dark:text-green-400">{desc}</span>
-                        </div>
-                      ))}
                       {stageNext.map((desc) => (
                         <div
                           key={desc}
@@ -354,6 +342,18 @@ export default function Home() {
                             size={11}
                           />
                           <span className="text-xs text-gray-600 dark:text-gray-400">{desc}</span>
+                        </div>
+                      ))}
+                      {stageDone.map((desc) => (
+                        <div
+                          key={desc}
+                          className="flex items-center gap-2 p-2 rounded border-l-4 border-green-400 bg-green-50 dark:bg-green-950/40"
+                        >
+                          <FaCheckCircle
+                            className="text-green-500 shrink-0"
+                            size={13}
+                          />
+                          <span className="text-xs text-green-700 dark:text-green-400">{desc}</span>
                         </div>
                       ))}
                     </div>

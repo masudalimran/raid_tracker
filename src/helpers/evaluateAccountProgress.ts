@@ -53,18 +53,18 @@ function hasTeam(
   });
 }
 
-function allTeams(
-  teams: ITeam[],
-  teamNames: string[],
+// Expands a single "all of these areas must pass" rule into one rule per
+// area, so progress is tracked (and displayed) per-dungeon/faction/boss
+// instead of as one opaque all-or-nothing line.
+function perItemRules(
+  items: string[],
+  describe: (item: string) => string,
   predicate: (team: ITeam) => boolean,
-): boolean {
-  const normalizedNames = teamNames.map((n) => n.toUpperCase());
-  return normalizedNames.every((name) =>
-    teams.some(
-      (team) =>
-        fromSlug(team.team_name).toUpperCase() === name && predicate(team),
-    ),
-  );
+): ProgressRule[] {
+  return items.map((item) => ({
+    description: describe(item),
+    test: (teams: ITeam[]) => hasTeam(teams, [item], predicate),
+  }));
 }
 
 /* ============================================================
@@ -128,18 +128,16 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
   {
     stage: ProgressStage.EARLY_GAME,
     rules: [
-      {
-        description: "Normal Dungeons ≥ Stage 16",
-        test: (teams) =>
-          allTeams(teams, COMMON_DUNGEONS, (t) =>
-            stageAtLeast(t.clearing_stage, 16),
-          ),
-      },
-      {
-        description: "Faction Wars ≥ Stage 7",
-        test: (teams) =>
-          allTeams(teams, FACTIONS, (t) => stageAtLeast(t.clearing_stage, 7)),
-      },
+      ...perItemRules(
+        COMMON_DUNGEONS,
+        (d) => `${d} ≥ Stage 16`,
+        (t) => stageAtLeast(t.clearing_stage, 16),
+      ),
+      ...perItemRules(
+        FACTIONS,
+        (f) => `${f} ≥ Stage 7`,
+        (t) => stageAtLeast(t.clearing_stage, 7),
+      ),
       {
         description: "Demon Lord ≥ 1-Key Hard",
         test: (teams) =>
@@ -162,8 +160,8 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           }),
       },
       {
-        description: "All 3 Hydra heads have a team",
-        test: (teams) => allTeams(teams, HYDRA_HEADS, () => true),
+        description: "Hydra team created (any head)",
+        test: (teams) => hasTeam(teams, HYDRA_HEADS, () => true),
       },
       {
         description: "Chimera team created",
@@ -174,20 +172,16 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
   {
     stage: ProgressStage.MID_GAME,
     rules: [
-      {
-        description: "Normal Dungeons ≥ Stage 20",
-        test: (teams) =>
-          allTeams(teams, COMMON_DUNGEONS, (t) =>
-            stageAtLeast(t.clearing_stage, 20),
-          ),
-      },
-      {
-        description: "Complete all Normal Doom Tower bosses",
-        test: (teams) =>
-          allTeams(teams, DOOM_TOWER_NORMAL, (t) =>
-            t.clearing_stage.toUpperCase().includes("COMPLETE"),
-          ),
-      },
+      ...perItemRules(
+        COMMON_DUNGEONS,
+        (d) => `${d} ≥ Stage 20`,
+        (t) => stageAtLeast(t.clearing_stage, 20),
+      ),
+      ...perItemRules(
+        DOOM_TOWER_NORMAL,
+        (b) => `${b} Complete`,
+        (t) => t.clearing_stage.toUpperCase().includes("COMPLETE"),
+      ),
       {
         description: "Demon Lord ≥ 1-Key Nightmare or 3-Key Ultra-Nightmare",
         test: (teams) =>
@@ -200,13 +194,11 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
             );
           }),
       },
-      {
-        description: "Faction Wars Max (Stage 21)",
-        test: (teams) =>
-          allTeams(teams, FACTIONS, (t) =>
-            t.clearing_stage.toUpperCase().includes("MAX"),
-          ),
-      },
+      ...perItemRules(
+        FACTIONS,
+        (f) => `${f} Max (Stage 21)`,
+        (t) => t.clearing_stage.toUpperCase().includes("MAX"),
+      ),
       {
         description: "Classic Arena Gold",
         test: (teams) =>
@@ -236,9 +228,9 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           ),
       },
       {
-        description: "All Hydra heads ≥ 3-Key Brutal",
+        description: "Hydra ≥ 3-Key Brutal (any head)",
         test: (teams) =>
-          allTeams(teams, HYDRA_HEADS, (t) => {
+          hasTeam(teams, HYDRA_HEADS, (t) => {
             const s = t.clearing_stage.toUpperCase();
             return (
               s.includes("3-KEY BRUTAL") ||
@@ -261,13 +253,11 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
   {
     stage: ProgressStage.LATE_GAME,
     rules: [
-      {
-        description: "Normal Dungeons ≥ Stage 25",
-        test: (teams) =>
-          allTeams(teams, COMMON_DUNGEONS, (t) =>
-            stageAtLeast(t.clearing_stage, 25),
-          ),
-      },
+      ...perItemRules(
+        COMMON_DUNGEONS,
+        (d) => `${d} ≥ Stage 25`,
+        (t) => stageAtLeast(t.clearing_stage, 25),
+      ),
       {
         description: "Demon Lord ≥ 2-Key Ultra-Nightmare",
         test: (teams) =>
@@ -280,27 +270,23 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
             );
           }),
       },
+      ...perItemRules(
+        DOOM_TOWER_HARD,
+        (b) => `${b} Complete`,
+        (t) => t.clearing_stage.toUpperCase().includes("COMPLETE"),
+      ),
       {
-        description: "Complete all Hard Doom Tower bosses",
+        description: "1-Key Brutal Hydra (any head)",
         test: (teams) =>
-          allTeams(teams, DOOM_TOWER_HARD, (t) =>
-            t.clearing_stage.toUpperCase().includes("COMPLETE"),
-          ),
-      },
-      {
-        description: "1-Key Brutal Hydra (all heads)",
-        test: (teams) =>
-          allTeams(teams, HYDRA_HEADS, (t) =>
+          hasTeam(teams, HYDRA_HEADS, (t) =>
             t.clearing_stage.toUpperCase().includes("1-KEY BRUTAL"),
           ),
       },
-      {
-        description: "Hard Dungeons ≥ Stage 10",
-        test: (teams) =>
-          allTeams(teams, COMMON_DUNGEONS_HARD, (t) =>
-            stageAtLeast(t.clearing_stage, 10),
-          ),
-      },
+      ...perItemRules(
+        COMMON_DUNGEONS_HARD,
+        (d) => `${d} ≥ Stage 10`,
+        (t) => stageAtLeast(t.clearing_stage, 10),
+      ),
       {
         description: "Sand Devil ≥ Stage 20",
         test: (teams) =>
@@ -332,13 +318,11 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
   {
     stage: ProgressStage.END_GAME,
     rules: [
-      {
-        description: "Hard Mode Dungeons MAX",
-        test: (teams) =>
-          allTeams(teams, COMMON_DUNGEONS_HARD, (t) =>
-            t.clearing_stage.toUpperCase().includes("MAX"),
-          ),
-      },
+      ...perItemRules(
+        COMMON_DUNGEONS_HARD,
+        (d) => `${d} MAX`,
+        (t) => t.clearing_stage.toUpperCase().includes("MAX"),
+      ),
       {
         description: "Iron Twin MAX",
         test: (teams) =>
@@ -354,9 +338,9 @@ const PROGRESS_RULES: ProgressRuleSet[] = [
           ),
       },
       {
-        description: "Nightmare Hydra 1-Key (all heads)",
+        description: "Nightmare Hydra 1-Key (any head)",
         test: (teams) =>
-          allTeams(teams, HYDRA_HEADS, (t) =>
+          hasTeam(teams, HYDRA_HEADS, (t) =>
             t.clearing_stage.toUpperCase().includes("1-KEY NIGHTMARE"),
           ),
       },
