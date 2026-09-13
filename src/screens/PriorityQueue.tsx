@@ -14,7 +14,9 @@ import type IChampion from "../models/IChampion";
 import type ITeam from "../models/ITeam";
 import { ChampionRarity } from "../models/ChampionRarity";
 import { ChampionRole } from "../models/ChampionRole";
+import { ChampionFaction } from "../models/ChampionFaction";
 import colorByRarity from "../helpers/colorByRarity";
+import toSlug from "../helpers/toSlug";
 
 // ── Priority scorer ───────────────────────────────────────────────────────────
 
@@ -45,16 +47,53 @@ function highValueRoleCount(champion: IChampion): number {
   return (champion.role ?? []).filter((r) => HIGH_VALUE_ROLES.includes(r as ChampionRole)).length;
 }
 
+// ── Faction Wars push bonus ──────────────────────────────────────────────────
+
+const FACTION_WARS_SLUGS = new Set(
+  Object.values(ChampionFaction)
+    .filter((f) => f !== ChampionFaction.OTHER)
+    .map((f) => toSlug(f)),
+);
+
+const EPIC_PLUS_RARITIES: string[] = [
+  ChampionRarity.EPIC,
+  ChampionRarity.LEGENDARY,
+  ChampionRarity.MYTHICAL,
+];
+
+function isFactionWarsStage21OrMax(stage: string): boolean {
+  const s = stage.toUpperCase();
+  if (s.includes("MAX")) return true;
+  const match = s.match(/(\d+)/);
+  return !!match && Number(match[1]) >= 21;
+}
+
+// An Epic+ champion still sitting in an unfinished (< Stage 21) Faction Wars
+// team is a common, high-value ask to push over the line, so it gets a small
+// priority bump on top of its normal team-usage score.
+function hasUnfinishedFactionWarsPush(champion: IChampion, teams: ITeam[]): boolean {
+  if (!EPIC_PLUS_RARITIES.includes(champion.rarity)) return false;
+  const champId = String(champion.id);
+  return teams.some(
+    (t) =>
+      FACTION_WARS_SLUGS.has(t.team_name) &&
+      t.champion_ids.includes(champId) &&
+      !isFactionWarsStage21OrMax(t.clearing_stage),
+  );
+}
+
 // Books: rarity matters (rarer tomes are scarcer, so prioritize using them well).
 function priorityScore(
   champion: IChampion,
   teamCount: number,
+  teams: ITeam[],
 ): number {
   let score = 0;
   score += teamCount * 100;                                       // teams carry the most weight
   score += RARITY_SCORE[champion.rarity] ?? 0;
   if (checkIfChampionIsBuilt(champion)) score += 30;             // built = higher urgency
   score += highValueRoleCount(champion) * 10;
+  if (hasUnfinishedFactionWarsPush(champion, teams)) score += 25;
   return score;
 }
 
@@ -63,11 +102,13 @@ function priorityScore(
 function masteryPriorityScore(
   champion: IChampion,
   teamCount: number,
+  teams: ITeam[],
 ): number {
   let score = 0;
   score += teamCount * 100;
   if (checkIfChampionIsBuilt(champion)) score += 30;
   score += highValueRoleCount(champion) * 10;
+  if (hasUnfinishedFactionWarsPush(champion, teams)) score += 25;
   return score;
 }
 
@@ -595,13 +636,13 @@ export default function PriorityQueue() {
   }, [teams]);
 
   const ranked = useCallback(
-    (list: IChampion[], scoreFn: (c: IChampion, teamCount: number) => number) =>
+    (list: IChampion[], scoreFn: (c: IChampion, teamCount: number, teams: ITeam[]) => number) =>
       [...list]
         .map((c) => ({ champion: c, teamCount: teamCountMap.get(String(c.id)) ?? 0 }))
         .sort((a, b) =>
-          scoreFn(b.champion, b.teamCount) - scoreFn(a.champion, a.teamCount),
+          scoreFn(b.champion, b.teamCount, teams) - scoreFn(a.champion, a.teamCount, teams),
         ),
-    [teamCountMap],
+    [teamCountMap, teams],
   );
 
   const needsBooks = useMemo(
