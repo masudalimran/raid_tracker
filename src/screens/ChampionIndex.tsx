@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaChevronDown, FaChevronUp, FaLayerGroup } from "react-icons/fa";
 import ArcaneLoader from "../components/loaders/ArcaneLoader";
+import ChampionCard from "../components/card/ChampionCard";
 import ChampionIndexCard from "../components/card/ChampionIndexCard";
+import ChampionModal from "../components/modals/ChampionModal";
+import Modal from "../components/modals/Modal";
 import { fetchChampions, generateChampions } from "../helpers/handleChampions";
 import { getTierListForFaction, type ChampionTierEntry } from "../helpers/getChampionTierScore";
 import getFactionLogo from "../helpers/getFactionLogo";
@@ -22,6 +25,8 @@ interface IndexEntry {
   owned: boolean;
   imgUrl?: string;
   score?: Pick<ChampionTierEntry, "support" | "dpsPotential" | "tankiness">;
+  /** The actual roster champion, when owned — lets the card open a real preview popup. */
+  champion?: IChampion;
 }
 
 interface RarityGroup {
@@ -50,6 +55,7 @@ function buildIndexEntries(tierEntries: ChampionTierEntry[], owned: IChampion[])
       owned: !!match,
       imgUrl: match?.imgUrl,
       score: { support: t.support, dpsPotential: t.dpsPotential, tankiness: t.tankiness },
+      champion: match,
     });
   }
 
@@ -63,6 +69,7 @@ function buildIndexEntries(tierEntries: ChampionTierEntry[], owned: IChampion[])
       role: c.type,
       owned: true,
       imgUrl: c.imgUrl,
+      champion: c,
     });
   }
 
@@ -78,11 +85,13 @@ function FactionSection({
   rarityGroups,
   isOpen,
   onToggle,
+  onSelectChampion,
 }: {
   faction: ChampionFaction;
   rarityGroups: RarityGroup[];
   isOpen: boolean;
   onToggle: () => void;
+  onSelectChampion: (champion: IChampion) => void;
 }) {
   const totalOwned = rarityGroups.reduce((sum, r) => sum + ownedCount(r.entries), 0);
   const totalKnown = rarityGroups.reduce((sum, r) => sum + r.entries.length, 0);
@@ -134,6 +143,7 @@ function FactionSection({
                       support={e.score?.support}
                       dpsPotential={e.score?.dpsPotential}
                       tankiness={e.score?.tankiness}
+                      onClick={e.champion ? () => onSelectChampion(e.champion!) : undefined}
                     />
                   ))}
                 </div>
@@ -150,6 +160,10 @@ export default function ChampionIndex() {
   const [loading, setLoading] = useState(true);
   const [champions, setChampions] = useState<IChampion[]>([]);
   const [openFactions, setOpenFactions] = useState<Set<string>>(new Set());
+  const [previewChampion, setPreviewChampion] = useState<IChampion | null>(null);
+  const [editingChampion, setEditingChampion] = useState<IChampion | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [reloadDetector, setReloadDetector] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -159,7 +173,22 @@ export default function ChampionIndex() {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [reloadDetector]);
+
+  const handleEditChampion = (champion: IChampion) => {
+    setPreviewChampion(null);
+    setEditingChampion(champion);
+    setShowEditModal(true);
+  };
+  const handleCloseEditModal = (shouldReload: boolean) => {
+    setShowEditModal(false);
+    setEditingChampion(null);
+    if (shouldReload) setReloadDetector((prev) => !prev);
+  };
+  const handleDeletePreviewChampion = () => {
+    setPreviewChampion(null);
+    setReloadDetector((prev) => !prev);
+  };
 
   const championsByFaction = useMemo(() => {
     const map = new Map<string, Record<ChampionRarity, IChampion[]>>();
@@ -260,9 +289,27 @@ export default function ChampionIndex() {
             rarityGroups={rarityGroupsByFaction.get(faction)!}
             isOpen={openFactions.has(faction)}
             onToggle={() => toggleFaction(faction)}
+            onSelectChampion={setPreviewChampion}
           />
         ))}
       </div>
+
+      {showEditModal && (
+        <ChampionModal
+          champion={editingChampion ?? undefined}
+          onClose={handleCloseEditModal}
+        />
+      )}
+
+      {previewChampion && (
+        <Modal isOpen bare maxWidthClass="max-w-xs" onClose={() => setPreviewChampion(null)}>
+          <ChampionCard
+            champion={previewChampion}
+            onEdit={handleEditChampion}
+            onDelete={handleDeletePreviewChampion}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

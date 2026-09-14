@@ -14,6 +14,8 @@ interface ChampionIndexCardProps {
   support?: number;
   dpsPotential?: number;
   tankiness?: number;
+  /** Only set for owned champions with real roster data to preview. */
+  onClick?: () => void;
 }
 
 const SCORE_BARS = [
@@ -32,6 +34,7 @@ export default function ChampionIndexCard({
   support,
   dpsPotential,
   tankiness,
+  onClick,
 }: ChampionIndexCardProps) {
   const [imgFailed, setImgFailed] = useState(false);
   const scores = { support, dpsPotential, tankiness };
@@ -40,7 +43,9 @@ export default function ChampionIndexCard({
 
   return (
     <div
+      onClick={onClick}
       className={`rounded-lg overflow-hidden bg-white dark:bg-gray-900 border transition
+        ${onClick ? "cursor-pointer hover:border-amber-400 hover:shadow-sm" : ""}
         ${owned
           ? "border-gray-200 dark:border-gray-800"
           : "border-dashed border-gray-300 dark:border-gray-700 opacity-60"}`}
