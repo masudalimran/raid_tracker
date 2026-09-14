@@ -382,7 +382,8 @@ export default function ShardLog() {
       const fetched = await fetchShardPulls();
       setPulls(fetched);
       setFetchStatus("done");
-    } catch {
+    } catch (err) {
+      console.error("[shard_pulls] fetch from cloud failed:", err);
       setFetchStatus("error");
     }
     setTimeout(() => setFetchStatus("idle"), 2000);

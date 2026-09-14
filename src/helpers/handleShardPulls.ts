@@ -56,8 +56,19 @@ export function loadShardPullsForActiveAccount(): IShardPull[] {
   return loadShardPulls().filter((p) => p.rsl_account_id === activeId);
 }
 
+// Some accounts have pulls with a base64-embedded imgUrl (rather than a
+// short external URL) instead of the usual few hundred bytes — with enough
+// of those, the serialized cache can exceed a browser's localStorage quota
+// (observed on Safari well before Firefox's larger limit). Swallow that
+// specific failure rather than let it propagate — callers (e.g. fetching
+// fresh data from the cloud) still have the correct in-memory result even
+// if it couldn't be cached locally this time.
 function savePulls(pulls: IShardPull[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(pulls));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pulls));
+  } catch (err) {
+    console.error("[shard_pulls] failed to cache pulls locally (storage quota likely exceeded):", err);
+  }
 }
 
 // ── Cloud sync — same cache pattern used by champions/teams/role_req ──────────
