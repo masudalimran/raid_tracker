@@ -1,0 +1,12 @@
+[
+  { "champion": "Broadmaw", "affinity": "Void", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Galapo the Recluse", "affinity": "Magic", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Jareg", "affinity": "Magic", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Jarang", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Jizoh", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Quargan the Crowned", "affinity": "Spirit", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Skathix", "affinity": "Void", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Slixus Stripehide", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Venomage", "affinity": "Magic", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Zii Ixchi", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 }
+]

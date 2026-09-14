@@ -30,6 +30,7 @@ import { MIN_VIABLE_ROLES as MIN_ROLES } from "../helpers/championDataQuality";
 import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { getBuildQuality, type BuildQuality } from "../helpers/getChampionBuildQuality";
+import { getChampionTierScore } from "../helpers/getChampionTierScore";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { ChampionRole } from "../models/ChampionRole";
 import type IChampion from "../models/IChampion";
@@ -44,9 +45,9 @@ const BUILD_STATUS_OPTIONS: { key: BuildQuality; label: string }[] = [
 const isBuildQuality = (value: string | null): value is BuildQuality =>
   !!value && BUILD_STATUS_OPTIONS.some((o) => o.key === value);
 
-type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable" | "no_relic" | "no_blessing";
+type DevFilterMode = "default_image" | "no_image" | "under_roled" | "not_viable" | "no_relic" | "no_blessing" | "no_tier_score";
 
-const DEV_FILTER_MODES: DevFilterMode[] = ["default_image", "no_image", "under_roled", "not_viable", "no_relic", "no_blessing"];
+const DEV_FILTER_MODES: DevFilterMode[] = ["default_image", "no_image", "under_roled", "not_viable", "no_relic", "no_blessing", "no_tier_score"];
 const isDevFilterMode = (value: string | null): value is DevFilterMode =>
   !!value && (DEV_FILTER_MODES as string[]).includes(value);
 
@@ -77,6 +78,11 @@ const FILTER_LABELS: Record<DevFilterMode, { title: string; subtitle: (n: number
     title: "No Equipped Blessing",
     subtitle: (n) =>
       `${n} awakened champion${n !== 1 ? "s" : ""} (1+ Awakened Star) used in at least 1 team but with no blessing equipped (Not Viable champions excluded).`,
+  },
+  no_tier_score: {
+    title: "No Tier Score",
+    subtitle: (n) =>
+      `${n} champion${n !== 1 ? "s" : ""} whose faction/rarity has no tier list data yet.`,
   },
 };
 
@@ -181,6 +187,8 @@ export default function DevChampions() {
         return getCurrentlyInUseChampions(championList).filter(
           (c) => c.awaken_stars >= 1 && !c.blessing && !c.role?.includes(ChampionRole.NOT_VIABLE),
         );
+      case "no_tier_score":
+        return championList.filter((c) => !getChampionTierScore(c));
       case "default_image":
       default:
         return championList.filter((c) => c.imgUrl === DefaultChampionObject.imgUrl);
@@ -326,6 +334,7 @@ export default function DevChampions() {
             <option value="not_viable">Not Viable</option>
             <option value="no_relic">No Equipped Relic</option>
             <option value="no_blessing">No Equipped Blessing</option>
+            <option value="no_tier_score">No tier score</option>
           </select>
 
           <select

@@ -1,0 +1,18 @@
+[
+  { "champion": "Dark Kael", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 88, "tankiness": 42 },
+  { "champion": "Madame Serris", "affinity": "Void", "role": "Support", "support": 88, "dpsPotential": 26, "tankiness": 66 },
+  { "champion": "Psylar", "affinity": "Void", "role": "Support", "support": 86, "dpsPotential": 26, "tankiness": 64 },
+  { "champion": "Luria", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 74, "tankiness": 44 },
+  { "champion": "Rian the Conjurer", "affinity": "Force", "role": "Support", "support": 74, "dpsPotential": 24, "tankiness": 58 },
+  { "champion": "Captain Temila", "affinity": "Magic", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Crimson Helm", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Delver", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Fang Cleric", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Kaiden", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Spider", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Theresc", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Warden", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Dirandil", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Gwynneth", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Krakarth", "affinity": "Force", "role": "HP", "support": 28, "dpsPotential": 34, "tankiness": 56 }
+]

@@ -1,0 +1,17 @@
+[
+  { "champion": "Demytha", "affinity": "Void", "role": "Support", "support": 88, "dpsPotential": 26, "tankiness": 66 },
+  { "champion": "Melga Steelgirdle", "affinity": "Spirit", "role": "HP", "support": 36, "dpsPotential": 52, "tankiness": 84 },
+  { "champion": "Rugnor Goldgleam", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 88, "tankiness": 42 },
+  { "champion": "Runekeeper Dazdurk", "affinity": "Void", "role": "Support", "support": 86, "dpsPotential": 26, "tankiness": 64 },
+  { "champion": "Rearguard Sergeant", "affinity": "Force", "role": "Defense", "support": 50, "dpsPotential": 24, "tankiness": 76 },
+  { "champion": "Baerdal Fellhammer", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Conellia", "affinity": "Magic", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Fylja", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Fyr-Gun Isbeil", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Gala Longbraids", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Grizzled Jarl", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Hilda Arnorndottr", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Maddak Eyes of Skyiron", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Morag Bronzelock", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Rock Breaker", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 }
+]

@@ -1,0 +1,19 @@
+[
+  { "champion": "Vulkanos Fumor", "affinity": "Force", "role": "Defense", "support": 55, "dpsPotential": 32, "tankiness": 96 },
+  { "champion": "Cruetraxa", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 92, "tankiness": 46 },
+  { "champion": "Duchess Lilitu", "affinity": "Spirit", "role": "Support", "support": 92, "dpsPotential": 30, "tankiness": 70 },
+  { "champion": "Prince Kymar", "affinity": "Magic", "role": "Support", "support": 90, "dpsPotential": 28, "tankiness": 68 },
+  { "champion": "Authoratrix Lamasu", "affinity": "Void", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Chalco the Blind", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Cheshire Cat", "affinity": "Spirit", "role": "Attack", "support": 22, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Countess Lix", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Hephraak", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 44 },
+  { "champion": "Drexthar Bloodtwin", "affinity": "Force", "role": "Defense", "support": 50, "dpsPotential": 28, "tankiness": 74 },
+  { "champion": "Inithwe Bloodtwin", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Lord Shazar", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Mortu-Macaab", "affinity": "Spirit", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Skorid the Halfspawn", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Vasal of the Seal", "affinity": "Force", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Wythir the Crowned", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Xalgaze Fangwall", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 }
+]

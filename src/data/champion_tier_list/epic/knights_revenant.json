@@ -1,0 +1,20 @@
+[
+  { "champion": "Miscreated Monster", "affinity": "Magic", "role": "HP", "support": 38, "dpsPotential": 54, "tankiness": 84 },
+  { "champion": "Rector Drath", "affinity": "Force", "role": "Support", "support": 88, "dpsPotential": 24, "tankiness": 66 },
+  { "champion": "Sinesha", "affinity": "Force", "role": "Support", "support": 86, "dpsPotential": 24, "tankiness": 64 },
+  { "champion": "Doompriest", "affinity": "Force", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Golden Reaper", "affinity": "Void", "role": "Support", "support": 76, "dpsPotential": 24, "tankiness": 58 },
+  { "champion": "Pestilus", "affinity": "Spirit", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Sepulcher Sentinel", "affinity": "Force", "role": "Defense", "support": 50, "dpsPotential": 24, "tankiness": 76 },
+  { "champion": "Skullcrown", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Whisper", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 74, "tankiness": 44 },
+  { "champion": "Aeshma", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Crypt Witch", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Faceless", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Malkith Bloodflock", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Necrohunter", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Pharsalas Gravedirt", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Pitiless One", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Thylessia", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Lady Eresh", "affinity": "Force", "role": "Attack", "support": 10, "dpsPotential": 34, "tankiness": 24 }
+]

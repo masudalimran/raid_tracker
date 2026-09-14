@@ -1,0 +1,7 @@
+[
+  { "champion": "Chevalier", "affinity": "Void", "role": "Defense", "support": 36, "dpsPotential": 18, "tankiness": 58 },
+  { "champion": "Conquerer", "affinity": "Spirit", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Dagger", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Halberdier", "affinity": "Spirit", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Courtier", "affinity": "Force", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 }
+]

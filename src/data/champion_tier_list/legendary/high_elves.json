@@ -1,0 +1,23 @@
+[
+  { "champion": "Arbiter", "affinity": "Void", "role": "Support", "support": 96, "dpsPotential": 32, "tankiness": 75 },
+  { "champion": "Solanar the Gleaming", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 92, "tankiness": 46 },
+  { "champion": "Wallmaster Othorion", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 90, "tankiness": 48 },
+  { "champion": "Belanor", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Celendiel the Opal Guardian", "affinity": "Void", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Deliana", "affinity": "Force", "role": "HP", "support": 44, "dpsPotential": 58, "tankiness": 80 },
+  { "champion": "Fyna Blade of Aravia", "affinity": "Magic", "role": "Support", "support": 78, "dpsPotential": 28, "tankiness": 60 },
+  { "champion": "High Keeper Prysma", "affinity": "Spirit", "role": "Support", "support": 80, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Ithos", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Aleksandr the Sharpshooter", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 66, "tankiness": 40 },
+  { "champion": "Basileus Roanas", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Elenaril", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Lonatharil", "affinity": "Force", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Lysanthir Beastbane", "affinity": "Spirit", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Pyxniel", "affinity": "Magic", "role": "Support", "support": 68, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Shirimani", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Strategos Islin", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Supreme Elhain", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 66, "tankiness": 40 },
+  { "champion": "Tatura Rimehide", "affinity": "Spirit", "role": "Defense", "support": 46, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "The Incarnate", "affinity": "Force", "role": "Defense", "support": 46, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Yannica", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 }
+]

@@ -1,0 +1,6 @@
+[
+  { "champion": "Bellower", "affinity": "Void", "role": "Support", "support": 62, "dpsPotential": 16, "tankiness": 44 },
+  { "champion": "Geargrinder", "affinity": "Void", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Furystoker", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Mycolus", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 }
+]

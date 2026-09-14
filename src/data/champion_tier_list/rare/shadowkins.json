@@ -1,0 +1,9 @@
+[
+  { "champion": "Assassin", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Bloodmask", "affinity": "Force", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Fanatic", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Itinerant", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Lifetaker", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Marauder", "affinity": "Spirit", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Odachi", "affinity": "Force", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 }
+]

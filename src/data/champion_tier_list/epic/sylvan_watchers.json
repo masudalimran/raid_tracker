@@ -1,0 +1,17 @@
+[
+  { "champion": "Criodan the Blue", "affinity": "Magic", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Mistrider Daithi", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Ruella", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "White Dryad Nia", "affinity": "Void", "role": "Defense", "support": 52, "dpsPotential": 24, "tankiness": 78 },
+  { "champion": "Aeila Lifebraid", "affinity": "Void", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Duedan the Runic", "affinity": "Force", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Dyana Gloompiercer", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Kellan the Shrike", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Pann the Bowhorn", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Wyrennon the Silken", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Wysteri Vineguard", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Arwydd Quivergrass", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Cormac the Highpeak", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Enda Moonbeam", "affinity": "Spirit", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Locwain", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 }
+]

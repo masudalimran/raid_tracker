@@ -1,0 +1,23 @@
+[
+  { "champion": "Gaellut Son of the Pact", "affinity": "Void", "role": "HP", "support": 44, "dpsPotential": 62, "tankiness": 84 },
+  { "champion": "Grugtha Darkseer", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 92, "tankiness": 48 },
+  { "champion": "Angar", "affinity": "Void", "role": "HP", "support": 42, "dpsPotential": 58, "tankiness": 80 },
+  { "champion": "Aragaz Wyldking", "affinity": "Force", "role": "HP", "support": 42, "dpsPotential": 58, "tankiness": 80 },
+  { "champion": "Belz the Reckoner", "affinity": "Spirit", "role": "HP", "support": 42, "dpsPotential": 56, "tankiness": 80 },
+  { "champion": "Danag Skullreap", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Gomlok Skyhide", "affinity": "Force", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Holguk of the Hallowsights", "affinity": "Spirit", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Iron Brago", "affinity": "Spirit", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Jagg Bonesaw", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Kawn Branchbreaker", "affinity": "Void", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "King Garog", "affinity": "Force", "role": "Attack", "support": 20, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Kreela Witch-Arm", "affinity": "Magic", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 60 },
+  { "champion": "Krokhad the Throatripper", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 44 },
+  { "champion": "Matriarch Zarguna", "affinity": "Force", "role": "HP", "support": 42, "dpsPotential": 56, "tankiness": 80 },
+  { "champion": "Packmaster Shyek", "affinity": "Force", "role": "HP", "support": 40, "dpsPotential": 54, "tankiness": 78 },
+  { "champion": "Robar", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Teela Goremane", "affinity": "Magic", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 60 },
+  { "champion": "Varl the Destroyer", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Warlord", "affinity": "Void", "role": "Support", "support": 80, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Supreme Galek", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 }
+]

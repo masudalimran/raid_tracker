@@ -1,0 +1,8 @@
+[
+  { "champion": "Coldheart", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 74, "tankiness": 38 },
+  { "champion": "Kael", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 62, "tankiness": 34 },
+  { "champion": "Pain Keeper", "affinity": "Void", "role": "HP", "support": 30, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Paragon", "affinity": "Void", "role": "Defense", "support": 40, "dpsPotential": 18, "tankiness": 66 },
+  { "champion": "Hexweaver", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Spirithost", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 }
+]

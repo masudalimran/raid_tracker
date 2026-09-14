@@ -34,6 +34,7 @@ const UtilitySideNavItems: NavItem[] = [
   { name: "Analytics", path: "/analytics", className: "" },
   { name: "Shard Log", path: "/shard-log", className: "" },
   { name: "Events", path: "/events", className: "" },
+  { name: "Champion Index", path: "/champion-index", className: "" },
 ];
 
 const OPEN_SECTION_STORAGE_KEY = "sidenav_open_section";

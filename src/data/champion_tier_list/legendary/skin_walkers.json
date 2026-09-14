@@ -1,0 +1,16 @@
+[
+  { "champion": "Gnishak Verminlord", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Leorius the Proud", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 82, "tankiness": 46 },
+  { "champion": "Mighty Ukko", "affinity": "Force", "role": "Support", "support": 80, "dpsPotential": 26, "tankiness": 64 },
+  { "champion": "Brakus the Shifter", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Cleopterix", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Greathoof Loriaca", "affinity": "Spirit", "role": "Support", "support": 68, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Hakkorhn Smashlord", "affinity": "Magic", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Longbeard", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Norog", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Ragash", "affinity": "Spirit", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Samson the Masher", "affinity": "Spirit", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Thayla Hammerhorn", "affinity": "Magic", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "The Cowardly Lion", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Warchief", "affinity": "Force", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 }
+]

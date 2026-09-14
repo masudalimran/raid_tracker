@@ -1,0 +1,20 @@
+[
+  { "champion": "Akemtum", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 88, "tankiness": 44 },
+  { "champion": "Basher", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Ghomm Yellowhand", "affinity": "Void", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Steelskull", "affinity": "Spirit", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Bowf the Rancid", "affinity": "Spirit", "role": "HP", "support": 40, "dpsPotential": 54, "tankiness": 78 },
+  { "champion": "Scabrius", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Taurus", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Hoforees the Tusked", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Gnarox Blackhorn", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Frenzi the Cackler", "affinity": "Void", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Reinbeast", "affinity": "Force", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Ursine Ironhide", "affinity": "Force", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Snorting Thug", "affinity": "Force", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Yuzan the Marooned", "affinity": "Void", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Flesh-Tearer", "affinity": "Magic", "role": "Support", "support": 50, "dpsPotential": 16, "tankiness": 42 },
+  { "champion": "Yaga the Insatiable", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Weregren Suncursed", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Ripper", "affinity": "Force", "role": "Attack", "support": 10, "dpsPotential": 34, "tankiness": 24 }
+]

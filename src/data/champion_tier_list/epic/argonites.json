@@ -1,0 +1,9 @@
+[
+  { "champion": "Tidemaster Dexikos", "affinity": "Magic", "role": "Support", "support": 88, "dpsPotential": 28, "tankiness": 66 },
+  { "champion": "Aox the Rememberer", "affinity": "Force", "role": "Support", "support": 74, "dpsPotential": 24, "tankiness": 58 },
+  { "champion": "Lionsguard Galatea", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Antigone Man Slayer", "affinity": "Void", "role": "HP", "support": 36, "dpsPotential": 42, "tankiness": 68 },
+  { "champion": "Deephook Nagis", "affinity": "Void", "role": "Defense", "support": 46, "dpsPotential": 24, "tankiness": 70 },
+  { "champion": "Stonebound Thisbe", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Xanthe Seaflower", "affinity": "Force", "role": "Defense", "support": 46, "dpsPotential": 24, "tankiness": 70 }
+]

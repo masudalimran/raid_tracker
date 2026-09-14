@@ -1,0 +1,18 @@
+[
+  { "champion": "Lord Entertainer Fabian", "affinity": "Spirit", "role": "Support", "support": 97, "dpsPotential": 30, "tankiness": 76 },
+  { "champion": "Bad-el-Kazar", "affinity": "Force", "role": "Support", "support": 92, "dpsPotential": 28, "tankiness": 70 },
+  { "champion": "Siphi the Lost Bride", "affinity": "Void", "role": "Support", "support": 90, "dpsPotential": 28, "tankiness": 68 },
+  { "champion": "Gaspard the Accused", "affinity": "Void", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Little Miss Annie", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Rotos the Lost Groom", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Skartorsis", "affinity": "Force", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "The Scarecrow", "affinity": "Spirit", "role": "Support", "support": 80, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Tribune Herakletes", "affinity": "Spirit", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Urost the Soulcage", "affinity": "Void", "role": "HP", "support": 42, "dpsPotential": 58, "tankiness": 80 },
+  { "champion": "Valkanen", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Vallaryn the Equalizer", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Vlad the Nightborn", "affinity": "Void", "role": "Attack", "support": 20, "dpsPotential": 80, "tankiness": 48 },
+  { "champion": "Bloodgorged", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Knave of Hearts", "affinity": "Force", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Ultimate Deathknight", "affinity": "Force", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 }
+]

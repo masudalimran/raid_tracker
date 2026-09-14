@@ -1,0 +1,20 @@
+[
+  { "champion": "Maneater", "affinity": "Void", "role": "HP", "support": 36, "dpsPotential": 54, "tankiness": 86 },
+  { "champion": "Uugo", "affinity": "Magic", "role": "Support", "support": 88, "dpsPotential": 24, "tankiness": 64 },
+  { "champion": "Ghrush the Mangler", "affinity": "Spirit", "role": "Defense", "support": 50, "dpsPotential": 24, "tankiness": 76 },
+  { "champion": "Klodd Beastfeeder", "affinity": "Magic", "role": "HP", "support": 40, "dpsPotential": 56, "tankiness": 78 },
+  { "champion": "Siegehulk", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Skullcrusher", "affinity": "Force", "role": "Defense", "support": 50, "dpsPotential": 24, "tankiness": 76 },
+  { "champion": "Urogrim", "affinity": "Void", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Ceez", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Cagebreaker", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Galkut", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Grimskin", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Grunch Killjoy", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Old Ghrukkus", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Shatterbones", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Towering Titan", "affinity": "Void", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Wuzgar", "affinity": "Spirit", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Lorn the Cutter", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Occult Brawler", "affinity": "Spirit", "role": "HP", "support": 28, "dpsPotential": 34, "tankiness": 56 }
+]

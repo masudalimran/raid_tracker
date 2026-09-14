@@ -1,0 +1,5 @@
+[
+  { "champion": "Acolyte of the Slither", "affinity": "Spirit", "role": "Support", "support": 64, "dpsPotential": 18, "tankiness": 50 },
+  { "champion": "Bladerider", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Crimson Pegason", "affinity": "Force", "role": "HP", "support": 22, "dpsPotential": 28, "tankiness": 46 }
+]

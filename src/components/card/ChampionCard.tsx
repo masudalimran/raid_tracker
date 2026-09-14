@@ -14,6 +14,7 @@ import type { IconType } from "react-icons";
 import { checkIfChampionIsBuilt } from "../../helpers/checkIfChampionIsBuilt.ts";
 import { getBuildQuality } from "../../helpers/getChampionBuildQuality.ts";
 import { getChampionRating, type ChampionArchetype } from "../../helpers/getChampionRating.ts";
+import { getChampionTierScore } from "../../helpers/getChampionTierScore.ts";
 import { toggleCompareList, MAX_COMPARE } from "../../helpers/compareList.ts";
 import { useCompareList } from "../../hooks/useCompareList.ts";
 import { getRelicById } from "../../data/relics.ts";
@@ -87,6 +88,7 @@ export default function ChampionCard({
   const championTeamNames = championTeams.map((t) => t.team_name);
 
   const rating = getChampionRating(champion, supabase_team_list);
+  const tierScore = getChampionTierScore(champion);
   const equippedRelic = champion.relic ? getRelicById(champion.relic) : undefined;
   const equippedBlessing = champion.blessing ? getBlessingById(champion.blessing) : undefined;
 
@@ -460,6 +462,33 @@ export default function ChampionCard({
                 </div>
               );
             })}
+          </div>
+
+          {/* ── TIER LIST SCORES (support/dps/tankiness) — always rendered (N/A when this
+               faction+rarity has no data yet) so every card stays the same height ── */}
+          <div className="space-y-1 pt-1">
+            <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-widest">Tier Scores</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Support", value: tierScore?.support, color: "bg-emerald-400" },
+                { label: "DPS", value: tierScore?.dpsPotential, color: "bg-red-400" },
+                { label: "Tank", value: tierScore?.tankiness, color: "bg-blue-400" },
+              ].map(({ label, value, color }) => (
+                <Tooltip key={label} content={value !== undefined ? `${label}: ${value}/100` : `${label}: no tier data yet`}>
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between text-[9px] text-gray-400">
+                      <span>{label}</span>
+                      <span>{value ?? "N/A"}</span>
+                    </div>
+                    <div className="h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      {value !== undefined && (
+                        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
+                      )}
+                    </div>
+                  </div>
+                </Tooltip>
+              ))}
+            </div>
           </div>
 
           {/* ── BOOK · MASTERY · TEAMS ── */}

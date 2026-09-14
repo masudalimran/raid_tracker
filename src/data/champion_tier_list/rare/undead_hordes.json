@@ -1,0 +1,12 @@
+[
+  { "champion": "Banshee", "affinity": "Magic", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Corpulent Cadaver", "affinity": "Spirit", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Defiled Sinner", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Doomscreech", "affinity": "Void", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Drowned Bloatwraith", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Frozen Banshee", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Ghoulish Ranger", "affinity": "Spirit", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Gravechill Killer", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Grinner", "affinity": "Force", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Hollow", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 }
+]

@@ -1,0 +1,12 @@
+[
+  { "champion": "Bloodhorn", "affinity": "Void", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Bloodpainter", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Channeler", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Fleshmonger", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Gnarlhorn", "affinity": "Spirit", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Grappler", "affinity": "Spirit", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Graybeard", "affinity": "Magic", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Hidestitcher Boorn", "affinity": "Magic", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Lamibur", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Panthera", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 }
+]

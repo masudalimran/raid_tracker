@@ -1,0 +1,9 @@
+[
+  { "champion": "Boughsmith Flannan", "affinity": "Force", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Branch-Arm Lasair", "affinity": "Void", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Gladewulf", "affinity": "Void", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Glensage Cithrel", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Ingid Twyst-staff", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Loneblade Riab", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Margrave Greenhawk", "affinity": "Force", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 }
+]

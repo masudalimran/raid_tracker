@@ -1,0 +1,11 @@
+[
+  { "champion": "Glorious Pallas", "affinity": "Magic", "role": "Support", "support": 90, "dpsPotential": 30, "tankiness": 70 },
+  { "champion": "Storm Herald Hekaton", "affinity": "Void", "role": "Defense", "support": 60, "dpsPotential": 35, "tankiness": 94 },
+  { "champion": "Aria the Golden Hope", "affinity": "Spirit", "role": "Defense", "support": 55, "dpsPotential": 32, "tankiness": 80 },
+  { "champion": "Keberon the Underflame", "affinity": "Force", "role": "Attack", "support": 20, "dpsPotential": 82, "tankiness": 46 },
+  { "champion": "Pelops the Victor", "affinity": "Spirit", "role": "HP", "support": 45, "dpsPotential": 65, "tankiness": 82 },
+  { "champion": "Phemo the Shepherd", "affinity": "Magic", "role": "Defense", "support": 58, "dpsPotential": 30, "tankiness": 78 },
+  { "champion": "Pelagus the Wavewalker", "affinity": "Spirit", "role": "Support", "support": 70, "dpsPotential": 25, "tankiness": 60 },
+  { "champion": "Kassandra", "affinity": "Magic", "role": "Attack", "support": 22, "dpsPotential": 66, "tankiness": 42 },
+  { "champion": "Knosson the Bronze Bull", "affinity": "Force", "role": "HP", "support": 40, "dpsPotential": 50, "tankiness": 74 }
+]

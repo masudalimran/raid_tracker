@@ -1,0 +1,9 @@
+[
+  { "champion": "Mother Superior", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Purgator", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Penitent", "affinity": "Spirit", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Warpriest", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Chaplain", "affinity": "Force", "role": "Support", "support": 44, "dpsPotential": 12, "tankiness": 34 },
+  { "champion": "Confessor", "affinity": "Void", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 },
+  { "champion": "Templar", "affinity": "Spirit", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 }
+]

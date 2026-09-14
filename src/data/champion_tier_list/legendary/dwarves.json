@@ -1,0 +1,20 @@
+[
+  { "champion": "Acrizia", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 90, "tankiness": 46 },
+  { "champion": "Gnut", "affinity": "Spirit", "role": "Defense", "support": 58, "dpsPotential": 32, "tankiness": 92 },
+  { "champion": "Hilvi the Rime Called", "affinity": "Force", "role": "Support", "support": 90, "dpsPotential": 28, "tankiness": 70 },
+  { "champion": "Hurndig", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 90, "tankiness": 48 },
+  { "champion": "Arnorn the Shining", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Boragar the Elder", "affinity": "Force", "role": "HP", "support": 42, "dpsPotential": 58, "tankiness": 80 },
+  { "champion": "Senna Amberheart", "affinity": "Void", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 62 },
+  { "champion": "Tormin the Cold", "affinity": "Void", "role": "Defense", "support": 55, "dpsPotential": 30, "tankiness": 80 },
+  { "champion": "Trunda Giltmallet", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 78, "tankiness": 46 },
+  { "champion": "Uzol of the Jade", "affinity": "Spirit", "role": "Attack", "support": 20, "dpsPotential": 78, "tankiness": 45 },
+  { "champion": "Admiral Blacktusk", "affinity": "Spirit", "role": "Support", "support": 68, "dpsPotential": 24, "tankiness": 58 },
+  { "champion": "Goffred Brassclad", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Gronjarr", "affinity": "Force", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Keeyra the Watcher", "affinity": "Spirit", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Maulie Tankard", "affinity": "Spirit", "role": "Support", "support": 68, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Mountain King", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 66, "tankiness": 42 },
+  { "champion": "Nari the Lucky", "affinity": "Force", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Samar Gemcursed", "affinity": "Spirit", "role": "HP", "support": 38, "dpsPotential": 44, "tankiness": 72 }
+]

@@ -1,0 +1,7 @@
+[
+  { "champion": "Bogwalker", "affinity": "Force", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Cagebound", "affinity": "Void", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Gator", "affinity": "Magic", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Haruspex", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Metalshaper", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 }
+]

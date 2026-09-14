@@ -1,0 +1,7 @@
+[
+  { "champion": "Abyssal", "affinity": "Spirit", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Diabolist", "affinity": "Magic", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Fellhound", "affinity": "Void", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Marquess", "affinity": "Spirit", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Marquis", "affinity": "Void", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 }
+]

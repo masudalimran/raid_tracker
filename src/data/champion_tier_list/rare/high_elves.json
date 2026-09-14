@@ -1,0 +1,8 @@
+[
+  { "champion": "Apothecary", "affinity": "Magic", "role": "Support", "support": 70, "dpsPotential": 18, "tankiness": 48 },
+  { "champion": "Heiress", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Reliquary Tender", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Selinia Nightcloak", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Adjudicator", "affinity": "Magic", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 },
+  { "champion": "Avenger", "affinity": "Magic", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 }
+]

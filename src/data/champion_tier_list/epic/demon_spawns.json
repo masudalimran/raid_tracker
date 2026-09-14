@@ -1,0 +1,17 @@
+[
+  { "champion": "Alure", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 88, "tankiness": 44 },
+  { "champion": "Peydma", "affinity": "Void", "role": "Defense", "support": 56, "dpsPotential": 24, "tankiness": 88 },
+  { "champion": "Skimfos the Consumed", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 74, "tankiness": 44 },
+  { "champion": "Achak the Wendarin", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Akoth the Seared", "affinity": "Magic", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Duhr the Hungerer", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Erinyes", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Excruciator", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Hellgazer", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Infernal Baroness", "affinity": "Force", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Tainix Hateflower", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Umbral Enchantress", "affinity": "Void", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Scion", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Souldrinker", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Vildrax", "affinity": "Magic", "role": "Support", "support": 40, "dpsPotential": 12, "tankiness": 32 }
+]

@@ -1,0 +1,19 @@
+[
+  { "champion": "Seer", "affinity": "Void", "role": "Support", "support": 94, "dpsPotential": 26, "tankiness": 68 },
+  { "champion": "Dhukk the Pierced", "affinity": "Magic", "role": "Defense", "support": 56, "dpsPotential": 24, "tankiness": 88 },
+  { "champion": "Old Hermit Jorrg", "affinity": "Magic", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Sandlashed Survivor", "affinity": "Spirit", "role": "Defense", "support": 50, "dpsPotential": 24, "tankiness": 76 },
+  { "champion": "Tagoar", "affinity": "Magic", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Tuhak the Wanderer", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 74, "tankiness": 44 },
+  { "champion": "Vrask", "affinity": "Spirit", "role": "HP", "support": 40, "dpsPotential": 54, "tankiness": 78 },
+  { "champion": "Zargala", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Bloodfeather", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Bonekeeper", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Shaman", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Yelagirna", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Trumborr", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Ultimate Galek", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Merouka", "affinity": "Magic", "role": "Defense", "support": 38, "dpsPotential": 18, "tankiness": 58 },
+  { "champion": "Terrorbeast", "affinity": "Spirit", "role": "HP", "support": 28, "dpsPotential": 34, "tankiness": 56 },
+  { "champion": "Torturehelm", "affinity": "Force", "role": "HP", "support": 28, "dpsPotential": 34, "tankiness": 56 }
+]

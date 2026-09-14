@@ -1,0 +1,19 @@
+[
+  { "champion": "Tayrel", "affinity": "Magic", "role": "Defense", "support": 56, "dpsPotential": 26, "tankiness": 88 },
+  { "champion": "Battlesage", "affinity": "Void", "role": "Support", "support": 74, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Neldor Rimeblade", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Royal Guard", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 76, "tankiness": 44 },
+  { "champion": "Ambassador Lethelin", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Andryssia", "affinity": "Void", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Endalia", "affinity": "Magic", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Ethlen the Golden", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Exemplar", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Ilysinya", "affinity": "Force", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Jinglehunter", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Lightward Siendra", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Luthiea", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Marksman", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Skeuramis", "affinity": "Magic", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Thenasil", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Vergis", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 }
+]

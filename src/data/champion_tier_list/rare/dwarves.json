@@ -1,0 +1,11 @@
+[
+  { "champion": "Dilgol", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 34 },
+  { "champion": "Kurzad Deepheart", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 34 },
+  { "champion": "Boltsmith", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Painsmith", "affinity": "Void", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Runic Warder", "affinity": "Magic", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Avir the Alchemage", "affinity": "Magic", "role": "Support", "support": 44, "dpsPotential": 12, "tankiness": 34 },
+  { "champion": "Bulwark", "affinity": "Void", "role": "Defense", "support": 30, "dpsPotential": 14, "tankiness": 48 },
+  { "champion": "Candleguard", "affinity": "Magic", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 },
+  { "champion": "Cudgeler", "affinity": "Magic", "role": "Attack", "support": 12, "dpsPotential": 40, "tankiness": 26 }
+]

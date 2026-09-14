@@ -1,0 +1,19 @@
+[
+  { "champion": "Ninja", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 92, "tankiness": 46 },
+  { "champion": "Onryo Ieyasu", "affinity": "Void", "role": "Attack", "support": 18, "dpsPotential": 90, "tankiness": 46 },
+  { "champion": "Riho Bonespear", "affinity": "Void", "role": "Support", "support": 90, "dpsPotential": 28, "tankiness": 68 },
+  { "champion": "Yumeko", "affinity": "Void", "role": "Support", "support": 90, "dpsPotential": 28, "tankiness": 68 },
+  { "champion": "Kyoku", "affinity": "Spirit", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Lady Kimi", "affinity": "Magic", "role": "Support", "support": 78, "dpsPotential": 26, "tankiness": 60 },
+  { "champion": "Leonardo", "affinity": "Void", "role": "Defense", "support": 58, "dpsPotential": 28, "tankiness": 82 },
+  { "champion": "Masahiro the Bell Monk", "affinity": "Force", "role": "HP", "support": 42, "dpsPotential": 56, "tankiness": 78 },
+  { "champion": "Tetsuya the Deliverer", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 80, "tankiness": 46 },
+  { "champion": "Arashi the Riptide", "affinity": "Spirit", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Ginro the Stork", "affinity": "Void", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Karato Foxhunter", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Michinaki", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Yoshi the Drunkard", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Yukimasa Demon of Ice", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Zinogre Blademaster", "affinity": "Magic", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Nobel", "affinity": "Force", "role": "Attack", "support": 15, "dpsPotential": 52, "tankiness": 36 }
+]

@@ -1,0 +1,13 @@
+[
+  { "champion": "Acolyte", "affinity": "Force", "role": "Support", "support": 44, "dpsPotential": 12, "tankiness": 34 },
+  { "champion": "Arcanist", "affinity": "Force", "role": "Support", "support": 44, "dpsPotential": 12, "tankiness": 34 },
+  { "champion": "Centurion", "affinity": "Void", "role": "Defense", "support": 30, "dpsPotential": 14, "tankiness": 48 },
+  { "champion": "Coffin Smasher", "affinity": "Magic", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Crimson Slayer", "affinity": "Spirit", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Executioner", "affinity": "Magic", "role": "Defense", "support": 36, "dpsPotential": 16, "tankiness": 58 },
+  { "champion": "Gladiator", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Guardian", "affinity": "Spirit", "role": "HP", "support": 24, "dpsPotential": 30, "tankiness": 48 },
+  { "champion": "Magus", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 30 },
+  { "champion": "Renegade", "affinity": "Void", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 },
+  { "champion": "Theurgist", "affinity": "Magic", "role": "Support", "support": 48, "dpsPotential": 14, "tankiness": 38 }
+]

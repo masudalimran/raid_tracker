@@ -1,0 +1,19 @@
+[
+  { "champion": "Graazur Irongut", "affinity": "Void", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Klaazag Keyhulk", "affinity": "Void", "role": "Defense", "support": 55, "dpsPotential": 28, "tankiness": 80 },
+  { "champion": "Togron the Conjoined", "affinity": "Void", "role": "Support", "support": 68, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Vizug the Noxious", "affinity": "Magic", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Brewguard Jeroboam", "affinity": "Force", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Belletar Mage Slayer", "affinity": "Void", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Ignatius", "affinity": "Magic", "role": "Defense", "support": 48, "dpsPotential": 26, "tankiness": 74 },
+  { "champion": "Khamir Scald Eye", "affinity": "Magic", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Korugar Death-Bell", "affinity": "Force", "role": "HP", "support": 38, "dpsPotential": 46, "tankiness": 72 },
+  { "champion": "Modo of the Peal", "affinity": "Force", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "War Mother", "affinity": "Magic", "role": "Attack", "support": 20, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Craklin the Blackened", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Drokgul the Gaunt", "affinity": "Spirit", "role": "Support", "support": 68, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Gurptuk Moss-Beard", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Guurda Bogbrew", "affinity": "Force", "role": "Support", "support": 66, "dpsPotential": 22, "tankiness": 56 },
+  { "champion": "Kroz Wallbreaker", "affinity": "Spirit", "role": "Attack", "support": 18, "dpsPotential": 64, "tankiness": 40 },
+  { "champion": "Ugir the Wyrmeater", "affinity": "Spirit", "role": "HP", "support": 38, "dpsPotential": 44, "tankiness": 72 }
+]

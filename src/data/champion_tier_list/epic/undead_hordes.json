@@ -1,0 +1,19 @@
+[
+  { "champion": "Seeker", "affinity": "Magic", "role": "Defense", "support": 56, "dpsPotential": 24, "tankiness": 88 },
+  { "champion": "Gorgorab", "affinity": "Magic", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Ostrox Boneglaive", "affinity": "Void", "role": "Support", "support": 76, "dpsPotential": 22, "tankiness": 58 },
+  { "champion": "Vogoth", "affinity": "Spirit", "role": "HP", "support": 40, "dpsPotential": 54, "tankiness": 78 },
+  { "champion": "Anax", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Balthus Drauglord", "affinity": "Spirit", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Corpse Collector", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Dark Athel", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Dark Elhain", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Husk", "affinity": "Force", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Khafru the Deathkeeper", "affinity": "Void", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Lich", "affinity": "Force", "role": "Defense", "support": 44, "dpsPotential": 22, "tankiness": 68 },
+  { "champion": "Mausoleum Mage", "affinity": "Force", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Zelotah", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Catacomb Councilor", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Hexia", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Karam", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 }
+]

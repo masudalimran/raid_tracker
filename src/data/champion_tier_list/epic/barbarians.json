@@ -1,0 +1,18 @@
+[
+  { "champion": "Fahrakin the Fat", "affinity": "Spirit", "role": "Attack", "support": 16, "dpsPotential": 86, "tankiness": 42 },
+  { "champion": "Armina", "affinity": "Magic", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Haarken Greatblade", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "High Khatun", "affinity": "Spirit", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Kallia", "affinity": "Force", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Sikara", "affinity": "Magic", "role": "Support", "support": 62, "dpsPotential": 20, "tankiness": 50 },
+  { "champion": "Suwai Firstborn", "affinity": "Void", "role": "Attack", "support": 16, "dpsPotential": 60, "tankiness": 38 },
+  { "champion": "Woad-Painted", "affinity": "Spirit", "role": "HP", "support": 32, "dpsPotential": 40, "tankiness": 62 },
+  { "champion": "Aina", "affinity": "Magic", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Alika", "affinity": "Force", "role": "Attack", "support": 14, "dpsPotential": 48, "tankiness": 32 },
+  { "champion": "Baroth the Bloodsoaked", "affinity": "Force", "role": "HP", "support": 28, "dpsPotential": 34, "tankiness": 56 },
+  { "champion": "Djamarsa", "affinity": "Force", "role": "Support", "support": 50, "dpsPotential": 16, "tankiness": 42 },
+  { "champion": "Teshada", "affinity": "Force", "role": "Defense", "support": 38, "dpsPotential": 18, "tankiness": 58 },
+  { "champion": "Valla", "affinity": "Spirit", "role": "Defense", "support": 38, "dpsPotential": 18, "tankiness": 58 },
+  { "champion": "Jotun", "affinity": "Magic", "role": "HP", "support": 20, "dpsPotential": 25, "tankiness": 45 },
+  { "champion": "Maeve", "affinity": "Force", "role": "Attack", "support": 10, "dpsPotential": 34, "tankiness": 24 }
+]
