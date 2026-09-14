@@ -7,4 +7,5 @@ export interface EventDefinition {
 // Add new time-limited events here as they're released.
 export const EVENT_DEFINITIONS: EventDefinition[] = [
   { slug: "summon-rush", label: "Summon Rush" },
+  { slug: "deck-of-fate", label: "Deck of Fate" },
 ];

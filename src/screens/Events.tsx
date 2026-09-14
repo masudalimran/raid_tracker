@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { MdEvent } from "react-icons/md";
 import { EVENT_DEFINITIONS } from "../data/eventDefinitions";
 import SummonRush from "./events/SummonRush";
+import DeckOfFate from "./events/DeckOfFate";
 
 const DEFAULT_EVENT_SLUG = EVENT_DEFINITIONS[0].slug;
 
@@ -49,6 +50,7 @@ export default function Events() {
       </div>
 
       {activeEvent?.slug === "summon-rush" && <SummonRush />}
+      {activeEvent?.slug === "deck-of-fate" && <DeckOfFate />}
     </div>
   );
 }
