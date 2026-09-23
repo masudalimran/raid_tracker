@@ -18,6 +18,7 @@ import Relics from "./screens/Relics.tsx";
 import Blessings from "./screens/Blessings.tsx";
 import Events from "./screens/Events.tsx";
 import ChampionIndex from "./screens/ChampionIndex.tsx";
+import BuffDebuffGuide from "./screens/BuffDebuffGuide.tsx";
 import { useEffect } from "react";
 import { AREA_ROUTES } from "./components/modals/AreanRoutes.ts";
 import BaseAreaTeam from "./components/base/BaseAreaTeam.tsx";
@@ -55,6 +56,7 @@ function App() {
         <Route path="/events" element={<Navigate to="/events/summon-rush" replace />} />
         <Route path="/events/:eventSlug" element={<Events />} />
         <Route path="/champion-index" element={<ChampionIndex />} />
+        <Route path="/buffs-debuffs" element={<BuffDebuffGuide />} />
         <Route path="/rtk-sync" element={<RtkSync />} />
         <Route path="/shard-log" element={<Navigate to="/shard-log/ancient" replace />} />
         <Route path="/shard-log/:shardType" element={<ShardLog />} />

@@ -35,6 +35,7 @@ import { fromSlug } from "../../helpers/fromSlug.ts";
 import colorByRarity from "../../helpers/colorByRarity.ts";
 import getFactionLogo from "../../helpers/getFactionLogo.ts";
 import Tooltip from "../utility/Tooltip.tsx";
+import { getEffectDescription } from "../../data/buffDebuffDescriptions.ts";
 
 // Icon for the rating badge's archetype tag — swapped in for the plain
 // C/T/S/H letters so it reads at a glance rather than needing a legend.
@@ -44,6 +45,20 @@ const ARCHETYPE_ICON: Record<ChampionArchetype, IconType> = {
   S: GiHealing,       // Support
   H: GiHeartPlus,     // Bulky (HP)
 };
+
+// Role icon tooltips fall back to the plain role name when it's a team-role
+// category (Nuker, Healer, …) rather than a literal buff/debuff with a
+// documented description on the Buffs & Debuffs page.
+function roleTooltipContent(role: string) {
+  const description = getEffectDescription(role);
+  if (!description) return role;
+  return (
+    <span className="block text-left">
+      <span className="block font-bold mb-0.5">{role}</span>
+      {description}
+    </span>
+  );
+}
 
 interface ChampionCardProps {
   champion: IChampion;
@@ -363,7 +378,7 @@ export default function ChampionCard({
           {rolesExpanded ? (
             <div className="flex items-center gap-1 flex-wrap justify-end ml-auto">
               {visibleRoles.map((role) => (
-                <Tooltip key={role} content={role} className="w-5 h-5 shrink-0">
+                <Tooltip key={role} content={roleTooltipContent(role)} className="w-5 h-5 shrink-0">
                   <div className="w-5 h-5">
                     <img
                       src={ChampionRoleImageMap[role]}
@@ -398,7 +413,7 @@ export default function ChampionCard({
                   {champion.type}
                 </span>
                 {previewRoles.map((role) => (
-                  <Tooltip key={role} content={role} className="w-5 h-5 shrink-0">
+                  <Tooltip key={role} content={roleTooltipContent(role)} className="w-5 h-5 shrink-0">
                     <div className="w-5 h-5">
                       <img
                         src={ChampionRoleImageMap[role]}

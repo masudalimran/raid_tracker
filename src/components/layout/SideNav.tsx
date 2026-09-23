@@ -28,13 +28,14 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Priority Queue", path: "/priority-queue", className: "" },
   { name: "Relics", path: "/relics", className: "" },
   { name: "Blessings", path: "/blessings", className: "" },
+  { name: "Buffs & Debuffs", path: "/buffs-debuffs", className: "" },
+  { name: "Champion Index", path: "/champion-index", className: "" },
 ];
 
 const UtilitySideNavItems: NavItem[] = [
   { name: "Analytics", path: "/analytics", className: "" },
   { name: "Shard Log", path: "/shard-log", className: "" },
   { name: "Events", path: "/events", className: "" },
-  { name: "Champion Index", path: "/champion-index", className: "" },
 ];
 
 const OPEN_SECTION_STORAGE_KEY = "sidenav_open_section";
