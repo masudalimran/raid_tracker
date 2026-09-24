@@ -7,7 +7,7 @@ import { ShardType, PullRarity, PITY_THRESHOLD, EPIC_PITY_THRESHOLD, MYTHICAL_PI
 import type { IShardPull } from "../models/IShard";
 import {
   loadShardPullsForActiveAccount,
-  addShardPull,
+  addShardPulls,
   deleteShardPull,
   updateShardPull,
   getShardStats,
@@ -297,6 +297,9 @@ export default function ShardLog() {
     rarity: getDefaultRarity(ShardType.ANCIENT) as PullRarity,
     notes: "",
   });
+  // How many times to log this exact pull in one go (e.g. pulled the same
+  // champion 48 times) — always resets to 1 after saving.
+  const [repeatCount, setRepeatCount] = useState(1);
   const [previewUrl, setPreviewUrl] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -564,24 +567,29 @@ export default function ShardLog() {
       info = await createChampionFromPull(trimmedName, form.rarity);
     }
 
-    const entry = addShardPull({
-      shardType:    activeTab as IShardPull["shardType"],
-      championName: trimmedName,
-      rarity:       form.rarity,
-      pulledAt:     new Date().toISOString(),
-      notes:        form.notes.trim() || undefined,
-      imgUrl:       info?.imgUrl,
-    });
-    setPulls((prev) => [entry, ...prev]);
+    const count = Math.max(1, Math.floor(repeatCount) || 1);
+    const newEntries = addShardPulls(
+      {
+        shardType:    activeTab as IShardPull["shardType"],
+        championName: trimmedName,
+        rarity:       form.rarity,
+        pulledAt:     new Date().toISOString(),
+        notes:        form.notes.trim() || undefined,
+        imgUrl:       info?.imgUrl,
+      },
+      count,
+    );
+    setPulls((prev) => [...newEntries, ...prev]);
     setForm({ championName: "", rarity: getDefaultRarity(activeTab), notes: "" });
+    setRepeatCount(1);
     setPreviewUrl("");
     inputRef.current?.focus();
 
-    if (entry.rarity === PullRarity.LEGENDARY || entry.rarity === PullRarity.MYTHICAL) {
+    if (form.rarity === PullRarity.LEGENDARY || form.rarity === PullRarity.MYTHICAL) {
       setLegendaryReveal({
-        championName: entry.championName,
+        championName: trimmedName,
         imgUrl: info?.imgUrl,
-        rarity: entry.rarity,
+        rarity: form.rarity,
       });
     }
   };
@@ -820,8 +828,8 @@ export default function ShardLog() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1 relative">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div className="sm:col-span-2 space-y-1 relative">
                 <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Champion Name</label>
                 <input
                   ref={inputRef}
@@ -874,6 +882,18 @@ export default function ShardLog() {
                   ))}
                 </select>
               </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300" title="Log this exact pull multiple times in one go">
+                  Count
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={repeatCount}
+                  onChange={(e) => setRepeatCount(Math.max(1, Math.floor(Number(e.target.value)) || 1))}
+                  className="basic-input w-full"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
@@ -893,7 +913,7 @@ export default function ShardLog() {
                 onClick={handleAdd}
                 className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition cursor-pointer font-semibold"
               >
-                Save Pull
+                {repeatCount > 1 ? `Save Pull ×${repeatCount}` : "Save Pull"}
               </button>
               <button
                 type="button"

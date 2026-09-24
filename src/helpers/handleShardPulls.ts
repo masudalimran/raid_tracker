@@ -177,6 +177,27 @@ export function addShardPull(pull: Omit<IShardPull, "id" | "rsl_account_id">): I
   return entry;
 }
 
+/**
+ * Logs the same pull `count` times in one localStorage read/write — used when
+ * a player retroactively logs a run of identical pulls (e.g. "add Kael x48")
+ * instead of one at a time.
+ */
+export function addShardPulls(
+  pull: Omit<IShardPull, "id" | "rsl_account_id">,
+  count: number,
+): IShardPull[] {
+  const accountId = getActiveRslAccountId() ?? undefined;
+  const entries: IShardPull[] = Array.from({ length: count }, () => ({
+    ...pull,
+    id: crypto.randomUUID(),
+    rsl_account_id: accountId,
+  }));
+  const pulls = loadShardPulls();
+  pulls.unshift(...entries); // newest first
+  savePulls(pulls);
+  return entries;
+}
+
 export function deleteShardPull(id: string): void {
   savePulls(loadShardPulls().filter((p) => p.id !== id));
 }
