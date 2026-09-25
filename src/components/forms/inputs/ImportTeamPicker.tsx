@@ -7,11 +7,13 @@ import type ITeam from "../../../models/ITeam";
 interface ImportTeamPickerProps {
   /** Candidate teams — already scoped to the current user/account and excluding this area's own team. */
   teams: ITeam[];
+  /** This area's champion cap — teams with more champions than this are shown but disabled, since none could be trimmed unambiguously. */
+  maxChampions: number;
   onImport: (team: ITeam) => void;
 }
 
 /** Searchable picker for copying another area's team roster into this one — e.g. importing Spirit Potion's team while editing Arcane Potion, or a Normal-mode team while editing its Hard-mode counterpart. */
-export default function ImportTeamPicker({ teams, onImport }: ImportTeamPickerProps) {
+export default function ImportTeamPicker({ teams, maxChampions, onImport }: ImportTeamPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [queryInput, setQueryInput] = useState("");
   const query = useDebouncedValue(queryInput, 300);
@@ -39,6 +41,7 @@ export default function ImportTeamPicker({ teams, onImport }: ImportTeamPickerPr
     .sort((a, b) => fromSlug(a.team_name).localeCompare(fromSlug(b.team_name)));
 
   const handlePick = (team: ITeam) => {
+    if (team.champion_ids.length > maxChampions) return;
     onImport(team);
     setIsOpen(false);
     setQueryInput("");
@@ -76,19 +79,28 @@ export default function ImportTeamPicker({ teams, onImport }: ImportTeamPickerPr
             {matches.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4">No matching teams</p>
             ) : (
-              matches.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handlePick(t)}
-                  className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
-                >
-                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{fromSlug(t.team_name)}</span>
-                  <span className="text-[10px] text-gray-400 shrink-0">
-                    {t.champion_ids.length} champ{t.champion_ids.length !== 1 ? "s" : ""}
-                  </span>
-                </button>
-              ))
+              matches.map((t) => {
+                const tooBig = t.champion_ids.length > maxChampions;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    disabled={tooBig}
+                    onClick={() => handlePick(t)}
+                    title={tooBig ? `Has ${t.champion_ids.length} champions — this team only allows ${maxChampions}` : undefined}
+                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-left transition ${
+                      tooBig
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                    }`}
+                  >
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{fromSlug(t.team_name)}</span>
+                    <span className={`text-[10px] shrink-0 ${tooBig ? "text-red-500 font-semibold" : "text-gray-400"}`}>
+                      {t.champion_ids.length} champ{t.champion_ids.length !== 1 ? "s" : ""}{tooBig ? " — too many" : ""}
+                    </span>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>

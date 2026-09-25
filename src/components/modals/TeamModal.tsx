@@ -11,6 +11,7 @@ interface TeamModalProps {
   team?: ITeam;
   championList: IChampion[];
   maxChampions?: number;
+  disableImport?: boolean;
   onClose: (should_reload: boolean) => void;
 }
 
@@ -19,6 +20,7 @@ export default function TeamModal({
   team,
   championList,
   maxChampions,
+  disableImport,
   onClose,
 }: TeamModalProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -37,6 +39,7 @@ export default function TeamModal({
     >
       <TeamForm
         maxChampions={maxChampions}
+        disableImport={disableImport}
         onCancel={() => handleOnClose(false)}
         onSave={() => handleOnClose(true)}
         teamName={teamName}

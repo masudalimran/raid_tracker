@@ -15,6 +15,8 @@ interface TeamFormProps {
   teamName: TeamIdentifier;
   championList: IChampion[];
   team?: Partial<ITeam>;
+  /** Hides the Import Team picker entirely — for areas like Faction Wars whose champion pool is restricted to a subset (e.g. one faction), so an imported roster from elsewhere would mostly fail to apply. */
+  disableImport?: boolean;
   onCancel: () => void;
   onSave: () => void;
 }
@@ -24,6 +26,7 @@ export default function TeamForm({
   teamName,
   championList = [],
   team,
+  disableImport = false,
   onCancel,
   onSave,
 }: TeamFormProps) {
@@ -99,9 +102,11 @@ export default function TeamForm({
   // team while editing its Hard-mode counterpart. Only the champion roster
   // is copied; clearing stage/notes stay whatever's already in this form,
   // since those are specific to this area, not the source team's.
-  const importableTeams = supabase_teams.filter(
-    (t) => t.user_id === userId && t.rsl_account_id === rslAccountId && t.team_name !== teamName,
-  );
+  const importableTeams = disableImport
+    ? []
+    : supabase_teams.filter(
+        (t) => t.user_id === userId && t.rsl_account_id === rslAccountId && t.team_name !== teamName,
+      );
 
   return (
     <form
@@ -113,7 +118,7 @@ export default function TeamForm({
         {/* ══ SIDEBAR: team metadata — sticky so it stays put while the ══
             ══ champion list (the tall part) scrolls past it            ══ */}
         <div className="lg:col-span-4 lg:sticky lg:top-0 lg:self-start space-y-4">
-          <ImportTeamPicker teams={importableTeams} onImport={handleImportTeam} />
+          <ImportTeamPicker teams={importableTeams} maxChampions={maxChampions} onImport={handleImportTeam} />
 
           {/* Clearing Stage */}
           <div>

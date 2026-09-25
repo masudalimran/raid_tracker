@@ -396,6 +396,7 @@ export default function BaseAreaTeam({
           teamName={teamKey}
           championList={championList}
           maxChampions={maxChampions}
+          disableImport={isFaction}
           team={team}
           onClose={onModalClose}
         />
