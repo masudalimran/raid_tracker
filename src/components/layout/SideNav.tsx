@@ -65,19 +65,18 @@ function SideNav({ isOpen, onClose }: SideNavProps) {
     localStorage.getItem("supabase_champion_list") ?? "[]",
   );
 
-  // Dungeons with a Hard mode (e.g. Dragon / Dragon Hard) get a single nav
-  // entry — the Hard variant is reached via the Normal/Hard selector on that
-  // area's own page instead of a separate sidebar link.
-  const dungeonNavSource: Record<string, string> = Object.fromEntries(
-    Object.entries(DUNGEON).filter(([key]) => !key.endsWith("_HARD")),
-  );
+  // Areas with a Hard mode (e.g. Dragon / Dragon Hard, Scarab King / Scarab
+  // King Hard) get a single nav entry — the Hard variant is reached via the
+  // Normal/Hard selector on that area's own page instead of a separate link.
+  const withoutHardModeKeys = (source: Record<string, string>): Record<string, string> =>
+    Object.fromEntries(Object.entries(source).filter(([key]) => !key.endsWith("_HARD")));
 
   const PotionKeepNavItems = buildNavItems(POTION_KEEP, teams, champions, 5);
-  const DungeonNavItems = buildNavItems(dungeonNavSource, teams, champions, 5);
+  const DungeonNavItems = buildNavItems(withoutHardModeKeys(DUNGEON), teams, champions, 5);
   const ClanBossNavItems = buildNavItems(CLAN_BOSS, teams, champions, 5);
   const HydraNavItems = buildNavItems(HYDRA, teams, champions, 6);
   const ArenaNavItems = buildNavItems(ARENA, teams, champions, 4);
-  const DoomTowerBossNavItems = buildNavItems(DOOM_TOWER_BOSS, teams, champions, 5);
+  const DoomTowerBossNavItems = buildNavItems(withoutHardModeKeys(DOOM_TOWER_BOSS), teams, champions, 5);
 
   const FactionNavItems: NavItem[] = Object.keys(ChampionFaction).map((key) => {
     const slug = toSlug(key);

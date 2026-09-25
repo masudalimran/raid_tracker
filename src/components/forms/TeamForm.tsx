@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { teamSchema, type TeamFormData } from "../../lib/zod/teamSchema";
 import type IChampion from "../../models/IChampion";
 import ChampionMultiSelect from "./inputs/ChampionMultiSelect";
+import ImportTeamPicker from "./inputs/ImportTeamPicker";
 import type ITeam from "../../models/ITeam";
 import toSlug from "../../helpers/toSlug";
 import { useTeam } from "../../hooks/useTeam";
@@ -49,7 +50,7 @@ export default function TeamForm({
     control,
     handleSubmit,
     formState: { errors },
-    reset,
+    setValue,
     // eslint-disable-next-line react-hooks/rules-of-hooks
   } = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),
@@ -89,27 +90,18 @@ export default function TeamForm({
     onSave();
   };
 
-  const handleImportNoHardTeam = () => {
-    if (teamName.includes("_hard")) {
-      const currentUserTeams = supabase_teams.filter(
-        (t) => t.user_id === userId && t.rsl_account_id === rslAccountId,
-      );
-      const nonHardTeam = currentUserTeams.find(
-        (t) => t.team_name === teamName.replace("_hard", ""),
-      );
-      if (nonHardTeam) {
-        reset({
-          team_name: teamName,
-          champion_ids: [...nonHardTeam.champion_ids],
-          clearing_stage: nonHardTeam.clearing_stage,
-          notes: nonHardTeam.notes,
-          user_id: userId,
-          rsl_account_id: rslAccountId,
-          ...team,
-        });
-      }
-    }
+  const handleImportTeam = (source: ITeam) => {
+    setValue("champion_ids", [...source.champion_ids], { shouldDirty: true, shouldValidate: true });
   };
+
+  // Any other team belonging to this account can be imported — e.g. copying
+  // Spirit Potion's roster while editing Arcane Potion, or a Normal-mode
+  // team while editing its Hard-mode counterpart. Only the champion roster
+  // is copied; clearing stage/notes stay whatever's already in this form,
+  // since those are specific to this area, not the source team's.
+  const importableTeams = supabase_teams.filter(
+    (t) => t.user_id === userId && t.rsl_account_id === rslAccountId && t.team_name !== teamName,
+  );
 
   return (
     <form
@@ -121,15 +113,7 @@ export default function TeamForm({
         {/* ══ SIDEBAR: team metadata — sticky so it stays put while the ══
             ══ champion list (the tall part) scrolls past it            ══ */}
         <div className="lg:col-span-4 lg:sticky lg:top-0 lg:self-start space-y-4">
-          {teamName.includes("_hard") && (
-            <button
-              type="button"
-              className="text-xs text-amber-600 hover:text-amber-700 font-medium underline cursor-pointer"
-              onClick={handleImportNoHardTeam}
-            >
-              Import from Normal Mode team →
-            </button>
-          )}
+          <ImportTeamPicker teams={importableTeams} onImport={handleImportTeam} />
 
           {/* Clearing Stage */}
           <div>

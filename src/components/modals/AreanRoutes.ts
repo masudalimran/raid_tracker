@@ -34,7 +34,7 @@ export const AREA_ROUTES = [
     isFaction: true,
   }),
 
-  ...buildAreaRoutes(DOOM_TOWER_BOSS, {
+  ...attachHardModePairs(buildAreaRoutes(DOOM_TOWER_BOSS, {
     maxChampions: 5,
-  }),
+  })),
 ] as const;
