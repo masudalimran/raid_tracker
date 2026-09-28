@@ -8,4 +8,5 @@ export interface EventDefinition {
 export const EVENT_DEFINITIONS: EventDefinition[] = [
   { slug: "summon-rush", label: "Summon Rush" },
   { slug: "deck-of-fate", label: "Deck of Fate" },
+  { slug: "path-event", label: "Path Event" },
 ];

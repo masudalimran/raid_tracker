@@ -4,6 +4,7 @@ import { MdEvent } from "react-icons/md";
 import { EVENT_DEFINITIONS } from "../data/eventDefinitions";
 import SummonRush from "./events/SummonRush";
 import DeckOfFate from "./events/DeckOfFate";
+import PathEvent from "./events/PathEvent";
 
 const DEFAULT_EVENT_SLUG = EVENT_DEFINITIONS[0].slug;
 
@@ -51,6 +52,7 @@ export default function Events() {
 
       {activeEvent?.slug === "summon-rush" && <SummonRush />}
       {activeEvent?.slug === "deck-of-fate" && <DeckOfFate />}
+      {activeEvent?.slug === "path-event" && <PathEvent />}
     </div>
   );
 }
