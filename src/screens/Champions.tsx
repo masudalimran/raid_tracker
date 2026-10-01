@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaPlusSquare, FaFileImport } from "react-icons/fa";
+import { FaPlusSquare, FaFileImport, FaRobot } from "react-icons/fa";
 import { TbTool } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { MdChecklist, MdClose, MdDeleteSweep, MdDownload, MdImportExport } from "react-icons/md";
@@ -34,6 +34,7 @@ import { getCurrentlyInUseChampions } from "../helpers/getChampionsInUse";
 // import { getShowSkillsStatus } from "../helpers/getShowSkillsStatus"; // skills hidden
 import { checkIfChampionIsBuilt } from "../helpers/checkIfChampionIsBuilt";
 import { getBuildQuality, getChampionBuildBreakdown } from "../helpers/getChampionBuildQuality";
+import { buildAiChatContext } from "../helpers/buildAiChatContext";
 import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 
 const STATUS_OPTIONS = [
@@ -179,6 +180,15 @@ export default function Champions() {
   // Duplicate "Other" champion cleanup
   const [showDedupeConfirm, setShowDedupeConfirm] = useState(false);
   const [dedupeStatus, setDedupeStatus] = useState<"idle" | "removing" | "error">("idle");
+
+  // AI Chat Context — copies a roster/teams/priority-queue summary for pasting into an AI chat
+  const [aiContextCopied, setAiContextCopied] = useState(false);
+  const handleCopyAiContext = async () => {
+    const context = buildAiChatContext(championList, teams);
+    await navigator.clipboard.writeText(context);
+    setAiContextCopied(true);
+    setTimeout(() => setAiContextCopied(false), 2000);
+  };
 
   const toggleSelect = (id: string | number) => {
     const sid = String(id);
@@ -626,6 +636,19 @@ export default function Champions() {
                 )}
               </>
             )}
+            <Tooltip content={aiContextCopied ? "Copied!" : "AI Chat Context — copy a roster/teams/priority summary to paste into an AI chat"}>
+              <button
+                type="button"
+                onClick={handleCopyAiContext}
+                className={`p-1.5 rounded-lg transition ${
+                  aiContextCopied
+                    ? "text-green-500"
+                    : "hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                }`}
+              >
+                <FaRobot size={19} />
+              </button>
+            </Tooltip>
             <Tooltip content="Dev tools">
               <button
                 type="button"
