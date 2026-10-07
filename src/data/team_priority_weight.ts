@@ -4,6 +4,7 @@ import { ARENA } from "../models/game_areas/Arena";
 import { CLAN_BOSS } from "../models/game_areas/ClanBoss";
 import { DOOM_TOWER_BOSS } from "../models/game_areas/DoomTowerBoss";
 import { DUNGEON } from "../models/game_areas/Dungeon";
+import { GRIM_FOREST } from "../models/game_areas/GrimForest";
 import { HYDRA } from "../models/game_areas/Hydra";
 import { POTION_KEEP } from "../models/game_areas/PotionKeep";
 
@@ -46,6 +47,9 @@ export const TEAM_PRIORITY_WEIGHTS: Record<TeamIdentifier, number> = {
 
   // Doom Tower Boss
   ...mapWithWeight(DOOM_TOWER_BOSS, 30, 15),
+
+  // Grim Forest
+  ...mapWithWeight(GRIM_FOREST, 25),
 };
 
 export const TEAM_IDENTIFIERS = Object.keys(

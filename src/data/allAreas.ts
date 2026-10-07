@@ -4,6 +4,7 @@ import { CLAN_BOSS } from "../models/game_areas/ClanBoss";
 import { HYDRA } from "../models/game_areas/Hydra";
 import { ARENA } from "../models/game_areas/Arena";
 import { DOOM_TOWER_BOSS } from "../models/game_areas/DoomTowerBoss";
+import { GRIM_FOREST } from "../models/game_areas/GrimForest";
 import { ChampionFaction } from "../models/ChampionFaction";
 import toSlug from "../helpers/toSlug";
 
@@ -28,4 +29,5 @@ export const ALL_AREAS: GameArea[] = [
   ...grouped(ARENA, "Arena"),
   ...grouped(DOOM_TOWER_BOSS, "Doom Tower"),
   ...grouped(ChampionFaction, "Faction Wars"),
+  ...grouped(GRIM_FOREST, "Grim Forest"),
 ];

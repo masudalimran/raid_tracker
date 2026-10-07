@@ -30,6 +30,7 @@ const CoreSideNavItems: NavItem[] = [
   { name: "Blessings", path: "/blessings", className: "" },
   { name: "Buffs & Debuffs", path: "/buffs-debuffs", className: "" },
   { name: "Champion Index", path: "/champion-index", className: "" },
+  { name: "Grim Forest", path: "/grim_forest_deck_1", className: "" },
 ];
 
 const UtilitySideNavItems: NavItem[] = [

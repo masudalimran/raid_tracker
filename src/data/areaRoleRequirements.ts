@@ -56,6 +56,24 @@ const POTION_KEEP_REQS: AreaRoleReq[] = [
     [ChampionRole.NUKER], []),
 ];
 
+// ── Grim Forest (same for both decks — each deck is independently judged) ───
+const GRIM_FOREST_DECK_REQS: AreaRoleReq[] = [
+  r("HP Burner",      "Percentage damage chips down tanky enemies every turn",
+    [ChampionRole.HP_BURNER], ["HP Burn"]),
+  r("Heal Reduction", "Shuts down enemy sustain — easy to forget, costly to skip",
+    [ChampionRole.HEAL_REDUCTION], ["Heal Reduction"]),
+  r("Freeze",         "Locks a dangerous enemy out of acting entirely",
+    [ChampionRole.FREEZE], ["Freeze"]),
+  r("Crowd Control",  "Stun / Sleep / Provoke to control the fight",
+    [ChampionRole.CONTROL], ["Stun", "Sleep", "Provoke"]),
+  r("Speed Booster",  "Keeps this deck's tempo ahead of the enemy",
+    [ChampionRole.SPEED_BOOSTER], ["Increase SPD", "TM Boost"]),
+  r("Shielder",       "Increase DEF or a Shield to blunt incoming damage",
+    [ChampionRole.SHIELDER, ChampionRole.INCREASE_DEF], ["Shield", "Increase DEF"]),
+  r("Reviver",        "Brings fallen champions back into the fight",
+    [ChampionRole.REVIVER], ["Revive", "Revive On Death"]),
+];
+
 export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[]>> = {
 
   // ── Potion Keep ───────────────────────────────────────────────────────────
@@ -63,6 +81,10 @@ export const AREA_ROLE_REQUIREMENTS: Partial<Record<TeamIdentifier, AreaRoleReq[
   SPIRIT_POTION: POTION_KEEP_REQS,
   VOID_POTION:   POTION_KEEP_REQS,
   FORCE_POTION:  POTION_KEEP_REQS,
+
+  // ── Grim Forest ───────────────────────────────────────────────────────────
+  GRIM_FOREST_DECK_1: GRIM_FOREST_DECK_REQS,
+  GRIM_FOREST_DECK_2: GRIM_FOREST_DECK_REQS,
 
   // ── Clan Boss ─────────────────────────────────────────────────────────────
   DEMON_LORD: [

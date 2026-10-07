@@ -19,6 +19,7 @@ import Blessings from "./screens/Blessings.tsx";
 import Events from "./screens/Events.tsx";
 import ChampionIndex from "./screens/ChampionIndex.tsx";
 import BuffDebuffGuide from "./screens/BuffDebuffGuide.tsx";
+import GrimForest from "./screens/GrimForest.tsx";
 import { useEffect } from "react";
 import { AREA_ROUTES } from "./components/modals/AreanRoutes.ts";
 import BaseAreaTeam from "./components/base/BaseAreaTeam.tsx";
@@ -57,6 +58,9 @@ function App() {
         <Route path="/events/:eventSlug" element={<Events />} />
         <Route path="/champion-index" element={<ChampionIndex />} />
         <Route path="/buffs-debuffs" element={<BuffDebuffGuide />} />
+        {/* Grim Forest's 2-deck page — both allAreas.ts-generated slugs render the same combined screen. */}
+        <Route path="/grim_forest_deck_1" element={<GrimForest />} />
+        <Route path="/grim_forest_deck_2" element={<GrimForest />} />
         <Route path="/rtk-sync" element={<RtkSync />} />
         <Route path="/shard-log" element={<Navigate to="/shard-log/ancient" replace />} />
         <Route path="/shard-log/:shardType" element={<ShardLog />} />
