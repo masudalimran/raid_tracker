@@ -4,6 +4,7 @@ import {
   type AreaRoleReq,
 } from "../data/areaRoleRequirements";
 import { getStatScore } from "./sortChampions";
+import { ChampionRole } from "../models/ChampionRole";
 
 export interface SuggestedTeamEntry {
   champion: IChampion;
@@ -19,14 +20,18 @@ const impactOf = (champion: IChampion): number =>
  * on power score. Once every role is covered, remaining slots are filled
  * by strongest-remaining champion. Because it considers the whole pool
  * rather than only unselected champions, it can recommend swapping out a
- * currently-selected champion for a better-fitting one.
+ * currently-selected champion for a better-fitting one. Champions tagged
+ * Not Viable are never candidates, regardless of how well they'd otherwise
+ * cover a role.
  */
 export function suggestTeam(
   champions: IChampion[],
   requiredRoles: AreaRoleReq[],
   teamSize: number,
 ): SuggestedTeamEntry[] {
-  const pool = champions.filter((c) => c.id !== undefined && c.id !== null);
+  const pool = champions.filter(
+    (c) => c.id !== undefined && c.id !== null && !c.role?.includes(ChampionRole.NOT_VIABLE),
+  );
   const uncovered = new Set(requiredRoles.map((_, i) => i));
   const picked = new Set<string>();
   const result: SuggestedTeamEntry[] = [];

@@ -2,20 +2,47 @@ import type IChampion from "../models/IChampion";
 import { getChampionRoleMatches, type AreaRoleReq } from "../data/areaRoleRequirements";
 import { checkIfChampionIsBuilt } from "./checkIfChampionIsBuilt";
 import { getStatScore } from "./sortChampions";
+import { ChampionRarity } from "../models/ChampionRarity";
+import { ChampionRole } from "../models/ChampionRole";
 
 export interface SuggestedDeckEntry {
   champion: IChampion;
   matchedLabels: string[];
 }
 
+const RARITY_RANK: Record<string, number> = {
+  [ChampionRarity.MYTHICAL]: 6,
+  [ChampionRarity.LEGENDARY]: 5,
+  [ChampionRarity.EPIC]: 4,
+  [ChampionRarity.RARE]: 3,
+  [ChampionRarity.UNCOMMON]: 2,
+  [ChampionRarity.COMMON]: 1,
+};
+
 const impactOf = (champion: IChampion): number =>
   champion.champion_impact ?? getStatScore(champion) * 1000;
 
+// Preference order for picking between champions: built status first, then
+// rarity tier, then raw stat impact as a final tiebreak — applies both when
+// choosing who covers a required role and when filling the remaining slots.
+const priorityOf = (champion: IChampion): [number, number, number] => [
+  Number(checkIfChampionIsBuilt(champion)),
+  RARITY_RANK[champion.rarity] ?? 0,
+  impactOf(champion),
+];
+
+function comparePriority(a: [number, number, number], b: [number, number, number]): number {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
 /**
  * Builds one Grim Forest deck: greedily covers each required role first (same
- * set-cover approach as suggestTeam), then fills remaining slots with the
- * most-built champions left in the pool — built status beats raw stat impact,
- * per how Grim Forest decks are meant to be prioritized.
+ * set-cover approach as suggestTeam, but preferring the most-built,
+ * highest-rarity champion among ties), then fills remaining slots the same
+ * way — most-built, then highest-rarity, among champions with no required role.
  */
 function suggestOneDeck(
   pool: IChampion[],
@@ -29,7 +56,7 @@ function suggestOneDeck(
   while (result.length < deckSize && uncovered.size > 0) {
     let best: IChampion | null = null;
     let bestNewCoverage = 0;
-    let bestImpact = -1;
+    let bestPriority: [number, number, number] = [-1, -1, -1];
 
     for (const champ of pool) {
       if (champ.id === undefined || champ.id === null) continue;
@@ -41,12 +68,12 @@ function suggestOneDeck(
         return req.matchRoles?.some((role) => champ.role?.includes(role)) ? count + 1 : count;
       }, 0);
       if (newCoverage === 0) continue;
-      const impact = impactOf(champ);
 
-      if (newCoverage > bestNewCoverage || (newCoverage === bestNewCoverage && impact > bestImpact)) {
+      const priority = priorityOf(champ);
+      if (newCoverage > bestNewCoverage || (newCoverage === bestNewCoverage && comparePriority(priority, bestPriority) > 0)) {
         best = champ;
         bestNewCoverage = newCoverage;
-        bestImpact = impact;
+        bestPriority = priority;
       }
     }
 
@@ -63,11 +90,7 @@ function suggestOneDeck(
 
   const remaining = pool
     .filter((c) => c.id !== undefined && c.id !== null && !picked.has(c.id!.toString()))
-    .sort((a, b) => {
-      const builtDiff = Number(checkIfChampionIsBuilt(b)) - Number(checkIfChampionIsBuilt(a));
-      if (builtDiff !== 0) return builtDiff;
-      return impactOf(b) - impactOf(a);
-    });
+    .sort((a, b) => comparePriority(priorityOf(b), priorityOf(a)));
 
   for (const champ of remaining) {
     if (result.length >= deckSize) break;
@@ -77,13 +100,15 @@ function suggestOneDeck(
   return result;
 }
 
-/** Suggests both Grim Forest decks at once — deck 2 is built from whatever deck 1 didn't take, so no champion appears in both. */
+/** Suggests both Grim Forest decks at once — deck 2 is built from whatever deck 1 didn't take, so no champion appears in both. Champions tagged Not Viable are never candidates. */
 export function suggestGrimForestDecks(
   champions: IChampion[],
   requiredRoles: AreaRoleReq[],
   deckSize: number,
 ): { deck1: SuggestedDeckEntry[]; deck2: SuggestedDeckEntry[] } {
-  const pool = champions.filter((c) => c.id !== undefined && c.id !== null);
+  const pool = champions.filter(
+    (c) => c.id !== undefined && c.id !== null && !c.role?.includes(ChampionRole.NOT_VIABLE),
+  );
   const deck1 = suggestOneDeck(pool, requiredRoles, deckSize);
   const deck1Ids = new Set(deck1.map((e) => e.champion.id!.toString()));
   const remainingPool = pool.filter((c) => !deck1Ids.has(c.id!.toString()));
